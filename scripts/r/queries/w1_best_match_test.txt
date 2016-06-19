@@ -1,0 +1,8 @@
+comparison model
+w1 hmm_BFact_w1_fm0.3
+w1 hmm_hdp_w1_LT
+w1 hmm_hdp_w1_noLT
+w1_F1 hmm_BFact_w1_fm0.3_BestMatchF1
+w1_F1 hmm_hdp_w1_LT_BestMatchF1
+w1_F1 hmm_hdp_w1_noLT_BestMatchF1
+

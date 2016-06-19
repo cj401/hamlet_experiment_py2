@@ -1,0 +1,7 @@
+comparison model
+w1 hmm_hdp_w1_LT
+w1 hmm_hdp_w1_noLT
+w1_F1 hmm_hdp_w1_LT_BestMatchF1
+w1_F1 hmm_hdp_w1_noLT_BestMatchF1
+w1_hamming hmm_hdp_w1_LT_BestMatchHamming
+w1_hamming hmm_hdp_w1_noLT_BestMatchHamming

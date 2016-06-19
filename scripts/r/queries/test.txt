@@ -1,0 +1,14 @@
+comparison model
+hmm_w0 hmm_hdp_w0_LT
+hmm_w0 hmm_hdp_w0_noLT
+hmm_w0 hmm_BFact_w0_fm0.3
+hmm_w1_F1 hmm_hdp_w1_LT_BestMatchF1
+hmm_w1_F1 hmm_hdp_w1_noLT_BestMatchF1
+hmm_w1_hamming hmm_hdp_w1_LT_BestMatchHamming
+hmm_w1_hamming hmm_hdp_w1_noLT_BestMatchHamming
+hsmm_w0 hsmm_hdp_w0_LT
+hsmm_w0 hsmm_hdp_w0_noLT
+hsmm_w1_F1 hsmm_hdp_w1_LT_BestMatchF1
+hsmm_w1_F1 hsmm_hdp_w1_noLT_BestMatchF1
+hsmm_w1_hamming hsmm_hdp_w1_LT_BestMatchHamming
+hsmm_w1_hamming hsmm_hdp_w1_noLT_BestMatchHamming
