@@ -1,10 +1,10 @@
-__author__ = 'clayton'
-
 import os
 import datetime
 import collections
 import glob
 import numpy as np
+
+__author__ = 'clayton'
 
 
 # ----------------------------------------------------------------------
@@ -38,6 +38,7 @@ def get_timestamp(verbose=False):
             .format(year=now.year, month=now.month, day=now.day,
                     hour=now.hour, minute=now.minute, second=now.second,
                     micro=now.microsecond)
+
 
 # ----------------------------------------------------------------------
 
@@ -189,15 +190,20 @@ def read_parameter_file_as_dict(parameter_filepath, parameter_filename, main_pat
         owd = os.getcwd()
         os.chdir(main_path)
 
-    with open(config_filepath, 'r') as cfile:
-        for line in cfile.readlines():
-            line = line.rstrip('\n').split(' ')
-            if line[0] and not ( line[0][0] == '/' ):
-                # print '>>> {0}'.format(line)
-                key = line[0] + ':' + line[1]
-                val = line[2]
-                params_dict[key] = val
-            # else : print '<<< {0}'.format(line)
+    try:
+        with open(config_filepath, 'r') as cfile:
+            for line in cfile.readlines():
+                line = line.rstrip('\n').split(' ')
+                if line[0] and not ( line[0][0] == '/' ):
+                    # print '>>> {0}'.format(line)
+                    key = line[0] + ':' + line[1]
+                    val = line[2]
+                    params_dict[key] = val
+                # else : print '<<< {0}'.format(line)
+    except IOError, err:
+        print 'ERROR: read_parameter_file_as_dict()'
+        print '     Current working directory:', os.getcwd()
+        raise IOError(err)
 
     if main_path:
         os.chdir(owd)

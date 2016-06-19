@@ -14,7 +14,22 @@ run single experiment
 run batch
 """
 
+# TODO: Still in mid refactor -- new directory structure breaks things
 
+
+# ----------------------------------------------------------------------
+# Hamlet root paths
+# ----------------------------------------------------------------------
+
+hamlet_root = '../../../'
+
+data_root = os.path.join(hamlet_root, 'data/data')
+parameters_root = os.path.join(hamlet_root, 'hamlet_experiment/parameters')
+results_root = os.path.join(hamlet_root, 'hamlet_experiment/results')
+
+
+# ----------------------------------------------------------------------
+# Global LOCK
 # ----------------------------------------------------------------------
 
 
@@ -760,121 +775,123 @@ ParameterSpec = util.namedtuple_with_defaults\
     ('ParameterSpec', ['parameters_file', 'parameters_dir'])
 
 
-def collect_parameter_spec_list_cp_W0():
+def collect_parameter_spec_list_cp_W0(parameters_path):
     """
     Parameters with Known weights
     :return:
     """
-    return [ ParameterSpec('cocktail_inference_BFact_HMM_W0.config'),
-             ParameterSpec('cocktail_inference_LT_HMM_W0.config'),
-             ParameterSpec('cocktail_inference_LT_HSMM_W0.config'),
-             ParameterSpec('cocktail_inference_noLT_HMM_W0.config'),
-             ParameterSpec('cocktail_inference_noLT_HSMM_W0.config') ]
+    return [ ParameterSpec('cocktail_inference_BFact_HMM_W0.config', parameters_path),
+             ParameterSpec('cocktail_inference_LT_HMM_W0.config', parameters_path),
+             ParameterSpec('cocktail_inference_LT_HSMM_W0.config', parameters_path),
+             ParameterSpec('cocktail_inference_noLT_HMM_W0.config', parameters_path),
+             ParameterSpec('cocktail_inference_noLT_HSMM_W0.config', parameters_path) ]
 
-def collect_parameter_spec_list_cp_BFact_only_W0():
+
+def collect_parameter_spec_list_cp_BFact_only_W0(parameters_path):
     """
     Parameters with Known weights
     :return:
     """
-    return [ ParameterSpec('cocktail_inference_BFact_HMM_W0.config') ]
+    return [ ParameterSpec('cocktail_inference_BFact_HMM_W0.config', parameters_path) ]
 
 
-def collect_parameter_spec_list_cp_W1():
+def collect_parameter_spec_list_cp_W1(parameters_path):
     """
     Parameters for weight learning
     :return:
     """
     return [ # ParameterSpec('cocktail_inference_BFact_HMM_W1.config'),
-             ParameterSpec('cocktail_inference_LT_HMM_W1.config'),
-             ParameterSpec('cocktail_inference_LT_HSMM_W1.config'),
-             ParameterSpec('cocktail_inference_noLT_HMM_W1.config'),
-             ParameterSpec('cocktail_inference_noLT_HSMM_W1.config') ]
+             ParameterSpec('cocktail_inference_LT_HMM_W1.config', parameters_path),
+             ParameterSpec('cocktail_inference_LT_HSMM_W1.config', parameters_path),
+             ParameterSpec('cocktail_inference_noLT_HMM_W1.config', parameters_path),
+             ParameterSpec('cocktail_inference_noLT_HSMM_W1.config', parameters_path) ]
 
-def collect_parameter_spec_list_cp_BFact_only_W1():
+
+def collect_parameter_spec_list_cp_BFact_only_W1(parameters_path):
     """
     Parameters with Known weights
     :return:
     """
-    return [ ParameterSpec('cocktail_inference_BFact_HMM_W1.config') ]
+    return [ ParameterSpec('cocktail_inference_BFact_HMM_W1.config', parameters_path) ]
 
 
-def collect_parameter_spec_list_cp_W1_4000():
+def collect_parameter_spec_list_cp_W1_4000(parameters_path):
     """
     cp, weight learning (w1), 4000 iterations
     :return:
     """
-    return [ ParameterSpec('cocktail_inference_BFact_HMM_W1_4000.config'),
-             ParameterSpec('cocktail_inference_LT_HMM_W1_4000.config'),
-             ParameterSpec('cocktail_inference_LT_HSMM_W1_4000.config'),
-             ParameterSpec('cocktail_inference_noLT_HMM_W1_4000.config'),
-             ParameterSpec('cocktail_inference_noLT_HSMM_W1_4000.config') ]
+    return [ ParameterSpec('cocktail_inference_BFact_HMM_W1_4000.config', parameters_path),
+             ParameterSpec('cocktail_inference_LT_HMM_W1_4000.config', parameters_path),
+             ParameterSpec('cocktail_inference_LT_HSMM_W1_4000.config', parameters_path),
+             ParameterSpec('cocktail_inference_noLT_HMM_W1_4000.config', parameters_path),
+             ParameterSpec('cocktail_inference_noLT_HSMM_W1_4000.config', parameters_path) ]
 
 
-def collect_parameter_spec_list_cp_W1_4000_D16():
+def collect_parameter_spec_list_cp_W1_4000_D16(parameters_path):
     """
     cp weight learning (w1), 4000 iterations, D=16
     works with: cocktail_s16_m12
     :return:
     """
-    return [ ParameterSpec('cocktail_inference_BFact_HMM_W1_4000_D16.config'),
-             ParameterSpec('cocktail_inference_LT_HMM_W1_4000_D16.config'),
-             ParameterSpec('cocktail_inference_noLT_HMM_W1_4000_D16.config')
+    return [ ParameterSpec('cocktail_inference_BFact_HMM_W1_4000_D16.config', parameters_path),
+             ParameterSpec('cocktail_inference_LT_HMM_W1_4000_D16.config', parameters_path),
+             ParameterSpec('cocktail_inference_noLT_HMM_W1_4000_D16.config', parameters_path)
              ]
 
 
-def collect_parameter_spec_list_cp_W0_1500_D16():
+def collect_parameter_spec_list_cp_W0_1500_D16(parameters_path):
     """
     cp **NO** weight learning (w0), 1500 iterations, D=16
     works with: cocktail_s16_m12
     :return:
     """
-    return [ ParameterSpec('cocktail16_inference_BFact_HMM_W0.config'),
-             ParameterSpec('cocktail16_inference_LT_HMM_W0.config'),
-             ParameterSpec('cocktail16_inference_noLT_HMM_W0.config')]
+    return [ ParameterSpec('cocktail16_inference_BFact_HMM_W0.config', parameters_path),
+             ParameterSpec('cocktail16_inference_LT_HMM_W0.config', parameters_path),
+             ParameterSpec('cocktail16_inference_noLT_HMM_W0.config', parameters_path)]
 
 
-def collect_parameter_spec_list_cp_W0_2000_D16_hmmJ600():
+def collect_parameter_spec_list_cp_W0_2000_D16_hmmJ600(parameters_path):
     """
     cp **NO** weight learning (w0), 1500 iterations, D=16, and J=600 for hmm
     works with: cocktail_s16_m12
     :return:
     """
-    return [ ParameterSpec('cocktail16_inference_BFact_HMM_W0.config'),
-             ParameterSpec('cocktail16_inference_LT_HMM_W0-J600.config'),
-             ParameterSpec('cocktail16_inference_noLT_HMM_W0-J600.config')]
+    return [ ParameterSpec('cocktail16_inference_BFact_HMM_W0.config', parameters_path),
+             ParameterSpec('cocktail16_inference_LT_HMM_W0-J600.config', parameters_path),
+             ParameterSpec('cocktail16_inference_noLT_HMM_W0-J600.config', parameters_path)]
 
 
-def collect_parameter_spec_list_cp_W1_4000_D14_J250():
+def collect_parameter_spec_list_cp_W1_4000_D14_J250(parameters_path):
     """
     cp weight learning (w1), 4000 iterations, D=14, J=250
     works with: cocktail_s14_m12/
     :return:
     """
-    return [ ParameterSpec('cocktail_inference_BFact_HMM_W1_4000_D14_J250.config'),
-             ParameterSpec('cocktail_inference_LT_HMM_W1_4000_D14_J250.config'),
-             ParameterSpec('cocktail_inference_noLT_HMM_W1_4000_D14_J250.config')]
+    return [ ParameterSpec('cocktail_inference_BFact_HMM_W1_4000_D14_J250.config', parameters_path),
+             ParameterSpec('cocktail_inference_LT_HMM_W1_4000_D14_J250.config', parameters_path),
+             ParameterSpec('cocktail_inference_noLT_HMM_W1_4000_D14_J250.config', parameters_path)]
 
 
-def collect_parameter_spec_list_synth():
+def collect_parameter_spec_list_synth(parameters_path):
     """
     Synthetic model figures experiment, no weight learning
     works with: synth/
     :return:
     """
-    return [ ParameterSpec('BFact_inference.config'),
-             ParameterSpec('LT_inference.config'),
-             ParameterSpec('noLT_inference.config')]
+    return [ ParameterSpec('BFact_inference.config', parameters_path),
+             ParameterSpec('LT_inference.config', parameters_path),
+             ParameterSpec('noLT_inference.config', parameters_path)]
 
 
-def collect_parameter_spec_list_synth16():
+def collect_parameter_spec_list_synth16(parameters_path):
     """
     Synthetic model figures experiment, 16 states, no weight learning
     works with: synth16/
     :return:
     """
-    return [ ParameterSpec('BFact16_inference.config'),
-             ParameterSpec('LT16_inference.config'),
-             ParameterSpec('noLT16_inference.config')]
+    return [ ParameterSpec('BFact16_inference.config', parameters_path),
+             ParameterSpec('LT16_inference.config', parameters_path),
+             ParameterSpec('noLT16_inference.config', parameters_path)]
 
 
 '''
@@ -1193,7 +1210,7 @@ def lt_p(params):
     return True
 
 
-def results_spec_fn(pspec, dspec, replication_postfix, main_path='../'):
+def results_spec_fn(results_dir, pspec, dspec, replication_postfix, main_path='../'):
     """
     Given ParameterSpec and DataSpec, constructs ResultsSpec
     specifying: results_subdir, results_postfix, results_dir
@@ -1206,7 +1223,7 @@ def results_spec_fn(pspec, dspec, replication_postfix, main_path='../'):
     :return: ResultsSpec
     """
 
-    results_root_name = dspec.data_dir[0:-1].split('/')[-1]
+    results_root_name = results_dir  # dspec.data_dir[0:-1].split('/')[-1]
 
     if dspec.data_subdir[-1] == '/':
         data_subdir = dspec.data_subdir[0:-1].replace('/', '_')
@@ -1215,6 +1232,7 @@ def results_spec_fn(pspec, dspec, replication_postfix, main_path='../'):
 
     pdir = 'parameters/'
     if pspec.parameters_dir:
+        print 'pspec.parameters_dir', pspec.parameters_dir
         pdir = pspec.parameters_dir
 
     owd = os.getcwd()
@@ -1280,24 +1298,26 @@ def results_spec_fn(pspec, dspec, replication_postfix, main_path='../'):
     return ResultsSpec(results_subdir=results_subdir, results_postfix=results_postfix)
 
 
+# TODO: 20160619 - refactoring broke this test, fix...
 def test_results_spec_fn():
-    pspec = ParameterSpec('cocktail_inference_LT_HMM_W0.config')
-    dspec = DataSpec(data_dir='figures/cocktail/',
+    pspec = ParameterSpec('cocktail_inference_LT_HMM_W0.config', parameters_root)
+    dspec = DataSpec(data_dir=os.path.join(data_root, 'cocktail'),
                      data_subdir='a3b6/cp2/',
-                     weights_file='figures/cocktail/a3b6/cp2/weights.txt')
-    rspec = results_spec_fn(pspec, dspec, 5)
+                     weights_file=os.path.join(data_root, 'cocktail/a3b6/cp2/weights.txt'))
+    rspec = results_spec_fn(results_root, pspec, dspec, 5)
 
     # print rspec.results_dir, rspec.results_subdir, rspec.results_postfix
 
     assert rspec.results_dir is None
-    # print 'rspec.results_subdir', rspec.results_subdir
+
+    print 'rspec.results_subdir', rspec.results_subdir  ################
     assert rspec.results_subdir == 'cocktail/a3b6_cp2/LT_hdp_hmm_w0'
     assert rspec.results_postfix == '05'
 
-    pspec = ParameterSpec('cocktail_inference_noLT_HSMM_W0.config')
-    dspec = DataSpec(data_dir='figures/cocktail/',
+    pspec = ParameterSpec('cocktail_inference_noLT_HSMM_W0.config', parameters_root)
+    dspec = DataSpec(data_dir=os.path.join(data_root, 'cocktail'),
                      data_subdir='a3b6/cp2/',
-                     weights_file='figures/cocktail/a3b6/cp2/weights.txt')
+                     weights_file=os.path.join(data_root, 'cocktail/a3b6/cp2/weights.txt'))
     rspec = results_spec_fn(pspec, dspec, 2)
 
     # print rspec.results_dir, rspec.results_subdir, rspec.results_postfix
@@ -1309,13 +1329,14 @@ def test_results_spec_fn():
 
     print 'PASS test_results_spec_fn()'
 
-test_results_spec_fn()
+# test_results_spec_fn()
 
 # -------------------------------
 
 
 def collect_experiment_spec_list(parameter_spec_list,
                                  data_spec_list,
+                                 results_dir,
                                  results_spec_fn=results_spec_fn,
                                  replications=1,
                                  offset=0,
@@ -1326,7 +1347,7 @@ def collect_experiment_spec_list(parameter_spec_list,
         for dspec in data_spec_list:
             for pspec in parameter_spec_list:
 
-                rspec = results_spec_fn(pspec, dspec, r + offset, main_path)
+                rspec = results_spec_fn(results_dir, pspec, dspec, r + offset, main_path)
 
                 experiment_spec_list.append\
                     (ExperimentSpec
@@ -1355,18 +1376,20 @@ def collect_experiment_spec_list(parameter_spec_list,
 
 
 def script(data_dir,
+           results_dir,
+           main_path='../',
            replications=1,
            offset=0,
-           parameter_spec_collector=collect_parameter_spec_list_cp_W0,
+           parameter_spec_list=None,
+           # parameter_spec_collector=collect_parameter_spec_list_cp_W0,
            match_dict=None,
-           main_path='../',
            multiproc=True,
            processor_pool_size=multiprocessing.cpu_count(),
            rerun=True,
            test=True,
            select_subdirs_verbose=False):
 
-    parameter_spec_list = parameter_spec_collector()
+    # parameter_spec_list = parameter_spec_collector()
 
     if test:
         print 'parameter_spec_list:'
@@ -1384,6 +1407,7 @@ def script(data_dir,
     spec_list = collect_experiment_spec_list \
         (parameter_spec_list=parameter_spec_list,
          data_spec_list=data_spec_list,
+         results_dir=results_dir,
          results_spec_fn=results_spec_fn,
          replications=replications,
          offset=offset,
@@ -1528,7 +1552,7 @@ match_select_hnocs_cp0to2 = {0: ['h{0}_nocs'.format(h)
                                  for h in [0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 5.0, 10.0]],
                              1: ['cp{0}'.format(i) for i in range(0, 10)]}
 
-script('figures/cocktail/',
+script(os.path.join(hamlet_root, 'cocktail'),
        replications=10,
        offset=10,  # ADDITIONAL runs
        parameter_spec_collector=collect_parameter_spec_list_cp_W1_1500,  # learn weights
@@ -1548,7 +1572,7 @@ match_select_hnocs_cp0to2 = {0: ['h{0}_nocs'.format(h)
                                  for h in [10.0]],  # [0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 5.0, 10.0]],
                              1: ['cp{0}'.format(i) for i in range(1)]}  # range(0, 10)
 
-script('figures/cocktail/',
+script(os.path.join(hamlet_root, 'cocktail'),
        replications=1,  # replications = 10
        offset=0,  # offset = 10 # for _additional_ runs
        parameter_spec_collector=collect_parameter_spec_list_cp_W1_1500_Nemh01,  # learn weights, Nem a_h=b_h=0.1
@@ -1567,7 +1591,7 @@ match_select_hnocs = {0: ['h{0}_nocs'.format(h)
                           for h in [0.5]],  # , 0.75, 1.0, 1.5, 2.0, 3.0, 5.0, 10.0]],
                       1: ['cp{0}'.format(i) for i in range(10)]}
 
-script('figures/cocktail/',
+script(os.path.join(hamlet_root, 'cocktail'),
        replications=5,
        offset=0,
        parameter_spec_collector=factorial_parameter_spec_list_W0,  # learn weights
@@ -1585,7 +1609,7 @@ match_select_hnocs = {0: ['h{0}_nocs'.format(h)
                           for h in [0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 5.0, 10.0]],
                       1: ['cp{0}'.format(i) for i in range(10)]}
 
-script('figures/cocktail/',
+script(os.path.join(hamlet_root, 'cocktail'),
        replications=10,
        offset=0,
        parameter_spec_collector=factorial_parameter_spec_list_W1,  # learn weights
@@ -1602,7 +1626,7 @@ match_select_hnocs = {0: ['h{0}_nocs'.format(h)
                           for h in [0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 5.0, 10.0]],
                       1: ['cp{0}'.format(i) for i in range(10)]}
 
-script('figures/cocktail/',
+script(os.path.join(hamlet_root, 'cocktail'),
        replications=10,
        offset=0,
        parameter_spec_collector=collect_parameter_spec_list_cp_W1,
@@ -1624,7 +1648,7 @@ match_select_hnocs = {0: ['h{0}_nocs'.format(h)
                           for h in [2.0, 3.0, 5.0, 10.0]],
                       1: ['cp{0}'.format(i) for i in range(3)]}
 
-script('figures/cocktail/',
+script(os.path.join(hamlet_root, 'cocktail'),
        replications=10,
        offset=0,
        parameter_spec_collector=collect_parameter_spec_list_cp_W1_4000,
@@ -1642,7 +1666,7 @@ match_select_hnocs = {0: ['h{0}_nocs'.format(h)
                           for h in [2.0]],
                       1: ['cp{0}'.format(i) for i in range(3)]}
 
-script('figures/cocktail_s14_m12/',
+script(os.path.join(hamlet_root, 'cocktail_s14_m12'),
        replications=10,
        offset=0,
        parameter_spec_collector=collect_parameter_spec_list_cp_W1_4000_D14_J250,
@@ -1662,7 +1686,7 @@ match_select_hnocs = {0: ['h{0}_nocs'.format(h)
                       1: ['cp{0}'.format(i) for i in range(3)]}
 
 # {BFact, LT, noLT} x {h3.0, h10.0} x {cp0..cp3} x {3 reps} = 3 x 2 x 3 x 3 = 54
-script('figures/cocktail_s16_m12/',
+script(os.path.join(hamlet_root, 'cocktail_s16_m12',
        replications=3,
        offset=2,
        # collect_parameter_spec_list_cp_W1_4000_D16,
@@ -1683,7 +1707,7 @@ match_select_synth = {0: ['BFact', 'LT', 'noLT'],
                       1: ['s{0}'.format(i) for i in range(3)]}
 
 # Synthetic experiment
-script('figures/synth/',
+script(os.path.join(hamlet_root, 'synth',
        replications=20,
        offset=0,
        # collect_parameter_spec_list_cp_W1_4000_D16,
@@ -1701,13 +1725,15 @@ script('figures/synth/',
 match_select_synth = {0: ['BFact', 'LT', 'noLT'],
                       1: ['s{0}'.format(i) for i in range(1)]}
 
-# Synthetic experiment
-script('figures/synth16/',
+# Synthetic 16 experiment
+script(os.path.join(data_root, 'synth16'),
+       results_dir=results_root,
+       main_path=hamlet_root,
        replications=4,
        offset=0,
        # collect_parameter_spec_list_cp_W1_4000_D16,
        # collect_parameter_spec_list_cp_W0_1500_D16,
-       parameter_spec_collector=collect_parameter_spec_list_synth16,
+       parameter_spec_list=collect_parameter_spec_list_synth16(parameters_root),
        match_dict=match_select_synth,
        multiproc=False,  # True,
        processor_pool_size=multiprocessing.cpu_count(),
