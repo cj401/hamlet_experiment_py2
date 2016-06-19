@@ -1,0 +1,1 @@
+# Hamlet temporary results plots directory
