@@ -1,0 +1,6 @@
+('multiprocessing', 8)
+('command', 15, 40, './main -p cocktail_inference_no_LT_HMM.config --data_subdir=cp_1/ -r cp_1/no_LT --results_timestamp=02', 0, '0:12:01.014295')
+('command', 7, 40, './main -p cocktail_inference_no_LT_HMM.config --data_subdir=cp_1/ -r cp_1/no_LT --results_timestamp=01', 0, '0:12:06.905181')
+('results', [(1, 0), (2, 0), (3, 0)])
+('failures', 2, [(4, 1), (21, 1)])
+('Total time', '2:31:38.426586')
