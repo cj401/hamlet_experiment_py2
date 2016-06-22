@@ -1,8 +1,3 @@
-## Hamlet-specific
-main
-data/
-results/
-
 # Handy gitignore settings for Python and R projects
 
 ### Python projects
