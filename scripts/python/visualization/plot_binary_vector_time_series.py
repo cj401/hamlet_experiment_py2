@@ -15,6 +15,7 @@ __author__ = 'clayton'
 def plot_binary_vector_time_series(data, figw=1000, figh=800, mydpi=96):
 
     fig = plt.figure(figsize=(figw/mydpi, figh/mydpi), dpi=mydpi)
+    ax = plt.gca()
 
     level_max = data.shape[1]
     end_max = data.shape[0]
@@ -29,7 +30,6 @@ def plot_binary_vector_time_series(data, figw=1000, figh=800, mydpi=96):
 
             interval_xrange = [start_idx, end_idx]
             interval_yrange = numpy.array([level, level])
-            ax = plt.gca()
             ax.fill_between(interval_xrange, interval_yrange-0.2, interval_yrange+0.2,
                             facecolor=color, edgecolor=color, alpha=0.5)
 
