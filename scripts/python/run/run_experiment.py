@@ -5,7 +5,7 @@ import os
 import sys
 from subprocess import call
 
-from utilities import util
+import utilities.util as util
 
 __author__ = 'clayton'
 
