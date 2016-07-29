@@ -256,11 +256,6 @@ def run_experiment(spec):
     owd = os.getcwd()
     os.chdir(spec.main_path)
 
-    print '>>>>>>>>>>>>>>>>>>>>>>>>'
-    print 'spec.main_path', spec.main_path
-    print 'os.getcwd()', os.getcwd()
-    # sys.exit()
-
     ret = -1  # indicates test
 
     start = datetime.datetime.now()
