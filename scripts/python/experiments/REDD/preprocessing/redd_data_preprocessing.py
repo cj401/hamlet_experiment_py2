@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import numpy
 from matplotlib.widgets import Slider, SpanSelector
 
-from scripts.python.experiments.REDD.preprocessing import dp_alpha
+import dp_alpha
 
 '''
 Procedure for creating downsampled data:
@@ -36,7 +36,10 @@ Procedure for creating downsampled data:
 # Paths
 # ------------------------------------------------------------
 
+print __package__
+
 HAMLET_ROOT = '../../../../../'
+# HAMLET_ROOT = paths
 REDD_DATA_ROOT = os.path.join(HAMLET_ROOT, 'data/data/REDD')
 REDD_DATA_jw2013_ROOT = os.path.join(REDD_DATA_ROOT, 'johnson_willsky')
 REDD_DATA_jw2013_extracted_ROOT = os.path.join(REDD_DATA_ROOT, 'jw2013_subset_extracted')
@@ -2612,9 +2615,9 @@ def script(house, channel_list, w_limit=10):
     plot_browser(fig_spec=plot_data_values_list_stacked(data_list))  # 30000, 80000
 
 
-# script(house='1', channel_list=(5, 17, 18, 6, 11, 13))
+# run_experiment_script(house='1', channel_list=(5, 17, 18, 6, 11, 13))
 
-# script(house='3', channel_list=(5, 11, 15, 17, 19))
+# run_experiment_script(house='3', channel_list=(5, 11, 15, 17, 19))
 
 
 '''

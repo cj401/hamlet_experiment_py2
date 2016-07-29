@@ -9,6 +9,12 @@ __author__ = 'clayton'
 
 # ----------------------------------------------------------------------
 
+def hello():
+    print 'Hello from utilities.util.hello()!'
+
+
+# ----------------------------------------------------------------------
+
 # From http://stackoverflow.com/questions/11351032/named-tuple-and-optional-keyword-arguments
 def namedtuple_with_defaults(typename, field_names, default_values=None):
     if default_values is None:

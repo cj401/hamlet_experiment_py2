@@ -17,7 +17,7 @@ For example, previous branch:
 now becomes:
    results/cocktail/h10.0_nocs_cp1/hsmm_hdp_w1_noLT/10
 
-This script likely only needs to be run once.
+This run_experiment_script likely only needs to be run once.
 '''
 
 def get_src_dst_pairs(results_root, main_path='../'):

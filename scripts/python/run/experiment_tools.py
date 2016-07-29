@@ -5,14 +5,69 @@ import os
 import sys
 from subprocess import call
 
-import utilities.util as util
+
+# ----------------------------------------------------------------------
+# Attempt to ensure parent to <hamlet>/experiment/scripts/python/ is available
+
+def hello():
+    print 'Hello from run.experiment_tools.hello() !'
+
+
+def seq_equal(s1, s2):
+    if len(s1) != len(s2):
+        return False
+    for e1, e2 in zip(s1, s2):
+        if e1 != e2:
+            return False
+    return True
+
+
+def print_sys_path():
+    for i, path in enumerate(sys.path):
+        print i, path
+
+
+def find_path_context(target_path_components):
+    for path in sys.path:
+        path_components = path.split('/')
+        if 'hamlet' in path_components:
+            if seq_equal(target_path_components,
+                         path_components[-len(target_path_components):]):
+                return True
+    return False
+
+
+def optional_add_relative_path(current, parent, relative_path, verbose=False):
+    """
+    If executing in current directory and parent path is not in sys.path,
+    then add parent path.
+    :return:
+    """
+    if not find_path_context(parent):
+        if find_path_context(current):
+            parent_path = os.path.realpath(os.path.join(os.getcwd(), relative_path))
+            if verbose:
+                print 'NOTICE: experiment_tools.py'
+                print '    Executing from:     {0}'.format(os.getcwd())
+                print '    Adding to sys.path: {0}'.format(parent_path)
+            sys.path.insert(1, parent_path)
+
+
+optional_add_relative_path\
+    (current=('scripts', 'python', 'run'),
+     parent=('scripts', 'python'),
+     relative_path='..',
+     verbose=True)
+
+
+from utilities import util
+
+
+# ----------------------------------------------------------------------
+
 
 __author__ = 'clayton'
 
-"""
-run single experiment
-run batch
-"""
 
 # TODO: Still in mid refactor -- new directory structure breaks things
 
@@ -21,17 +76,25 @@ run batch
 # Hamlet root paths
 # ----------------------------------------------------------------------
 
-hamlet_root = '../../../'
+# NOTE: The following is valid from <hamlet>/experiment/scripts/python
+# Each domain experiment specified within <hamlet>/experiment/scripts/python/experiments
+# should have its own local HAMLET_ROOT definition
+HAMLET_ROOT = '../../../'
 
-data_root = os.path.join(hamlet_root, 'data/data')
-parameters_root = os.path.join(hamlet_root, 'hamlet_experiment/parameters')
-results_root = os.path.join(hamlet_root, 'hamlet_experiment/results')
+# print os.listdir(HAMLET_ROOT)
+
+# The following assume a standard HAMLET_ROOT configuration
+# and can be used by any experiment definition that assumes
+# the <hamlet> directory structure, assuming a locally
+# specified HAMLET_ROOT
+DATA_ROOT = 'data/data'
+PARAMETERS_ROOT = 'experiment/parameters'
+RESULTS_ROOT = 'experiment/results'
 
 
 # ----------------------------------------------------------------------
 # Global LOCK
 # ----------------------------------------------------------------------
-
 
 lock = None  # Global definition of lock
 
@@ -66,7 +129,7 @@ class ExperimentSpec:
                  exp_num=None,
                  total_exps=None,
 
-                 # specified by run_experiment_script
+                 # specified by run_experiment_wrapper
                  main_path=None,
                  log_file=None,
                  test=None
@@ -235,11 +298,11 @@ def run_experiment(spec):
 # ----------------------------------------------------------------------
 
 
-def run_experiments_wrapper(parameter_spec_list,
-                            log_file,
-                            multiproc=False,
-                            processor_pool_size=8,
-                            test=True):
+def run_experiment_batch(parameter_spec_list,
+                         log_file,
+                         multiproc=False,
+                         processor_pool_size=8,
+                         test=True):
 
     global lock
 
@@ -318,7 +381,8 @@ def test_read_log():
     assert results_list == [(1, 0), (2, 0), (3, 0)]
     print 'PASS test_read_log()'
 
-test_read_log()
+# TODO: test is broken b/c relying on paths that aren't valid if not executing in same dir
+# test_read_log()
 
 
 def collect_results_from_log(filepath):
@@ -641,11 +705,11 @@ def process_failures(command_dict,
     if not test:
 
         # rerun the experiments!
-        run_experiments_wrapper(rerun_exp_specs_list,
-                                log_file,
-                                multiproc=multiproc,
-                                processor_pool_size=processor_pool_size,
-                                test=test)
+        run_experiment_batch(rerun_exp_specs_list,
+                             log_file,
+                             multiproc=multiproc,
+                             processor_pool_size=processor_pool_size,
+                             test=test)
 
     return log_file
 
@@ -678,19 +742,19 @@ def rerun_experiment(target_log_file,
 # ----------------------------------------------------------------------
 
 
-def run_experiment_script(experiment_spec_list,
+def run_experiment_wrapper(experiment_spec_list,
 
-                          multiproc=False,
-                          processor_pool_size=8,
+                           multiproc=False,
+                           processor_pool_size=8,
 
-                          rerun_count_max=10,
+                           rerun_count_max=10,
 
-                          main_path='../',
+                           main_path='../',
 
-                          log_file='exp_run',
-                          test=True,
+                           log_file='exp_run',
+                           test=True,
 
-                          rerun=True):
+                           rerun=True):
 
     global lock
 
@@ -707,11 +771,11 @@ def run_experiment_script(experiment_spec_list,
         spec.log_file = log_file
         spec.test = test
 
-    run_experiments_wrapper(experiment_spec_list,
-                            log_file,
-                            multiproc=multiproc,
-                            processor_pool_size=processor_pool_size,
-                            test=test)
+    run_experiment_batch(experiment_spec_list,
+                         log_file,
+                         multiproc=multiproc,
+                         processor_pool_size=processor_pool_size,
+                         test=test)
 
     if rerun and not test:
 
@@ -1029,8 +1093,8 @@ def select_subdirs(dir_branches, match_dict=None, verbose=False):
         # matched_branch = list()
         end = 0
         for k in sorted(match_dict.keys()):
-            print k, branch, branch_components, k, match_dict[k], k > len(branch_components),\
-                branch_components[k] not in match_dict[k]
+            # print k, branch, branch_components, k, match_dict[k], k > len(branch_components),\
+            #     branch_components[k] not in match_dict[k]
             if k > len(branch_components):
                 return None
             if branch_components[k] not in match_dict[k]:
@@ -1094,7 +1158,8 @@ def walklevel(some_dir, level=1):
             del dirs[:]
 
 
-def get_dir_branches(root_dir, remove_root_p=True, match_dict=None, main_path='../',
+def get_dir_branches(root_dir, main_path=HAMLET_ROOT,
+                     remove_root_p=True, match_dict=None,
                      select_subdirs_verbose=False):
     """
     Uses os.walk to walk directory tree under root_dir and collects
@@ -1132,9 +1197,9 @@ def get_dir_branches(root_dir, remove_root_p=True, match_dict=None, main_path='.
     # dir_branches = select_subdirs(dir_branches, match_dict=match_dict, verbose=select_subdirs_verbose)
     dir_branches = select_subdirs(dir_branches, match_dict=match_dict, verbose=True)
 
-    print '-----'
-    for db in dir_branches:
-        print db
+    # print '-----'
+    # for db in dir_branches:
+    #     print db
 
     if select_subdirs_verbose:
         print 'dir_branches after selection:'
@@ -1162,18 +1227,24 @@ def test_get_dir_branches():
 # test_get_dir_branches()
 
 
-def collect_data_spec_list(data_dir, weights_p=False, match_dict=None, main_path='../',
+def collect_data_spec_list(main_path=HAMLET_ROOT,
+                           data_dir=None,
+                           weights_p=False, match_dict=None,
                            select_subdirs_verbose=False):
     data_spec_list = []
-    for data_subdir in get_dir_branches(data_dir,
+
+    data_directories = get_dir_branches(data_dir,
+                                        main_path=main_path,
                                         remove_root_p=True,
                                         match_dict=match_dict,
-                                        main_path=main_path,
-                                        select_subdirs_verbose=select_subdirs_verbose):
+                                        select_subdirs_verbose=select_subdirs_verbose)
+
+    for data_subdir in data_directories:
         weights_file = None
         if weights_p:
             weights_file = data_dir + data_subdir + 'weights.txt'
         data_spec_list.append(DataSpec(data_dir, data_subdir, weights_file))
+
     return data_spec_list
 
 
@@ -1185,7 +1256,9 @@ def test_collect_data_spec_list_synth():
     # print collect_data_spec_list('figures/synth', match_dict=match_select_synth)
 
     print 'get_dir_branches'
-    print get_dir_branches('figures/synth', match_dict=match_select_synth, main_path='../')
+    print get_dir_branches('figures/synth',
+                           main_path=HAMLET_ROOT,
+                           match_dict=match_select_synth)
 
 # test_collect_data_spec_list_synth()
 
@@ -1210,7 +1283,8 @@ def lt_p(params):
     return True
 
 
-def results_spec_fn(results_dir, pspec, dspec, replication_postfix, main_path='../'):
+def results_spec_fn(results_dir, pspec, dspec, replication_postfix,
+                    main_path=HAMLET_ROOT):
     """
     Given ParameterSpec and DataSpec, constructs ResultsSpec
     specifying: results_subdir, results_postfix, results_dir
@@ -1232,7 +1306,7 @@ def results_spec_fn(results_dir, pspec, dspec, replication_postfix, main_path='.
 
     pdir = 'parameters/'
     if pspec.parameters_dir:
-        print 'pspec.parameters_dir', pspec.parameters_dir
+        # print 'pspec.parameters_dir', pspec.parameters_dir
         pdir = pspec.parameters_dir
 
     owd = os.getcwd()
@@ -1340,14 +1414,15 @@ def collect_experiment_spec_list(parameter_spec_list,
                                  results_spec_fn=results_spec_fn,
                                  replications=1,
                                  offset=0,
-                                 main_path='../'):
+                                 main_path=HAMLET_ROOT):
 
     experiment_spec_list = []
     for r in range(1, replications + 1):
         for dspec in data_spec_list:
             for pspec in parameter_spec_list:
 
-                rspec = results_spec_fn(results_dir, pspec, dspec, r + offset, main_path)
+                rspec = results_spec_fn(results_dir, pspec, dspec, r + offset,
+                                        main_path)
 
                 experiment_spec_list.append\
                     (ExperimentSpec
@@ -1375,19 +1450,19 @@ def collect_experiment_spec_list(parameter_spec_list,
 # -------------------------------
 
 
-def script(data_dir,
-           results_dir,
-           main_path='../',
-           replications=1,
-           offset=0,
-           parameter_spec_list=None,
-           # parameter_spec_collector=collect_parameter_spec_list_cp_W0,
-           match_dict=None,
-           multiproc=True,
-           processor_pool_size=multiprocessing.cpu_count(),
-           rerun=True,
-           test=True,
-           select_subdirs_verbose=False):
+def run_experiment_script(main_path=HAMLET_ROOT,
+                          data_dir=None,
+                          results_dir=None,
+                          replications=1,
+                          offset=0,
+                          parameter_spec_list=None,
+                          # parameter_spec_collector=collect_parameter_spec_list_cp_W0,
+                          match_dict=None,
+                          multiproc=True,
+                          processor_pool_size=multiprocessing.cpu_count(),
+                          rerun=True,
+                          test=True,
+                          select_subdirs_verbose=False):
 
     # parameter_spec_list = parameter_spec_collector()
 
@@ -1396,7 +1471,9 @@ def script(data_dir,
         for i, spec in enumerate(parameter_spec_list):
             print '    [{0}] : {1}'.format(i, spec)
 
-    data_spec_list = collect_data_spec_list(data_dir, match_dict=match_dict,
+    data_spec_list = collect_data_spec_list(main_path=main_path,
+                                            data_dir=data_dir,
+                                            match_dict=match_dict,
                                             select_subdirs_verbose=select_subdirs_verbose)
 
     if test:
@@ -1424,7 +1501,7 @@ def script(data_dir,
         #for spec in spec_list:
         #    print '{0}'.format(spec)
 
-    run_experiment_script \
+    run_experiment_wrapper \
         (spec_list,
          main_path=main_path,
          multiproc=multiproc,
@@ -1439,7 +1516,7 @@ match_select_cp0to2 = { 0: ( 'a6b10', 'a20b76' ),
                         1: [ 'cp{0}'.format(i) for i in range(3) ] }
 # match_select_cp3to9 = { 1: [ 'cp{0}'.format(i) for i in range(3,10) ] }
 
-script('figures/cocktail/', # 'figures/cocktailNarrow7/',  # 'figures/cocktailNarrow4/',  # 'figures/cocktail/'
+run_experiment_script('figures/cocktail/', # 'figures/cocktailNarrow7/',  # 'figures/cocktailNarrow4/',  # 'figures/cocktail/'
        replications=5,
        offset=0,
        match_dict=match_select_cp0to2, # match_select_cp3to9
@@ -1456,7 +1533,7 @@ match_select_h_cp0to2 = { 0: ( 'a1b1' ),
 
 # match_select_cp3to9 = { 1: [ 'cp{0}'.format(i) for i in range(3,10) ] }
 
-script('figures/cocktail_rw/',  # 'figures/cocktailNarrow7/',  # 'figures/cocktailNarrow4/',  # 'figures/cocktail/'
+run_experiment_script('figures/cocktail_rw/',  # 'figures/cocktailNarrow7/',  # 'figures/cocktailNarrow4/',  # 'figures/cocktail/'
        replications=5,
        offset=0,
        match_dict=match_select_h_cp0to2,  # match_select_cp3to9
@@ -1472,7 +1549,7 @@ match_select_h_cp0to2 = { 0: ( 'h0.5', 'h0.75', 'h1.0', 'h1.5', 'h2.0', 'h3.0', 
 
 # match_select_cp3to9 = { 1: [ 'cp{0}'.format(i) for i in range(3,10) ] }
 
-script('figures/cocktail/',  # 'figures/cocktailNarrow7/',  # 'figures/cocktailNarrow4/',  # 'figures/cocktail/'
+run_experiment_script('figures/cocktail/',  # 'figures/cocktailNarrow7/',  # 'figures/cocktailNarrow4/',  # 'figures/cocktail/'
        replications=5,
        offset=0,
        parameter_spec_collector=collect_parameter_spec_list_cp_W0,
@@ -1488,7 +1565,7 @@ script('figures/cocktail/',  # 'figures/cocktailNarrow7/',  # 'figures/cocktailN
 match_select_a1b1new_cp0to2 = { 0: ( 'a1b1_nocs' ),
                                 1: [ 'cp{0}'.format(i) for i in range(3) ] }
 
-script('figures/cocktail/',
+run_experiment_script('figures/cocktail/',
        replications=1,
        offset=0,
        parameter_spec_collector=collect_parameter_spec_list_cp_W0,
@@ -1512,7 +1589,7 @@ match_select_hnocs_cp0to2 = {0: ['h{0}_nocs'.format(h)
                                  for h in [0.5]],  # [0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 5.0, 10.0]],
                              1: ['cp{0}'.format(i) for i in range(1)]}  # >>>NOTE range<<<
 
-script('figures/cocktail/',
+run_experiment_script('figures/cocktail/',
        replications=1,
        offset=0,
        parameter_spec_collector=collect_parameter_spec_list_cp_W0,
@@ -1532,7 +1609,7 @@ match_select_normalJ_cp0to2 = {0: ['HMM_HDP_N_J{0}_s1.0_L0.0'.format(J)
                                    for J in [3, 5, 7, 12]],
                                1: ['n{0}'.format(i) for i in range(3)]}
 
-script('figures/normal/',
+run_experiment_script('figures/normal/',
        replications=5,
        offset=0,
        match_dict=match_select_normalJ_cp0to2,
@@ -1552,7 +1629,7 @@ match_select_hnocs_cp0to2 = {0: ['h{0}_nocs'.format(h)
                                  for h in [0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 5.0, 10.0]],
                              1: ['cp{0}'.format(i) for i in range(0, 10)]}
 
-script(os.path.join(hamlet_root, 'cocktail'),
+run_experiment_script(os.path.join(HAMLET_ROOT, 'cocktail'),
        replications=10,
        offset=10,  # ADDITIONAL runs
        parameter_spec_collector=collect_parameter_spec_list_cp_W1_1500,  # learn weights
@@ -1572,7 +1649,7 @@ match_select_hnocs_cp0to2 = {0: ['h{0}_nocs'.format(h)
                                  for h in [10.0]],  # [0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 5.0, 10.0]],
                              1: ['cp{0}'.format(i) for i in range(1)]}  # range(0, 10)
 
-script(os.path.join(hamlet_root, 'cocktail'),
+run_experiment_script(os.path.join(HAMLET_ROOT, 'cocktail'),
        replications=1,  # replications = 10
        offset=0,  # offset = 10 # for _additional_ runs
        parameter_spec_collector=collect_parameter_spec_list_cp_W1_1500_Nemh01,  # learn weights, Nem a_h=b_h=0.1
@@ -1591,7 +1668,7 @@ match_select_hnocs = {0: ['h{0}_nocs'.format(h)
                           for h in [0.5]],  # , 0.75, 1.0, 1.5, 2.0, 3.0, 5.0, 10.0]],
                       1: ['cp{0}'.format(i) for i in range(10)]}
 
-script(os.path.join(hamlet_root, 'cocktail'),
+run_experiment_script(os.path.join(HAMLET_ROOT, 'cocktail'),
        replications=5,
        offset=0,
        parameter_spec_collector=factorial_parameter_spec_list_W0,  # learn weights
@@ -1609,7 +1686,7 @@ match_select_hnocs = {0: ['h{0}_nocs'.format(h)
                           for h in [0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 5.0, 10.0]],
                       1: ['cp{0}'.format(i) for i in range(10)]}
 
-script(os.path.join(hamlet_root, 'cocktail'),
+run_experiment_script(os.path.join(HAMLET_ROOT, 'cocktail'),
        replications=10,
        offset=0,
        parameter_spec_collector=factorial_parameter_spec_list_W1,  # learn weights
@@ -1626,7 +1703,7 @@ match_select_hnocs = {0: ['h{0}_nocs'.format(h)
                           for h in [0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 5.0, 10.0]],
                       1: ['cp{0}'.format(i) for i in range(10)]}
 
-script(os.path.join(hamlet_root, 'cocktail'),
+run_experiment_script(os.path.join(HAMLET_ROOT, 'cocktail'),
        replications=10,
        offset=0,
        parameter_spec_collector=collect_parameter_spec_list_cp_W1,
@@ -1648,7 +1725,7 @@ match_select_hnocs = {0: ['h{0}_nocs'.format(h)
                           for h in [2.0, 3.0, 5.0, 10.0]],
                       1: ['cp{0}'.format(i) for i in range(3)]}
 
-script(os.path.join(hamlet_root, 'cocktail'),
+run_experiment_script(os.path.join(HAMLET_ROOT, 'cocktail'),
        replications=10,
        offset=0,
        parameter_spec_collector=collect_parameter_spec_list_cp_W1_4000,
@@ -1666,7 +1743,7 @@ match_select_hnocs = {0: ['h{0}_nocs'.format(h)
                           for h in [2.0]],
                       1: ['cp{0}'.format(i) for i in range(3)]}
 
-script(os.path.join(hamlet_root, 'cocktail_s14_m12'),
+run_experiment_script(os.path.join(HAMLET_ROOT, 'cocktail_s14_m12'),
        replications=10,
        offset=0,
        parameter_spec_collector=collect_parameter_spec_list_cp_W1_4000_D14_J250,
@@ -1686,7 +1763,7 @@ match_select_hnocs = {0: ['h{0}_nocs'.format(h)
                       1: ['cp{0}'.format(i) for i in range(3)]}
 
 # {BFact, LT, noLT} x {h3.0, h10.0} x {cp0..cp3} x {3 reps} = 3 x 2 x 3 x 3 = 54
-script(os.path.join(hamlet_root, 'cocktail_s16_m12',
+run_experiment_script(os.path.join(HAMLET_ROOT, 'cocktail_s16_m12',
        replications=3,
        offset=2,
        # collect_parameter_spec_list_cp_W1_4000_D16,
@@ -1707,7 +1784,7 @@ match_select_synth = {0: ['BFact', 'LT', 'noLT'],
                       1: ['s{0}'.format(i) for i in range(3)]}
 
 # Synthetic experiment
-script(os.path.join(hamlet_root, 'synth',
+run_experiment_script(os.path.join(HAMLET_ROOT, 'synth',
        replications=20,
        offset=0,
        # collect_parameter_spec_list_cp_W1_4000_D16,
@@ -1721,14 +1798,15 @@ script(os.path.join(hamlet_root, 'synth',
        select_subdirs_verbose=False)
 '''
 
+'''
 #
 match_select_synth = {0: ['BFact', 'LT', 'noLT'],
                       1: ['s{0}'.format(i) for i in range(1)]}
 
 # Synthetic 16 experiment
-script(os.path.join(data_root, 'synth16'),
+run_experiment_script(os.path.join(data_root, 'synth16'),
        results_dir=results_root,
-       main_path=hamlet_root,
+       main_path=HAMLET_ROOT,
        replications=4,
        offset=0,
        # collect_parameter_spec_list_cp_W1_4000_D16,
@@ -1740,8 +1818,18 @@ script(os.path.join(data_root, 'synth16'),
        rerun=False,
        test=True,
        select_subdirs_verbose=False)
+'''
 
 
 # ----------------------------------------------------------------------
 
 # rerun_experiment('exp_run_20150609_223203867358.log', test=True)
+
+
+if __name__ == '__main__':
+    # test to make sure can access fns in utilities.util
+    print 'Running __main__ in experiment_tools.py'
+    print 'Executing from:', os.getcwd()
+    hello()       # self
+    util.hello()  # relative to utilities
+    print 'DONE'
