@@ -255,7 +255,7 @@ def run_experiment(spec):
     print '>>>>>>>>>>>>>>>>>>>>>>>>'
     print 'spec.main_path', spec.main_path
     print 'os.getcwd()', os.getcwd()
-    sys.exit()
+    # sys.exit()
 
     ret = -1  # indicates test
 
