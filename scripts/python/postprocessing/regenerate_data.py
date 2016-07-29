@@ -1,3 +1,11 @@
+import glob
+import os
+import sys
+from subprocess import call
+
+from utilities.util import get_timestamp
+
+
 __author__ = 'clayton'
 
 
@@ -14,13 +22,6 @@ figures directory name:  <base-name>_{<r#>_}<date-timestamp>_<time-timestamp>
 ( {...} means optional: zero or one)
 
 """
-
-import glob
-import os
-import sys
-from subprocess import call
-
-from utilities.util import get_timestamp
 
 
 def get_file_from_path(path):

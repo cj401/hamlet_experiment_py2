@@ -1,8 +1,12 @@
-__author__ = 'clayton'
-
 import glob
 
 from utilities import util
+
+
+__author__ = 'clayton'
+
+
+# ----------------------------------------------------------------------
 
 
 def get_header_names(header_pattern):

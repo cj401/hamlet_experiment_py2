@@ -48,7 +48,7 @@ def optional_add_relative_path(current, parent, relative_path, verbose=False):
 
 
 optional_add_relative_path\
-    (current=('scripts', 'python', 'experiments', 'cocktail_party', 'experiment'),
+    (current=('scripts', 'python', 'experiments', 'REDD', 'experiment'),
      parent=('scripts', 'python'),
      relative_path='../../../',
      verbose=True)
@@ -71,10 +71,9 @@ RESULTS_ROOT = experiment_tools.RESULTS_ROOT
 # Parameter spec list
 # ----------------------------------------------------------------------
 
-def collect_parameter_spec_list_cocktail16_w0(parameters_path):
+def collect_parameter_spec_list_redd(parameters_path):
     """
-    cp **NO** weight learning (w0), 1500 iterations, D=16, and J=600 for hmm
-    works with: cocktail_s16_m12
+    REDD data parameter spec list
     :return:
     """
     return [ experiment_tools.ParameterSpec('cocktail16_inference_BFact_HMM_W0.config', parameters_path),
@@ -86,22 +85,48 @@ def collect_parameter_spec_list_cocktail16_w0(parameters_path):
 # Script
 # ----------------------------------------------------------------------
 
+'''
+print os.path.join(HAMLET_ROOT, DATA_ROOT), 'REDD/jw2013_downsampled_intervals/'
+print os.path.join(os.path.join(HAMLET_ROOT, DATA_ROOT),
+                   'REDD/jw2013_downsampled_intervals/')
+print os.listdir(os.path.join(os.path.join(HAMLET_ROOT, DATA_ROOT),
+                              'REDD/jw2013_downsampled_intervals/'))
+'''
 
-match_select_cp16 = {0: ['h{0}_nocs'.format(h) for h in [10.0]],
-                     1: ['cp{0}'.format(i) for i in range(1)]}
+# TODO: create parameter spec files for REDD experiment
+# TODO: update collect_parameter_spec_list_redd for the spec files
+
+
+match_select_cp16 = {0: ['house_1_1200_6800',
+                         'house_1_22600_27800',
+                         'house_1_27300_32300',
+                         'house_1_55300_59100',
+                         'house_1_80000_83900',
+                         'house_1_112600_116800',
+                         'house_2_700_6700',
+                         'house_2_15000_23200',
+                         'house_2_36400_41800',
+                         'house_3_3000_8000',
+                         'house_3_9000_14000',
+                         'house_3_19000_24000',
+                         'house_3_37000_42000',
+                         'house_3_42000_47000',
+                         'house_6_15000_20000',
+                         'house_6_29000_36000',
+                         'house_6_36000_41000',
+                         'house_6_46000_51000',
+                         'house_6_51000_56000'], }
 
 experiment_tools.run_experiment_script \
     (main_path=HAMLET_ROOT,
-     data_dir=os.path.join(DATA_ROOT, 'cocktail_s16_m12/'),
-     results_dir=os.path.join(RESULTS_ROOT, 'cocktail_s16_m12'),
-     replications=10,
+     data_dir=os.path.join(DATA_ROOT, 'REDD/jw2013_downsampled_intervals/'),
+     results_dir=os.path.join(RESULTS_ROOT, 'redd'),
+     replications=1,
      offset=0,
-     parameter_spec_list=collect_parameter_spec_list_cocktail16_w0(PARAMETERS_ROOT),
+     parameter_spec_list=collect_parameter_spec_list_redd(PARAMETERS_ROOT),
      match_dict=match_select_cp16,
      multiproc=True,
      processor_pool_size=multiprocessing.cpu_count(),
      rerun=False,
      test=True,
      select_subdirs_verbose=False)
-
-# print os.listdir(os.path.join(os.path.join(HAMLET_ROOT, DATA_ROOT), 'cocktail_s16_m12'))
