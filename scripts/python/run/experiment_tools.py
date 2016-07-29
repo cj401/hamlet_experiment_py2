@@ -89,7 +89,11 @@ HAMLET_ROOT = '../../../'
 # specified HAMLET_ROOT
 DATA_ROOT = 'data/data'
 PARAMETERS_ROOT = 'experiment/parameters'
-RESULTS_ROOT = 'experiment/results'
+
+# TODO: as of 20160729, hamlet_cpp is hardcoded to put results in '<Hamlet_root>/results/'
+# But the following appends to that default path.  Should likely update hamlet_cpp to
+# allow specifying the actual results root
+RESULTS_ROOT = ''
 
 
 # ----------------------------------------------------------------------

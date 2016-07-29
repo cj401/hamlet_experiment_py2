@@ -92,9 +92,9 @@ match_select_cp16 = {0: ['h{0}_nocs'.format(h) for h in [10.0]],
 
 experiment_tools.run_experiment_script \
     (main_path=HAMLET_ROOT,
-     data_dir=os.path.join(DATA_ROOT, 'cocktail_s16_m12'),
+     data_dir=os.path.join(DATA_ROOT, 'cocktail_s16_m12/'),
      results_dir=RESULTS_ROOT,
-     replications=10,
+     replications=1,
      offset=0,
      parameter_spec_list=collect_parameter_spec_list_cocktail16_w0(PARAMETERS_ROOT),
      match_dict=match_select_cp16,
