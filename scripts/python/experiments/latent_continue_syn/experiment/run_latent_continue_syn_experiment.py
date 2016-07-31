@@ -88,13 +88,15 @@ def collect_parameter_spec_list_latent_continue_syn(parameters_path):
 # Script
 # ----------------------------------------------------------------------
 
-# TODO: define parameter specs and assign file names to collect_parameter_spec_list_latent_continue_syn()
+# TODO: define parameter specs (in <hamlet_root>/experiment/parameters/), for LT, noLT and BFact models (others?)
+# TODO: fill in parameter spec file names in collect_parameter_spec_list_latent_continue_syn()
 # TODO: generate synthetic data and place in <hamlet_root>/data/data/latent_continue_syn/
+# TODO: update match_select_latent_continue_syn to match directory structure of latent_continue_syn data
 # TODO: test experiment generation; ensure all paths correct
 
-
-match_select_cp16 = {0: ['h{0}_nocs'.format(h) for h in [10.0]],
-                     1: ['cp{0}'.format(i) for i in range(1)]}
+# TODO: The following needs to be modified to match the directory structure of the latent_continue_syn data
+match_select_latent_continue_syn = {0: ['h{0}_nocs'.format(h) for h in [10.0]],
+                                    1: ['cp{0}'.format(i) for i in range(1)]}
 
 experiment_tools.run_experiment_script \
     (main_path=HAMLET_ROOT,
@@ -103,7 +105,7 @@ experiment_tools.run_experiment_script \
      replications=1,
      offset=0,
      parameter_spec_list=collect_parameter_spec_list_latent_continue_syn(PARAMETERS_ROOT),
-     match_dict=match_select_cp16,
+     match_dict=match_select_latent_continue_syn,
      multiproc=True,
      processor_pool_size=multiprocessing.cpu_count(),
      rerun=False,
