@@ -101,7 +101,7 @@ experiment_tools.run_experiment_script \
      multiproc=True,
      processor_pool_size=multiprocessing.cpu_count(),
      rerun=False,
-     test=True,
+     test=False,
      select_subdirs_verbose=False)
 
 # print os.listdir(os.path.join(os.path.join(HAMLET_ROOT, DATA_ROOT), 'cocktail_s16_m12'))
