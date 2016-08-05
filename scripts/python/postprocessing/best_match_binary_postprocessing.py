@@ -20,7 +20,7 @@ Consider that bits could be flipped, so test each pair (a) directly
 and (b) flipping one vector, and return the score and pairing with
 the smallest distance
 
-The core script does the following:
+The core run_experiment_script does the following:
 () Reads results parameters.config to get path to original figures with ground-truth states
 () Creates new directory called 'old_statistics' and moves
     'accuracy.txt', 'precision.txt', 'recall.txt', 'F1_score.txt' to old_statistics
