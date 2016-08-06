@@ -8,10 +8,10 @@ import numpy as np
 import scipy
 import scipy.io.wavfile
 import scipy.stats
+from utilities import util
 
 import cocktail_party_data
 from cocktail_party_data import MixedConversations
-from utilities import util
 
 __author__ = 'clayton'
 
@@ -226,7 +226,7 @@ def read_speaker_data_from_file(data_path, find_min_max_p=True):
 
 
 '''
-# script to extract CHiME figures (lengths of each wav file)
+# run_experiment_script to extract CHiME figures (lengths of each wav file)
 # and save as separate text file for analysis
 
 data1, phrase1 = collect_speaker_data(vision_chime_data_path, 'figures/chime_speaker_data.txt')

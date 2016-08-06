@@ -57,7 +57,7 @@ def my_function_to_make_command_line_call(spec):
 
     The following is NOT necessary, but I've found to be a helpful pattern:
     Suppose your command-line function needed to be called from a directory
-    that is _not_ the same as the one you call the outer python script.
+    that is _not_ the same as the one you call the outer python run_experiment_script.
     In that case, use the spec.main_path to switch the python current working
     directory (cwd) from it's current location to spec.main_path, then make
     the command-line call, then switch back to the original cwd.

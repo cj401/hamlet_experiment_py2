@@ -457,7 +457,7 @@ generate_data_old(parameters_dir='experiment/parameters/figures/',
               log_file='data_generation',
 
               # path python current working directory (cwd) will be changed
-              # to for running script
+              # to for running run_experiment_script
               main_path='../',
 
               test=False,

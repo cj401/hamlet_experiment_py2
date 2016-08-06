@@ -1,8 +1,12 @@
-__author__ = 'clayton'
-
 import glob
 
 from utilities import util
+
+
+__author__ = 'clayton'
+
+
+# ----------------------------------------------------------------------
 
 
 def get_header_names(header_pattern):
@@ -128,7 +132,7 @@ There could be two sets of these determining two collection conditions:
     one where the params are not necessarily present in all files, so this is an OR,
     then one where the param must be present, perhaps with a specified value
     -- these need to be present / satisfy the condition.
-the script then runs over all subdirs in the path list and checks the conditions
+the run_experiment_script then runs over all subdirs in the path list and checks the conditions
 and gathers the params with their values
 
 '''
