@@ -83,6 +83,15 @@ def collect_parameter_spec_list_latent_continue_syn_block_diag12(parameters_path
              experiment_tools.ParameterSpec('block_diag12_noLT.config', parameters_path) ]
 
 
+def collect_parameter_spec_list_latent_continue_syn_block_diag12_10000itr(parameters_path):
+    """
+    Latent continuous state synthetic experiment parameters
+    :return:
+    """
+    return [ experiment_tools.ParameterSpec('block_diag12_LT_10000itr.config', parameters_path),
+             experiment_tools.ParameterSpec('block_diag12_noLT_10000itr.config', parameters_path) ]
+
+
 # ----------------------------------------------------------------------
 # Script
 # ----------------------------------------------------------------------
@@ -97,18 +106,48 @@ def collect_parameter_spec_list_latent_continue_syn_block_diag12(parameters_path
 match_select_latent_continue_syn_block_diag12 \
     = { 0: ['block_diag12_s{0}'.format(h) for h in [2.5, 4, 10]] }
 
-experiment_tools.run_experiment_script \
-    (main_path=HAMLET_ROOT,
-     data_dir=os.path.join(DATA_ROOT, 'continuous_latent_syn/'),
-     results_dir=os.path.join(RESULTS_ROOT, 'continuous_latent_syn'),
-     replications=10,
-     offset=0,
-     parameter_spec_list=collect_parameter_spec_list_latent_continue_syn_block_diag12(PARAMETERS_ROOT),
-     match_dict=match_select_latent_continue_syn_block_diag12,
-     multiproc=True,
-     processor_pool_size=multiprocessing.cpu_count(),
-     rerun=False,
-     test=False,
-     select_subdirs_verbose=False)
+
+def scrip1():
+    experiment_tools.run_experiment_script \
+        (main_path=HAMLET_ROOT,
+         data_dir=os.path.join(DATA_ROOT, 'continuous_latent_syn/'),
+         results_dir=os.path.join(RESULTS_ROOT, 'continuous_latent_syn'),
+         replications=10,
+         offset=0,
+         parameter_spec_list=collect_parameter_spec_list_latent_continue_syn_block_diag12(PARAMETERS_ROOT),
+         match_dict=match_select_latent_continue_syn_block_diag12,
+         multiproc=True,
+         processor_pool_size=multiprocessing.cpu_count(),
+         rerun=False,
+         test=True,
+         select_subdirs_verbose=False)
+
+
+# ----------------------------------------------------------------------
+
+match_select_latent_continue_syn_block_diag12_10000itr \
+    = { 0: ['block_diag12_s{0}'.format(h) for h in [2.5, 4, 10]] }
+
+
+def scrip2():
+    experiment_tools.run_experiment_script \
+        (main_path=HAMLET_ROOT,
+         data_dir=os.path.join(DATA_ROOT, 'continuous_latent_syn/'),
+         results_dir=os.path.join(RESULTS_ROOT, 'continuous_latent_syn_10000itr'),
+         replications=10,
+         offset=0,
+         parameter_spec_list=collect_parameter_spec_list_latent_continue_syn_block_diag12_10000itr(PARAMETERS_ROOT),
+         match_dict=match_select_latent_continue_syn_block_diag12,
+         multiproc=True,
+         processor_pool_size=multiprocessing.cpu_count(),
+         rerun=False,
+         test=True,
+         select_subdirs_verbose=False)
+
+script2()
+
+
+# ----------------------------------------------------------------------
+
 
 # print os.listdir(os.path.join(os.path.join(HAMLET_ROOT, DATA_ROOT), 'latent_continue_syn'))
