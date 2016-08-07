@@ -92,6 +92,15 @@ def collect_parameter_spec_list_latent_continue_syn_block_diag12_10000itr(parame
              experiment_tools.ParameterSpec('block_diag12_noLT_10000itr.config', parameters_path) ]
 
 
+def collect_parameter_spec_list_latent_continue_syn_block_diag12_10000itr_hmc(parameters_path):
+    """
+    Latent continuous state synthetic experiment parameters
+    :return:
+    """
+    return [ experiment_tools.ParameterSpec('block_diag12_LT_10000itr_hmc.config', parameters_path),
+             experiment_tools.ParameterSpec('block_diag12_noLT_10000itr_hmc.config', parameters_path) ]
+
+
 # ----------------------------------------------------------------------
 # Script
 # ----------------------------------------------------------------------
@@ -107,7 +116,7 @@ match_select_latent_continue_syn_block_diag12 \
     = { 0: ['block_diag12_s{0}'.format(h) for h in [2.5, 4, 10]] }
 
 
-def script1():
+def exp1():
     experiment_tools.run_experiment_script \
         (main_path=HAMLET_ROOT,
          data_dir=os.path.join(DATA_ROOT, 'continuous_latent_syn/'),
@@ -129,7 +138,7 @@ match_select_latent_continue_syn_block_diag12_10000itr \
     = { 0: ['block_diag12_s{0}'.format(h) for h in [2.5, 4, 10]] }
 
 
-def script2():
+def exp2():
     experiment_tools.run_experiment_script \
         (main_path=HAMLET_ROOT,
          data_dir=os.path.join(DATA_ROOT, 'continuous_latent_syn/'),
@@ -144,7 +153,31 @@ def script2():
          test=False,
          select_subdirs_verbose=False)
 
-script2()
+# exp2()
+
+
+# ----------------------------------------------------------------------
+
+match_select_latent_continue_syn_block_diag12_10000itr_hmc \
+    = { 0: ['block_diag12_s{0}'.format(h) for h in [2.5, 4, 10]] }
+
+
+def exp3():
+    experiment_tools.run_experiment_script \
+        (main_path=HAMLET_ROOT,
+         data_dir=os.path.join(DATA_ROOT, 'continuous_latent_syn/'),
+         results_dir=os.path.join(RESULTS_ROOT, 'continuous_latent_syn_10000itr_hmc'),
+         replications=10,
+         offset=0,
+         parameter_spec_list=collect_parameter_spec_list_latent_continue_syn_block_diag12_10000itr_hmc(PARAMETERS_ROOT),
+         match_dict=match_select_latent_continue_syn_block_diag12_10000itr_hmc,
+         multiproc=True,
+         processor_pool_size=multiprocessing.cpu_count(),
+         rerun=False,
+         test=False,
+         select_subdirs_verbose=False)
+
+exp3()
 
 
 # ----------------------------------------------------------------------
