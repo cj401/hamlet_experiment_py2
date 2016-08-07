@@ -122,10 +122,10 @@ class Data(object):
 
     def output(self):
         try:
-            os.mkdir(os.path.join(self.save_path, 'latent_continue_syn'))
+            os.mkdir(os.path.join(self.save_path, 'block_diag12'))
         except OSError:
             print("latent_continue_syn exist in ", self.save_path)
-        self.save_path = os.path.join(self.save_path, 'latent_continue_syn')
+        self.save_path = os.path.join(self.save_path, 'block_diag12')
         output_file('matrix', self.trans, os.path.join(self.save_path, 'A.txt'))
         output_file('matrix', self.precision, os.path.join(self.save_path, 'h.txt'))
         output_file('matrix', self.mean, os.path.join(self.save_path, 'mean.txt'))
