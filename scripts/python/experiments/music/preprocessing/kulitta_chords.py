@@ -8,12 +8,14 @@ import collections
 
 HAMLET_ROOT = '../../../../../../'
 MUSIC_DATA_ROOT = os.path.join(HAMLET_ROOT, 'data/data/music')
-KULITTA_CHORD1_ROOT = os.path.join(MUSIC_DATA_ROOT, 'kulitta')
+KULITTA_CHORD1_ROOT = os.path.join(MUSIC_DATA_ROOT, 'kulitta_chord1')
+
 KULITTA_CHORD1_SOURCE_DATA_ROOT = os.path.join(KULITTA_CHORD1_ROOT, 'source')
 KULITTA_chord1_DATA_ROOT = os.path.join(KULITTA_CHORD1_SOURCE_DATA_ROOT, 'KulittaData_chord1_20160710')
 
 KULITTA_chord1_tokens_hamlet_DATA_ROOT = os.path.join(KULITTA_CHORD1_ROOT, 'chord1_tokens')
 
+# print os.listdir(MUSIC_DATA_ROOT)
 # print os.listdir(KULITTA_chord1_DATA_ROOT)
 
 
@@ -138,9 +140,66 @@ def script():
 # Generate hamlet data from Kullita chord1
 # ------------------------------------------------------------
 
-def generate_hamlet_data_from_kullita_chord1(data_root, destination_root):
+def get_chord_to_int_dict(data):
+    chord_to_int_dict = dict()
+    counter = 0
+    for chord, _ in data:
+        if chord not in chord_to_int_dict:
+            chord_to_int_dict[chord] = counter
+            counter += 1
+    return chord_to_int_dict
+
+
+def get_chord_roman_to_int_dict():
+    return { 'I': 1, 'II': 2, 'III': 3, 'IV': 4, 'V': 5, 'VI': 6, 'VII': 7 }
+
+
+def generate_hamlet_data_from_kulitta_chord1(data_root, destination_root):
+    """
+    Read Kulitta chord1 data and latent chord Roman numeral latent state
+    and save in hamlet format two files: obs.txt, chord_roman.txt
+    :param data_root:
+    :param destination_root:
+    :return:
+    """
     data = read_kulitta_chord1(data_root)
     data_chord_roman = read_kulitta_chord1_parse_tree_leaves(data_root)
 
-generate_hamlet_data_from_kullita_chord1(KULITTA_chord1_DATA_ROOT,
+    if not os.path.exists(destination_root):
+        print 'Directory does not exit: {0}'.format(destination_root),
+        print '... Creating'
+        os.makedirs(destination_root)
+
+    chord_to_int_dict = get_chord_to_int_dict(data)
+
+    print 'Writing obs.txt',
+    obs_path = os.path.join(destination_root, 'obs.txt')
+    with open(obs_path, 'w') as fout:
+        for chord, _ in data:
+            fout.write('{0}\n'.format(chord_to_int_dict[chord]))
+    print 'Done.'
+
+    print 'Writing state_to_chord_map.txt',
+    int_to_chord_dict = dict()
+    for chord, i in chord_to_int_dict.iteritems():
+        int_to_chord_dict[i] = chord
+    state_to_chord_map_path = os.path.join(destination_root,
+                                           'state_to_chord_map.txt')
+    with open(state_to_chord_map_path, 'w') as fout:
+        for i in sorted(int_to_chord_dict.keys()):
+            fout.write('{0} {1}\n'.format(i, int_to_chord_dict[i]))
+
+    chord_roman_to_int_dict = get_chord_roman_to_int_dict()
+    print 'Done.'
+
+    print 'Writing chord_roman.txt',
+    chord_roman_path = os.path.join(destination_root, 'chord_roman.txt')
+    with open(chord_roman_path, 'w') as fout:
+        for (chord_roman, _), _ in data_chord_roman:
+            fout.write('{0}\n'.format(chord_roman_to_int_dict[chord_roman]))
+    print 'Done.'
+
+    print 'DONE.'
+
+generate_hamlet_data_from_kulitta_chord1(KULITTA_chord1_DATA_ROOT,
                                          KULITTA_chord1_tokens_hamlet_DATA_ROOT)
