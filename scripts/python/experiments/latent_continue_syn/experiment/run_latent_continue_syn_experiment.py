@@ -150,7 +150,7 @@ def exp2():
          multiproc=True,
          processor_pool_size=multiprocessing.cpu_count(),
          rerun=False,
-         test=False,
+         test=True,
          select_subdirs_verbose=False)
 
 # exp2()
