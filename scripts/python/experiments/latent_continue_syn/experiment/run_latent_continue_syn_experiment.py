@@ -101,6 +101,15 @@ def collect_parameter_spec_list_latent_continue_syn_block_diag12_10000itr_hmc(pa
              experiment_tools.ParameterSpec('block_diag12_noLT_10000itr_hmc.config', parameters_path) ]
 
 
+def collect_parameter_spec_list_latent_continue_syn_block_diag12_10000itr_hmc_h01(parameters_path):
+    """
+    Latent continuous state synthetic experiment parameters
+    :return:
+    """
+    return [ experiment_tools.ParameterSpec('block_diag12_LT_10000itr_hmc_h0.1.config', parameters_path),
+             experiment_tools.ParameterSpec('block_diag12_noLT_10000itr_hmc_h0.1.config', parameters_path) ]
+
+
 # ----------------------------------------------------------------------
 # Script
 # ----------------------------------------------------------------------
@@ -221,7 +230,36 @@ def exp4():
          test=True,
          select_subdirs_verbose=False)
 
-exp4()
+# exp4()
+
+
+# ----------------------------------------------------------------------
+
+# match_select_latent_continue_syn_block_diag40_10000itr_hmc \
+#     = { 0: ['block_diag40_s{0}'.format(h) for h in [2]] }
+
+
+def exp5():
+    """
+    Using block_diag40_s2 dataset (10 blocks of 4 states, for a total of 40 states)
+    Using syn_block_diag12_10000itr_hmc, 10,000 iterations, J=100
+    :return:
+    """
+    experiment_tools.run_experiment_script \
+        (main_path=HAMLET_ROOT,
+         data_dir=os.path.join(DATA_ROOT, 'continuous_latent_syn/'),
+         results_dir=os.path.join(RESULTS_ROOT, 'continuous_latent_syn_10000itr_hmc_diag40_h0.1'),
+         replications=10,
+         offset=0,
+         parameter_spec_list=collect_parameter_spec_list_latent_continue_syn_block_diag12_10000itr_hmc_h01(PARAMETERS_ROOT),
+         match_dict=match_select_latent_continue_syn_block_diag40_10000itr_hmc,
+         multiproc=True,
+         processor_pool_size=multiprocessing.cpu_count(),
+         rerun=False,
+         test=True,
+         select_subdirs_verbose=False)
+
+exp5()
 
 
 # ----------------------------------------------------------------------

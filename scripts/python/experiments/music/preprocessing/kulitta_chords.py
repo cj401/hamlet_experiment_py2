@@ -8,8 +8,11 @@ import collections
 
 HAMLET_ROOT = '../../../../../../'
 MUSIC_DATA_ROOT = os.path.join(HAMLET_ROOT, 'data/data/music')
-KULITTA_DATA_ROOT = os.path.join(MUSIC_DATA_ROOT, 'kulitta')
-KULITTA_chord1_DATA_ROOT = os.path.join(KULITTA_DATA_ROOT, 'KulittaData_chord1_20160710')
+KULITTA_CHORD1_ROOT = os.path.join(MUSIC_DATA_ROOT, 'kulitta')
+KULITTA_CHORD1_SOURCE_DATA_ROOT = os.path.join(KULITTA_CHORD1_ROOT, 'source')
+KULITTA_chord1_DATA_ROOT = os.path.join(KULITTA_CHORD1_SOURCE_DATA_ROOT, 'KulittaData_chord1_20160710')
+
+KULITTA_chord1_tokens_hamlet_DATA_ROOT = os.path.join(KULITTA_CHORD1_ROOT, 'chord1_tokens')
 
 # print os.listdir(KULITTA_chord1_DATA_ROOT)
 
@@ -50,7 +53,7 @@ def test_read_kulitta_chord1_parse_tree_leaves():
     print len(chord_counter)
     print chord_counter
 
-test_read_kulitta_chord1_parse_tree_leaves()
+# test_read_kulitta_chord1_parse_tree_leaves()
 
 
 # ------------------------------------------------------------
@@ -128,7 +131,16 @@ def script():
     data = read_kulitta_chord1(KULITTA_chord1_DATA_ROOT)
     kulitta_chord1_simple_stats(data)
 
-
 # script()
 
 
+# ------------------------------------------------------------
+# Generate hamlet data from Kullita chord1
+# ------------------------------------------------------------
+
+def generate_hamlet_data_from_kullita_chord1(data_root, destination_root):
+    data = read_kulitta_chord1(data_root)
+    data_chord_roman = read_kulitta_chord1_parse_tree_leaves(data_root)
+
+generate_hamlet_data_from_kullita_chord1(KULITTA_chord1_DATA_ROOT,
+                                         KULITTA_chord1_tokens_hamlet_DATA_ROOT)

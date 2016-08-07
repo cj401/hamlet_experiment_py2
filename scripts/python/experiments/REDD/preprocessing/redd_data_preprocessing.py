@@ -36,7 +36,7 @@ Procedure for creating downsampled data:
 # Paths
 # ------------------------------------------------------------
 
-print __package__
+# print __package__
 
 HAMLET_ROOT = '../../../../../'
 # HAMLET_ROOT = paths
