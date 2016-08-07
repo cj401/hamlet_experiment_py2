@@ -107,7 +107,7 @@ match_select_latent_continue_syn_block_diag12 \
     = { 0: ['block_diag12_s{0}'.format(h) for h in [2.5, 4, 10]] }
 
 
-def scrip1():
+def script1():
     experiment_tools.run_experiment_script \
         (main_path=HAMLET_ROOT,
          data_dir=os.path.join(DATA_ROOT, 'continuous_latent_syn/'),
@@ -129,7 +129,7 @@ match_select_latent_continue_syn_block_diag12_10000itr \
     = { 0: ['block_diag12_s{0}'.format(h) for h in [2.5, 4, 10]] }
 
 
-def scrip2():
+def script2():
     experiment_tools.run_experiment_script \
         (main_path=HAMLET_ROOT,
          data_dir=os.path.join(DATA_ROOT, 'continuous_latent_syn/'),
@@ -141,7 +141,7 @@ def scrip2():
          multiproc=True,
          processor_pool_size=multiprocessing.cpu_count(),
          rerun=False,
-         test=True,
+         test=False,
          select_subdirs_verbose=False)
 
 script2()
