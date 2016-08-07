@@ -194,6 +194,27 @@ def read_matrix(path):
         sys.exit(-1)
     return matrix, iteration_num
 
+def get_n_dot(path):
+    n_dot = open(os.path.join(path, 'n_dot.txt'))
+    n_dot = n_dot.readlines()[1:]
+    keep = {}
+    for line in n_dot:
+        iteration = line.split()[0]
+        to_keep = []
+        i = 0
+        for value in line.split()[1:]:
+            if (int(value) > 0):
+                to_keep.append(i)
+            i += 1
+        keep[iteration] = to_keep
+    return keep
+
+def reduce_matrix(matrix, keep):
+    row_reduce = matrix[keep,:]
+    full_reduce = row_reduce[:,keep]
+    return full_reduce
+    
+
 def output(block_matrix, block_diagonal, group, number, results_root):
     output_block = os.path.join(results_root, 'G/block_A')
     output_one_zero = os.path.join(results_root, 'G/zero_one')
@@ -226,14 +247,21 @@ def output(block_matrix, block_diagonal, group, number, results_root):
 #main
 experiment = str(input("Experiment Name: "))
 
+reduce = str(input("Reduce Matrix (yes or no): "))
+
 results_root = os.path.join('results',experiment)
 
 matrix_root = os.path.join(results_root, 'A')
+
+if (reduce == 'yes'):
+    keep_row_column = get_n_dot(results_root)
 
 set_up_ouput_structure(results_root)
 
 for file_path in glob.glob(os.path.join(matrix_root, '*.txt')):
     matrix, number = read_matrix(file_path)
+    if (reduce == 'yes'):
+        matrix = reduce_matrix(matrix, keep_row_column[str(number)])
     check_matrix(matrix)
     symmetric_matrix = construct_symmetric_matrix(matrix)
     permutation = RCM(symmetric_matrix)
