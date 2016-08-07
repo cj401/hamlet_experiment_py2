@@ -299,6 +299,7 @@ def exp6():
          test=True,
          select_subdirs_verbose=False)
 
+# run me!
 exp6()
 
 
