@@ -185,7 +185,7 @@ def set_up_ouput_structure(results_root):
         print("grouping directory has been created under G!")
 
 def read_matrix(path):
-    iteration_num = re.search(r'\d+', path).group()
+    iteration_num = re.search(r'\d+', path.split('/')[-1]).group()
     try:
         matrix = np.loadtxt(path)
         print(iteration_num, " matrix imported!")
