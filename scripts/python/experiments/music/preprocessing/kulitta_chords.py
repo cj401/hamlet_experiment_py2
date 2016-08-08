@@ -133,7 +133,7 @@ def script():
     data = read_kulitta_chord1(KULITTA_chord1_DATA_ROOT)
     kulitta_chord1_simple_stats(data)
 
-# script()
+script()
 
 
 # ------------------------------------------------------------
@@ -201,5 +201,7 @@ def generate_hamlet_data_from_kulitta_chord1(data_root, destination_root):
 
     print 'DONE.'
 
+'''
 generate_hamlet_data_from_kulitta_chord1(KULITTA_chord1_DATA_ROOT,
                                          KULITTA_chord1_tokens_hamlet_DATA_ROOT)
+'''
