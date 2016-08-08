@@ -9,7 +9,14 @@ DATA_gamma2_ROOT = os.path.join(DATA_ROOT, 'block_diag10x4_gamma2/A.txt')
 DATA_gamma5_ROOT = os.path.join(DATA_ROOT, 'block_diag10x4_gamma5/A.txt')
 DATA_gamma10_ROOT = os.path.join(DATA_ROOT, 'block_diag10x4_gamma10/A.txt')
 
-DATA_gamma1_block_diag12_ROOT = os.path.join(DATA_ROOT, 'block_diag12/A.txt')
+DATA_gamma1_10x4_80pct_ROOT = os.path.join(DATA_ROOT, 'block_diag10x4_80percent_gamma1/A.txt')
+DATA_gamma10_10x4_80pct_ROOT = os.path.join(DATA_ROOT, 'block_diag10x4_80percent_gamma10/A.txt')
+
+DATA_gamma01_10x4_70pct_ROOT = os.path.join(DATA_ROOT, 'block_diag10x4_70percent_gamma0.1/A.txt')
+DATA_gamma05_10x4_70pct_ROOT = os.path.join(DATA_ROOT, 'block_diag10x4_70percent_gamma0.5/A.txt')
+DATA_gamma1_10x4_70pct_ROOT = os.path.join(DATA_ROOT, 'block_diag10x4_70percent_gamma1/A.txt')
+DATA_gamma10_10x4_70pct_ROOT = os.path.join(DATA_ROOT, 'block_diag10x4_70percent_gamma10/A.txt')
+
 
 def read_matrix(matrix_path):
     return numpy.loadtxt(matrix_path)
@@ -33,7 +40,12 @@ def read_and_plot_heatmap(matrix_path, title=None):
     matrix = read_matrix(matrix_path)
     plot_heatmap(matrix, title)
 
-read_and_plot_heatmap(DATA_gamma1_block_diag12_ROOT, 'gamma=1')
+read_and_plot_heatmap(DATA_gamma1_10x4_80pct_ROOT, '10x4 80% g1')
+read_and_plot_heatmap(DATA_gamma10_10x4_80pct_ROOT, '10x4 80% g10')
+read_and_plot_heatmap(DATA_gamma01_10x4_70pct_ROOT, '10x4 70% g0.1')
+read_and_plot_heatmap(DATA_gamma05_10x4_70pct_ROOT, '10x4 70% g0.5')
+read_and_plot_heatmap(DATA_gamma1_10x4_70pct_ROOT, '10x4 70% g1')
+read_and_plot_heatmap(DATA_gamma10_10x4_70pct_ROOT, '10x4 70% g10')
 #read_and_plot_heatmap(DATA_gamma1_ROOT, 'gamma=1')
 #read_and_plot_heatmap(DATA_gamma2_ROOT, 'gamma=2')
 #read_and_plot_heatmap(DATA_gamma5_ROOT, 'gamma=5')
