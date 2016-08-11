@@ -332,7 +332,69 @@ def exp7():
          select_subdirs_verbose=False)
 
 # run me!
-exp7()
+# exp7()
+
+
+# ----------------------------------------------------------------------
+
+match_select_latent_continue_syn_block_diag10x4_10000itr_g1_80pct \
+    = { 0: ['block_diag10x4_80percent_gamma1'] }
+
+
+def exp8():
+    """
+    Using block_diag4x10_s2 dataset (4 blocks of 10 states, for a total of 40 states)
+    Using syn_block_diag12_10000itr_hmc, 10,000 iterations, J=100,
+    h=1.0 (precision of prior on latent locations)
+    :return:
+    """
+    experiment_tools.run_experiment_script \
+        (main_path=HAMLET_ROOT,
+         data_dir=os.path.join(DATA_ROOT, 'continuous_latent_syn/'),
+         results_dir=os.path.join(RESULTS_ROOT, 'continuous_latent_syn_10000itr_diag10x4_g1_80pct'),
+         replications=10,
+         offset=0,
+         parameter_spec_list=collect_parameter_spec_list_latent_continue_syn_block_diag12_10000itr_hmc(PARAMETERS_ROOT),
+         match_dict=match_select_latent_continue_syn_block_diag10x4_10000itr_g1_80pct,
+         multiproc=True,
+         processor_pool_size=multiprocessing.cpu_count(),
+         rerun=False,
+         test=True,
+         select_subdirs_verbose=False)
+
+# run me!
+# exp8()
+
+
+# ----------------------------------------------------------------------
+
+match_select_latent_continue_syn_block_diag10x4_10000itr_g05_70pct \
+    = { 0: ['block_diag10x4_70percent_gamma0.5'] }
+
+
+def exp9():
+    """
+    Using block_diag4x10_s2 dataset (4 blocks of 10 states, for a total of 40 states)
+    Using syn_block_diag12_10000itr_hmc, 10,000 iterations, J=100,
+    h=1.0 (precision of prior on latent locations)
+    :return:
+    """
+    experiment_tools.run_experiment_script \
+        (main_path=HAMLET_ROOT,
+         data_dir=os.path.join(DATA_ROOT, 'continuous_latent_syn/'),
+         results_dir=os.path.join(RESULTS_ROOT, 'continuous_latent_syn_10000itr_diag10x4_g05_70pct'),
+         replications=10,
+         offset=0,
+         parameter_spec_list=collect_parameter_spec_list_latent_continue_syn_block_diag12_10000itr_hmc(PARAMETERS_ROOT),
+         match_dict=match_select_latent_continue_syn_block_diag10x4_10000itr_g05_70pct,
+         multiproc=True,
+         processor_pool_size=multiprocessing.cpu_count(),
+         rerun=False,
+         test=True,
+         select_subdirs_verbose=False)
+
+# run me!
+exp9()
 
 
 # ----------------------------------------------------------------------

@@ -4,6 +4,7 @@ import sys
 import glob
 import re
 
+
 def check_matrix(matrix):
     '''
     Only take squared matrix
@@ -12,6 +13,7 @@ def check_matrix(matrix):
     if (row != column):
         print ("Input Matrix is not a squared matrix!")
         sys.exit(-1)
+
 
 def construct_symmetric_matrix(matrix):
     '''
@@ -43,6 +45,7 @@ def find_lowest_degree_node(degree_node, set_of_node):
             break
     return node_lowest_degree
 
+
 def sort(degree_node, set_of_node):
     '''
     return nodes in a given set in an increasing order by degree
@@ -58,7 +61,6 @@ def sort(degree_node, set_of_node):
                 index += 1
                 break
     return sorted_node
-
 
 
 def RCM(matrix):
@@ -115,6 +117,7 @@ def get_block_diagonal(matrix, permutation):
         block_diagonal[:,i] = row_permuted[:,permutation[i]]
     return block_diagonal
 
+
 def find_first_zero_entry(array):
     if (0 not in array):
         return len(array)
@@ -122,6 +125,7 @@ def find_first_zero_entry(array):
         for i in range(len(array)):
             if (array[i] == 0):
                 return i
+
 
 def discover_grouping(matrix):
     '''
@@ -150,6 +154,7 @@ def discover_grouping(matrix):
         matrix = matrix[number:,number:]
     return grouping
 
+
 def get_group(permutation, grouping):
     '''
     return which states are in which group
@@ -161,6 +166,7 @@ def get_group(permutation, grouping):
             group[i+1].append(permutation[j])
         permutation = permutation[grouping[i]:]
     return group
+
 
 def set_up_ouput_structure(results_root):
     output_root = os.path.join(results_root, 'G')
@@ -184,6 +190,7 @@ def set_up_ouput_structure(results_root):
     except OSError:
         print("grouping directory has been created under G!")
 
+
 def read_matrix(path):
     iteration_num = re.search(r'\d+', path.split('/')[-1]).group()
     try:
@@ -193,6 +200,7 @@ def read_matrix(path):
         print(iteration_num, " matrix not found!")
         sys.exit(-1)
     return matrix, iteration_num
+
 
 def get_n_dot(path):
     n_dot = open(os.path.join(path, 'n_dot.txt'))
@@ -208,6 +216,7 @@ def get_n_dot(path):
             i += 1
         keep[iteration] = to_keep
     return keep
+
 
 def reduce_matrix(matrix, keep):
     row_reduce = matrix[keep,:]
