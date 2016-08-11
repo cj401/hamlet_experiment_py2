@@ -344,15 +344,15 @@ make_key_scalar_plots <-
             summary_function = count_nonzero_entries_per_row,
             paths = paths)
     }
-    if(binary)
-    {
-        binary_matrices <-
-            format_data_for_binary_matrix_plot(
-                specs, "thetastar",
-                burnin_samples = burnin_samples
-                )
-        plot_binary_matrices(specs, binary_matrices)
-    }
+    ## if(binary)
+    ## {
+    ##     binary_matrices <-
+    ##         format_data_for_binary_matrix_plot(
+    ##             specs, "thetastar",
+    ##             burnin_samples = burnin_samples
+    ##             )
+    ##     plot_binary_matrices(specs, binary_matrices)
+    ## }
 }
 
 make_scalar_plots_batch <-

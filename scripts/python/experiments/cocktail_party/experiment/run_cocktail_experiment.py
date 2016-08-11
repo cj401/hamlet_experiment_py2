@@ -79,7 +79,8 @@ def collect_parameter_spec_list_cocktail16_w0(parameters_path):
     """
     return [ experiment_tools.ParameterSpec('cocktail16_inference_BFact_HMM_W0.config', parameters_path),
              experiment_tools.ParameterSpec('cocktail16_inference_LT_HMM_W0-J600.config', parameters_path),
-             experiment_tools.ParameterSpec('cocktail16_inference_noLT_HMM_W0-J600.config', parameters_path)]
+             experiment_tools.ParameterSpec('cocktail16_inference_noLT_HMM_W0-J600.config', parameters_path)
+    ]
 
 
 # ----------------------------------------------------------------------
@@ -94,7 +95,7 @@ experiment_tools.run_experiment_script \
     (main_path=HAMLET_ROOT,
      data_dir=os.path.join(DATA_ROOT, 'cocktail_s16_m12/'),
      results_dir=os.path.join(RESULTS_ROOT, 'cocktail_s16_m12'),
-     replications=10,
+     replications=2,
      offset=0,
      parameter_spec_list=collect_parameter_spec_list_cocktail16_w0(PARAMETERS_ROOT),
      match_dict=match_select_cp16,

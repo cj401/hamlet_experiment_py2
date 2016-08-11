@@ -74,42 +74,329 @@ RESULTS_ROOT = experiment_tools.RESULTS_ROOT
 # Parameter spec list
 # ----------------------------------------------------------------------
 
-def collect_parameter_spec_list_latent_continue_syn(parameters_path):
+def collect_parameter_spec_list_latent_continue_syn_block_diag12(parameters_path):
     """
     Latent continuous state synthetic experiment parameters
     :return:
     """
-    return [ experiment_tools.ParameterSpec('TODO-BFact.config', parameters_path),
-             experiment_tools.ParameterSpec('TODO-LT.config', parameters_path),
-             experiment_tools.ParameterSpec('TODO-noLT.config', parameters_path)]
+    return [ experiment_tools.ParameterSpec('block_diag12_LT.config', parameters_path),
+             experiment_tools.ParameterSpec('block_diag12_noLT.config', parameters_path) ]
+
+
+def collect_parameter_spec_list_latent_continue_syn_block_diag12_10000itr(parameters_path):
+    """
+    Latent continuous state synthetic experiment parameters
+    :return:
+    """
+    return [ experiment_tools.ParameterSpec('block_diag12_LT_10000itr.config', parameters_path),
+             experiment_tools.ParameterSpec('block_diag12_noLT_10000itr.config', parameters_path) ]
+
+
+def collect_parameter_spec_list_latent_continue_syn_block_diag12_10000itr_hmc(parameters_path):
+    """
+    Latent continuous state synthetic experiment parameters
+    :return:
+    """
+    return [ experiment_tools.ParameterSpec('block_diag12_LT_10000itr_hmc.config', parameters_path),
+             experiment_tools.ParameterSpec('block_diag12_noLT_10000itr_hmc.config', parameters_path) ]
+
+
+def collect_parameter_spec_list_latent_continue_syn_block_diag12_10000itr_hmc_h01(parameters_path):
+    """
+    Latent continuous state synthetic experiment parameters
+    :return:
+    """
+    return [ experiment_tools.ParameterSpec('block_diag12_LT_10000itr_hmc_h0.1.config', parameters_path),
+             experiment_tools.ParameterSpec('block_diag12_noLT_10000itr_hmc_h0.1.config', parameters_path) ]
+
+
+def collect_parameter_spec_list_latent_continue_syn_block_diag12_10000itr_hmc_h20(parameters_path):
+    """
+    Latent continuous state synthetic experiment parameters
+    :return:
+    """
+    return [ experiment_tools.ParameterSpec('block_diag12_LT_10000itr_hmc_h2.0.config', parameters_path),
+             experiment_tools.ParameterSpec('block_diag12_noLT_10000itr_hmc_h2.0.config', parameters_path) ]
 
 
 # ----------------------------------------------------------------------
 # Script
 # ----------------------------------------------------------------------
 
-# TODO: define parameter specs (in <hamlet_root>/experiment/parameters/), for LT, noLT and BFact models (others?)
-# TODO: fill in parameter spec file names in collect_parameter_spec_list_latent_continue_syn()
-# TODO: generate synthetic data and place in <hamlet_root>/data/data/latent_continue_syn/
-# TODO: update match_select_latent_continue_syn to match directory structure of latent_continue_syn data
+# DONE: define parameter specs (in <hamlet_root>/experiment/parameters/), for LT, noLT and BFact models (others?)
+# DONE: fill in parameter spec file names in collect_parameter_spec_list_latent_continue_syn()
+# DONE: generate synthetic data and place in <hamlet_root>/data/data/latent_continue_syn/
+# DONE: update match_select_latent_continue_syn to match directory structure of latent_continue_syn data
 # TODO: test experiment generation; ensure all paths correct
 
-# TODO: The following needs to be modified to match the directory structure of the latent_continue_syn data
-match_select_latent_continue_syn = {0: ['h{0}_nocs'.format(h) for h in [10.0]],
-                                    1: ['cp{0}'.format(i) for i in range(1)]}
+# DONE: The following needs to be modified to match the directory structure of the latent_continue_syn data
+match_select_latent_continue_syn_block_diag12 \
+    = { 0: ['block_diag12_s{0}'.format(h) for h in [2.5, 4, 10]] }
 
-experiment_tools.run_experiment_script \
-    (main_path=HAMLET_ROOT,
-     data_dir=os.path.join(DATA_ROOT, 'latent_continue_syn/'),
-     results_dir=os.path.join(RESULTS_ROOT, 'latent_continue_syn'),
-     replications=1,
-     offset=0,
-     parameter_spec_list=collect_parameter_spec_list_latent_continue_syn(PARAMETERS_ROOT),
-     match_dict=match_select_latent_continue_syn,
-     multiproc=True,
-     processor_pool_size=multiprocessing.cpu_count(),
-     rerun=False,
-     test=True,
-     select_subdirs_verbose=False)
+
+def exp1():
+    """
+    Using block_diag12_s{2.5, 4, 10} dataset
+    Using syn_block_diag12, 2000 iterations, J=24
+    :return:
+    """
+    experiment_tools.run_experiment_script \
+        (main_path=HAMLET_ROOT,
+         data_dir=os.path.join(DATA_ROOT, 'continuous_latent_syn/'),
+         results_dir=os.path.join(RESULTS_ROOT, 'continuous_latent_syn'),
+         replications=10,
+         offset=0,
+         parameter_spec_list=collect_parameter_spec_list_latent_continue_syn_block_diag12(PARAMETERS_ROOT),
+         match_dict=match_select_latent_continue_syn_block_diag12,
+         multiproc=True,
+         processor_pool_size=multiprocessing.cpu_count(),
+         rerun=False,
+         test=True,
+         select_subdirs_verbose=False)
+
+
+# ----------------------------------------------------------------------
+
+match_select_latent_continue_syn_block_diag12_10000itr \
+    = { 0: ['block_diag12_s{0}'.format(h) for h in [2.5, 4, 10]] }
+
+
+def exp2():
+    """
+    Using block_diag12_s{2.5, 4, 10} dataset
+    Using syn_block_diag12_10000itr, 10,000 iterations, J=24
+    :return:
+    """
+    experiment_tools.run_experiment_script \
+        (main_path=HAMLET_ROOT,
+         data_dir=os.path.join(DATA_ROOT, 'continuous_latent_syn/'),
+         results_dir=os.path.join(RESULTS_ROOT, 'continuous_latent_syn_10000itr'),
+         replications=10,
+         offset=0,
+         parameter_spec_list=collect_parameter_spec_list_latent_continue_syn_block_diag12_10000itr(PARAMETERS_ROOT),
+         match_dict=match_select_latent_continue_syn_block_diag12,
+         multiproc=True,
+         processor_pool_size=multiprocessing.cpu_count(),
+         rerun=False,
+         test=True,
+         select_subdirs_verbose=False)
+
+# exp2()
+
+
+# ----------------------------------------------------------------------
+
+match_select_latent_continue_syn_block_diag12_10000itr_hmc \
+    = { 0: ['block_diag12_s{0}'.format(h) for h in [2.5, 4, 10]] }
+
+
+def exp3():
+    """
+    Using block_diag12_s{2.5, 4, 10} dataset
+    Using syn_block_diag12_10000itr_hmc, 10,000 iterations, J=100
+    :return:
+    """
+    experiment_tools.run_experiment_script \
+        (main_path=HAMLET_ROOT,
+         data_dir=os.path.join(DATA_ROOT, 'continuous_latent_syn/'),
+         results_dir=os.path.join(RESULTS_ROOT, 'continuous_latent_syn_10000itr_hmc'),
+         replications=10,
+         offset=0,
+         parameter_spec_list=collect_parameter_spec_list_latent_continue_syn_block_diag12_10000itr_hmc(PARAMETERS_ROOT),
+         match_dict=match_select_latent_continue_syn_block_diag12_10000itr_hmc,
+         multiproc=True,
+         processor_pool_size=multiprocessing.cpu_count(),
+         rerun=False,
+         test=True,
+         select_subdirs_verbose=False)
+
+# exp3()
+
+
+# ----------------------------------------------------------------------
+
+match_select_latent_continue_syn_block_diag40_10000itr_hmc \
+    = { 0: ['block_diag40_s{0}'.format(h) for h in [2]] }
+
+
+def exp4():
+    """
+    Using block_diag40_s2 dataset (10 blocks of 4 states, for a total of 40 states)
+    Using syn_block_diag12_10000itr_hmc, 10,000 iterations, J=100
+    :return:
+    """
+    experiment_tools.run_experiment_script \
+        (main_path=HAMLET_ROOT,
+         data_dir=os.path.join(DATA_ROOT, 'continuous_latent_syn/'),
+         results_dir=os.path.join(RESULTS_ROOT, 'continuous_latent_syn_10000itr_hmc_diag40'),
+         replications=10,
+         offset=0,
+         parameter_spec_list=collect_parameter_spec_list_latent_continue_syn_block_diag12_10000itr_hmc(PARAMETERS_ROOT),
+         match_dict=match_select_latent_continue_syn_block_diag40_10000itr_hmc,
+         multiproc=True,
+         processor_pool_size=multiprocessing.cpu_count(),
+         rerun=False,
+         test=True,
+         select_subdirs_verbose=False)
+
+# exp4()
+
+
+# ----------------------------------------------------------------------
+
+# match_select_latent_continue_syn_block_diag40_10000itr_hmc \
+#     = { 0: ['block_diag40_s{0}'.format(h) for h in [2]] }
+
+
+def exp5():
+    """
+    Using block_diag40_s2 dataset (10 blocks of 4 states, for a total of 40 states)
+    Using syn_block_diag12_10000itr_hmc, 10,000 iterations, J=100,
+    h=0.1 (precision of prior on latent locations; weaker prior)
+    :return:
+    """
+    experiment_tools.run_experiment_script \
+        (main_path=HAMLET_ROOT,
+         data_dir=os.path.join(DATA_ROOT, 'continuous_latent_syn/'),
+         results_dir=os.path.join(RESULTS_ROOT, 'continuous_latent_syn_10000itr_hmc_diag40_h0.1'),
+         replications=10,
+         offset=0,
+         parameter_spec_list=collect_parameter_spec_list_latent_continue_syn_block_diag12_10000itr_hmc_h01(PARAMETERS_ROOT),
+         match_dict=match_select_latent_continue_syn_block_diag40_10000itr_hmc,
+         multiproc=True,
+         processor_pool_size=multiprocessing.cpu_count(),
+         rerun=False,
+         test=True,
+         select_subdirs_verbose=False)
+
+# exp5()
+
+
+# ----------------------------------------------------------------------
+
+# match_select_latent_continue_syn_block_diag40_10000itr_hmc \
+#     = { 0: ['block_diag40_s{0}'.format(h) for h in [2]] }
+
+
+def exp6():
+    """
+    Using block_diag40_s2 dataset (10 blocks of 4 states, for a total of 40 states)
+    Using syn_block_diag12_10000itr_hmc, 10,000 iterations, J=100,
+    h=2.0 (precision of prior on latent locations; stronger prior)
+    :return:
+    """
+    experiment_tools.run_experiment_script \
+        (main_path=HAMLET_ROOT,
+         data_dir=os.path.join(DATA_ROOT, 'continuous_latent_syn/'),
+         results_dir=os.path.join(RESULTS_ROOT, 'continuous_latent_syn_10000itr_hmc_diag40_h2.0'),
+         replications=10,
+         offset=0,
+         parameter_spec_list=collect_parameter_spec_list_latent_continue_syn_block_diag12_10000itr_hmc_h20(PARAMETERS_ROOT),
+         match_dict=match_select_latent_continue_syn_block_diag40_10000itr_hmc,
+         multiproc=True,
+         processor_pool_size=multiprocessing.cpu_count(),
+         rerun=False,
+         test=True,
+         select_subdirs_verbose=False)
+
+# run me!
+# exp6()
+
+
+# ----------------------------------------------------------------------
+
+
+match_select_latent_continue_syn_block_diag4x10_10000itr_hmc \
+    = { 0: ['block_diag4x10_s{0}'.format(h) for h in [2]] }
+
+
+def exp7():
+    """
+    Using block_diag4x10_s2 dataset (4 blocks of 10 states, for a total of 40 states)
+    Using syn_block_diag12_10000itr_hmc, 10,000 iterations, J=100,
+    h=1.0 (precision of prior on latent locations)
+    :return:
+    """
+    experiment_tools.run_experiment_script \
+        (main_path=HAMLET_ROOT,
+         data_dir=os.path.join(DATA_ROOT, 'continuous_latent_syn/'),
+         results_dir=os.path.join(RESULTS_ROOT, 'continuous_latent_syn_10000itr_hmc_diag4x10_h1.0'),
+         replications=10,
+         offset=0,
+         parameter_spec_list=collect_parameter_spec_list_latent_continue_syn_block_diag12_10000itr_hmc(PARAMETERS_ROOT),
+         match_dict=match_select_latent_continue_syn_block_diag4x10_10000itr_hmc,
+         multiproc=True,
+         processor_pool_size=multiprocessing.cpu_count(),
+         rerun=False,
+         test=True,
+         select_subdirs_verbose=False)
+
+# run me!
+# exp7()
+
+
+# ----------------------------------------------------------------------
+
+match_select_latent_continue_syn_block_diag10x4_10000itr_g1_80pct \
+    = { 0: ['block_diag10x4_80percent_gamma1'] }
+
+
+def exp8():
+    """
+    Using block_diag4x10_s2 dataset (4 blocks of 10 states, for a total of 40 states)
+    Using syn_block_diag12_10000itr_hmc, 10,000 iterations, J=100,
+    h=1.0 (precision of prior on latent locations)
+    :return:
+    """
+    experiment_tools.run_experiment_script \
+        (main_path=HAMLET_ROOT,
+         data_dir=os.path.join(DATA_ROOT, 'continuous_latent_syn/'),
+         results_dir=os.path.join(RESULTS_ROOT, 'continuous_latent_syn_10000itr_diag10x4_g1_80pct'),
+         replications=10,
+         offset=0,
+         parameter_spec_list=collect_parameter_spec_list_latent_continue_syn_block_diag12_10000itr_hmc(PARAMETERS_ROOT),
+         match_dict=match_select_latent_continue_syn_block_diag10x4_10000itr_g1_80pct,
+         multiproc=True,
+         processor_pool_size=multiprocessing.cpu_count(),
+         rerun=False,
+         test=True,
+         select_subdirs_verbose=False)
+
+# run me!
+# exp8()
+
+
+# ----------------------------------------------------------------------
+
+match_select_latent_continue_syn_block_diag10x4_10000itr_g05_70pct \
+    = { 0: ['block_diag10x4_70percent_gamma0.5'] }
+
+
+def exp9():
+    """
+    Using block_diag4x10_s2 dataset (4 blocks of 10 states, for a total of 40 states)
+    Using syn_block_diag12_10000itr_hmc, 10,000 iterations, J=100,
+    h=1.0 (precision of prior on latent locations)
+    :return:
+    """
+    experiment_tools.run_experiment_script \
+        (main_path=HAMLET_ROOT,
+         data_dir=os.path.join(DATA_ROOT, 'continuous_latent_syn/'),
+         results_dir=os.path.join(RESULTS_ROOT, 'continuous_latent_syn_10000itr_diag10x4_g05_70pct'),
+         replications=10,
+         offset=0,
+         parameter_spec_list=collect_parameter_spec_list_latent_continue_syn_block_diag12_10000itr_hmc(PARAMETERS_ROOT),
+         match_dict=match_select_latent_continue_syn_block_diag10x4_10000itr_g05_70pct,
+         multiproc=True,
+         processor_pool_size=multiprocessing.cpu_count(),
+         rerun=False,
+         test=True,
+         select_subdirs_verbose=False)
+
+# run me!
+exp9()
+
+
+# ----------------------------------------------------------------------
 
 # print os.listdir(os.path.join(os.path.join(HAMLET_ROOT, DATA_ROOT), 'latent_continue_syn'))
