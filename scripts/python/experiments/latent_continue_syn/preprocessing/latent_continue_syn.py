@@ -124,7 +124,7 @@ class Data(object):
         try:
             os.mkdir(os.path.join(self.save_path, 'block_diag12'))
         except OSError:
-            print("latent_continue_syn exist in ", self.save_path)
+            print("block_diag12 exist in ", self.save_path)
         self.save_path = os.path.join(self.save_path, 'block_diag12')
         output_file('matrix', self.trans, os.path.join(self.save_path, 'A.txt'))
         output_file('matrix', self.precision, os.path.join(self.save_path, 'h.txt'))
