@@ -2,6 +2,9 @@ import numpy as np
 import random
 import configparser
 import os
+import sys
+
+__autor__='bill'
 
 def probability(num, constant):
     prob = []
@@ -42,10 +45,9 @@ def output_file(which, data, path):
 
 
 class Data(object):
-    def __init__(self):
-        cwd = os.path.dirname(os.path.realpath(__file__))
+    def __init__(self, config_file_path):
         config = configparser.ConfigParser()
-        config.read(os.path.join(cwd,'latent_continue_syn.config'))
+        config.read(config_file_path)
         self.groupnumber = int(config.get('parameter', 'number_of_group'))
         self.num_state_in_group = int(config.get('parameter','number_state_in_group'))
         self.num_state = self.groupnumber * self.num_state_in_group
@@ -120,12 +122,12 @@ class Data(object):
         self.test_state.remove(self.test_state[0])
         self.train_state.remove(self.train_state[0])
 
-    def output(self):
+    def output(self, output_file_name):
         try:
-            os.mkdir(os.path.join(self.save_path, 'block_diag12'))
+            os.mkdir(os.path.join(self.save_path, output_file_name))
         except OSError:
-            print("block_diag12 exist in ", self.save_path)
-        self.save_path = os.path.join(self.save_path, 'block_diag12')
+            print(output_file_name, " exist in ", self.save_path)
+        self.save_path = os.path.join(self.save_path, output_file_name)
         output_file('matrix', self.trans, os.path.join(self.save_path, 'A.txt'))
         output_file('matrix', self.precision, os.path.join(self.save_path, 'h.txt'))
         output_file('matrix', self.mean, os.path.join(self.save_path, 'mean.txt'))
@@ -142,12 +144,22 @@ class Data(object):
         output_file('matrix', self.test_mean_by_time_step, os.path.join(S_path, 'test.txt'))
         output_file('matrix', self.train_mean_by_time_step, os.path.join(S_path, 'train.txt'))
 
-new_data = Data()
-new_data.transition_matrix()
-new_data.gen_precision()
-new_data.gen_mean()
-new_data.gen_state()
-new_data.output()
+
+
+def main(argv):
+    directory = '/'.join(str(argv[0]).split('/')[:-1])
+    config_file_path = os.path.join(directory, str(argv[1]))
+    output_file_name = str(argv[2])
+    new_data = Data(config_file_path)
+    new_data.transition_matrix()
+    new_data.gen_precision()
+    new_data.gen_mean()
+    new_data.gen_state()
+    new_data.output(output_file_name)
+
+if __name__=="__main__":
+    main(sys.argv)
+
         
 
 
