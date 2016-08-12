@@ -1,6 +1,8 @@
 Instruction:
 The parameters and where to save the output file can be changed in latent_continue_syn.config. 
-To generate data is to run latent_continue_syn.py in the terminal.
+To generate data is to run latent_continue_syn.py in the terminal by
+‘python latent_continue_syn.py con_fig_file_name(latent_continue_syn.config) 
+output_directory_name(e.g. block_diag12)’
 
 [Parameter explanation]
 number_of_group: 
