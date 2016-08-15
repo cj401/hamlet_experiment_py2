@@ -92,7 +92,7 @@ experiment_tools.run_experiment_script \
     (main_path=HAMLET_ROOT,
      data_dir=os.path.join(DATA_ROOT, 'music/kulitta_chord1/'),
      results_dir=os.path.join(RESULTS_ROOT, 'music_chord1'),
-     replications=2,
+     replications=10,
      offset=0,
      parameter_spec_list=collect_parameter_spec_list_music_chord1(PARAMETERS_ROOT),
      match_dict=match_select_music_chord1,
