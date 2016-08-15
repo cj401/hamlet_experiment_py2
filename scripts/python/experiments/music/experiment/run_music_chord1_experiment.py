@@ -48,7 +48,7 @@ def optional_add_relative_path(current, parent, relative_path, verbose=False):
 
 
 optional_add_relative_path\
-    (current=('scripts', 'python', 'experiments', 'cocktail_party', 'experiment'),
+    (current=('scripts', 'python', 'experiments', 'music', 'experiment'),
      parent=('scripts', 'python'),
      relative_path='../../../',
      verbose=True)
@@ -71,34 +71,31 @@ RESULTS_ROOT = experiment_tools.RESULTS_ROOT
 # Parameter spec list
 # ----------------------------------------------------------------------
 
-def collect_parameter_spec_list_cocktail16_w0(parameters_path):
+def collect_parameter_spec_list_music_chord1(parameters_path):
     """
-    cp **NO** weight learning (w0), 1500 iterations, D=16, and J=600 for hmm
-    works with: cocktail_s16_m12
+    Music chord 1 **NO** weight learning (w0), 2000 iterations
+    works with:
     :return:
     """
-    return [ experiment_tools.ParameterSpec('cocktail16_inference_BFact_HMM_W0.config', parameters_path),
-             experiment_tools.ParameterSpec('cocktail16_inference_LT_HMM_W0-J600.config', parameters_path),
-             experiment_tools.ParameterSpec('cocktail16_inference_noLT_HMM_W0-J600.config', parameters_path)
+    return [ experiment_tools.ParameterSpec('music_chord1_LT.config', parameters_path),
+             experiment_tools.ParameterSpec('music_chord1_noLT.config', parameters_path)
     ]
-
 
 # ----------------------------------------------------------------------
 # Script
 # ----------------------------------------------------------------------
 
 
-match_select_cp16 = {0: ['h{0}_nocs'.format(h) for h in [10.0]],
-                     1: ['cp{0}'.format(i) for i in range(1)]}
+match_select_music_chord1 = {0: ['music_chord1'.format(h) for h in [10.0]] }
 
 experiment_tools.run_experiment_script \
     (main_path=HAMLET_ROOT,
-     data_dir=os.path.join(DATA_ROOT, 'cocktail_s16_m12/'),
-     results_dir=os.path.join(RESULTS_ROOT, 'cocktail_s16_m12'),
+     data_dir=os.path.join(DATA_ROOT, 'music/kulitta_chord1/'),
+     results_dir=os.path.join(RESULTS_ROOT, 'music_chord1'),
      replications=2,
      offset=0,
-     parameter_spec_list=collect_parameter_spec_list_cocktail16_w0(PARAMETERS_ROOT),
-     match_dict=match_select_cp16,
+     parameter_spec_list=collect_parameter_spec_list_music_chord1(PARAMETERS_ROOT),
+     match_dict=match_select_music_chord1,
      multiproc=True,
      processor_pool_size=multiprocessing.cpu_count(),
      rerun=False,
