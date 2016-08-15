@@ -73,7 +73,7 @@ RESULTS_ROOT = experiment_tools.RESULTS_ROOT
 
 def collect_parameter_spec_list_music_chord1(parameters_path):
     """
-    Music chord 1 **NO** weight learning (w0), 2000 iterations
+    Music chord 1 **NO** weight learning (w0), 5000 iterations
     works with:
     :return:
     """
@@ -91,7 +91,7 @@ match_select_music_chord1 = {0: ['music_chord1'.format(h) for h in [10.0]] }
 experiment_tools.run_experiment_script \
     (main_path=HAMLET_ROOT,
      data_dir=os.path.join(DATA_ROOT, 'music/kulitta_chord1/'),
-     results_dir=os.path.join(RESULTS_ROOT, 'music_chord1'),
+     results_dir=os.path.join(RESULTS_ROOT, 'music'),
      replications=10,
      offset=0,
      parameter_spec_list=collect_parameter_spec_list_music_chord1(PARAMETERS_ROOT),
