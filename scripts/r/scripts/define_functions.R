@@ -125,7 +125,7 @@ collect_data_as_scalar <- function(data_list, summary_function = I, ...)
     return(list(iterations = iterations, values = result))
 }
 
-summarize_scalar_data_across_runs <- function(collapsed_data, smoothing_window_size = 1)
+summarize_scalar_data_across_runs <- function(collapsed_data, smoothing_window_size = 1, ...)
 {
     result <- list()
     center_iteration <-
