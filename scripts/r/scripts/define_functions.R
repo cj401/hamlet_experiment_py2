@@ -138,11 +138,18 @@ summarize_scalar_data_across_runs <- function(collapsed_data)
                     se_upper = apply(d, 1, function(x) {mean(x, na.rm = TRUE) + sd(x, na.rm = TRUE) / sqrt(length(x))}),
                     se_lower = apply(d, 1, function(x) {mean(x, na.rm = TRUE) - sd(x, na.rm = TRUE) / sqrt(length(x))}),
                     cint_upper =
-                         apply(d, 1, function(x)
-                           {mean(x, na.rm = TRUE) + sqrt(2 * var(x, na.rm = TRUE) / length(x)) / 2 * qt(0.995, length(x) - 1)}),
+                        apply(d, 1, function(x)
+                            {mean(x, na.rm = TRUE) + sqrt(var(x, na.rm = TRUE) / length(x)) * 2 * qt(0.995, length(x) - 1)}),
                     cint_lower =
-                         apply(d, 1, function(x)
-                           {mean(x, na.rm = TRUE) - sqrt(2 * var(x, na.rm = TRUE) / length(x)) / 2 * qt(0.995, length(x) - 1)}))))
+                        apply(d, 1, function(x)
+                            {mean(x, na.rm = TRUE) - sqrt(var(x, na.rm = TRUE) / length(x)) * 2 * qt(0.995, length(x) - 1)}),
+                    quantile_upper =
+                        apply(d, 1, function(x) {quantile(x, 0.9)}),
+                    quantile_lower =
+                        apply(d, 1, function(x) {quantile(x, 0.1)}),
+                    median =
+                        apply(d, 1, median))))
+
     }
     names(result) <- names(collapsed_data$values)
     return(list(iterations = collapsed_data$iterations, values = result))
@@ -207,6 +214,7 @@ plot_scalar_by_iteration <-
         error_var = "cint",
         yrange = c(-Inf, Inf),
         burnin_samples = 10,
+        spacing = 50,
         ...
         )
 {
@@ -218,7 +226,7 @@ plot_scalar_by_iteration <-
             )
     summarized_data <- summarize_scalar_data_across_runs(collected_data)
     t <- summarized_data$iterations
-    index_subset = (t %% 50 == 0 & t > burnin_samples)
+    index_subset = (t %% spacing == 0 & t > burnin_samples)
     ## calculate a suitable range to plot
     lowest_val <- Inf
     highest_val <- -Inf
@@ -329,20 +337,21 @@ make_key_scalar_plots <-
         paths,
         comparison_name,
         plot.vars = c("F1_score", "precision", "recall",
-               "accuracy")
+               "accuracy"),
+        ...
         )
 {
     specs <- get_specs(query_file, results_dir, data_set, comparison_name)
     for(v in plot.vars)
     {
-        plot_scalar_by_iteration(specs, v, burnin_samples = burnin_samples, paths = paths)
+        plot_scalar_by_iteration(specs, v, burnin_samples = burnin_samples, paths = paths, ...)
     }
     if("n_dot" %in% plot.vars)
     {
         plot_scalar_by_iteration(
             specs, "n_dot", burnin_samples = burnin_samples,
             summary_function = count_nonzero_entries_per_row,
-            paths = paths)
+            paths = paths, ...)
     }
     ## if(binary)
     ## {
@@ -365,7 +374,8 @@ make_scalar_plots_batch <-
         extra.plot.vars = c(),
         base.plot.vars = c("F1_score", "precision", "recall",
                "accuracy"),
-        project_root = "../../../"
+        project_root = "../../../",
+        ...
         )
 {
     specs <-
@@ -394,7 +404,8 @@ make_scalar_plots_batch <-
                 burnin_samples = burnin_samples,
                 paths = root,
                 comparison_name = comp,
-                plot.vars = c(base.plot.vars, extra.plot.vars)
+                plot.vars = c(base.plot.vars, extra.plot.vars),
+                ...
             )
             print("........done.")
         }
