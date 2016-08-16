@@ -158,7 +158,7 @@ def collect_multiple_datasets(path_base):
     return A_all, X_all, theta_all, pi0_all
 
 
-def multidataset_stats(path_base):
+def multidataset_stats(path_base, show_p=False):
     A, X, theta, pi0 = collect_multiple_datasets(path_base)
 
     A_mu = numpy.mean(A, axis=2)
@@ -186,7 +186,8 @@ def multidataset_stats(path_base):
     plot_bar(pi0_std, title='pi0{0}'.format(' std'))
     plt.savefig('pi0_std.pdf', format='pdf')
 
-    plt.show()
+    if show_p:
+        plt.show()
 
 
 # multidataset_stats(LT_DATA_PATH)
