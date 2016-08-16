@@ -251,11 +251,13 @@ plot_scalar_by_iteration <-
         lwr <- summarized_data$values[[g]][[paste(error_var,"_lower",sep = "")]]
         upr <- summarized_data$values[[g]][[paste(error_var,"_upper",sep = "")]]
         lines(t[index_subset], m[index_subset], lty = plot_vars[g])
-        arrows(x0 = t[index_subset],
-               y0 = lwr[index_subset],
-               y1 = upr[index_subset],
-               angle = 90, code = 3,
-               length = 0.1, lty = plot_vars[g])
+        lines(t[index_subset], lwr[index_subset], lty = plot_vars[g])
+        lines(t[index_subset], upr[index_subset], lty = plot_vars[g])
+        ## arrows(x0 = t[index_subset],
+        ##        y0 = lwr[index_subset],
+        ##        y1 = upr[index_subset],
+        ##        angle = 90, code = 3,
+        ##        length = 0.1, lty = plot_vars[g])
     }
     legend("bottomright", lty = plot_vars, legend = unique(groups))
     dev.off()
