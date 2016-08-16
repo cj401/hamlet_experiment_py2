@@ -346,6 +346,7 @@ make_key_scalar_plots <-
         comparison_name,
         plot.vars = c("F1_score", "precision", "recall",
                "accuracy"),
+        smoothing_window_size = 1,
         ...
         )
 {
@@ -383,6 +384,7 @@ make_scalar_plots_batch <-
         base.plot.vars = c("F1_score", "precision", "recall",
                "accuracy"),
         project_root = "../../../",
+        smoothing_window_size = 1,
         ...
         )
 {
