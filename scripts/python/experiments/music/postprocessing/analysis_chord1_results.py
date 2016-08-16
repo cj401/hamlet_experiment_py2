@@ -11,6 +11,7 @@ HAMLET_ROOT = '../../../../../../'
 RESULTS_ROOT = os.path.join(HAMLET_ROOT, 'results')
 
 LT_DATA_PATH = os.path.join(RESULTS_ROOT, 'music/music_chord1_10000iter/LT_hdp_hmm_w0')
+LT_100K_DATA_PATH = os.path.join(RESULTS_ROOT, 'music/music_chord1_100000iter/LT_hdp_hmm_w0')
 
 PATH_01_ROOT = os.path.join(LT_DATA_PATH, '01')
 PATH_02_ROOT = os.path.join(LT_DATA_PATH, '02')
@@ -188,4 +189,5 @@ def multidataset_stats(path_base):
     plt.show()
 
 
-multidataset_stats(LT_DATA_PATH)
+# multidataset_stats(LT_DATA_PATH)
+multidataset_stats(LT_100K_DATA_PATH)
