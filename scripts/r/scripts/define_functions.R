@@ -125,7 +125,7 @@ collect_data_as_scalar <- function(data_list, summary_function = I, ...)
     return(list(iterations = iterations, values = result))
 }
 
-summarize_scalar_data_across_runs <- function(collapsed_data, smoothing_window_size = 1, ...)
+summarize_scalar_data_across_runs <- function(collapsed_data, smoothing_window_size = 1)
 {
     result <- list()
     center_iteration <-
@@ -175,7 +175,9 @@ summarize_matrix_data_across_iterations <-
             group_result <-
                 append(
                     group_result,
-                    list(apply(m[,,-c(1,burnin_samples)], MARGIN = c(1,2), FUN = summary_function))
+                    list(apply(m[,,-c(1,burnin_samples)],
+                               MARGIN = c(1,2),
+                               FUN = summary_function))
                     )
         }
         matrix_result <- do.call("abind", list(group_result, along = 3))
@@ -218,7 +220,7 @@ plot_scalar_by_iteration <-
         error_var = "cint",
         yrange = c(-Inf, Inf),
         burnin_samples = 10,
-        spacing = 50,
+        smoothing_window_size = 50,
         ...
         )
 {
@@ -228,7 +230,7 @@ plot_scalar_by_iteration <-
             results_list, summary_function = summary_function,
             ...
             )
-    summarized_data <- summarize_scalar_data_across_runs(collected_data, ...)
+    summarized_data <- summarize_scalar_data_across_runs(collected_data, smoothing_window_size)
     t <- summarized_data$iterations
     index_subset = (t %% spacing == 0 & t > burnin_samples)
     ## calculate a suitable range to plot
