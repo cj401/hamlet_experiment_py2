@@ -18,12 +18,7 @@ For the program to run accurately (in terminal):
         this will block diagonize matrix in that directory with reduction and
         default parameter value m=0, t=2
 () To change default value, simply add m=value1 t=value2 after '... true'
-   in command line
-
-Change from the last version:
-() Added function of accepting command line argv
-() Remove grouping function since the algorithm I had for the last version does
-   not work fine
+   in command line 
 '''
 
 
@@ -192,6 +187,9 @@ def set_up_output_structure(results_root):
     set up the output directory structure
     '''
     output_root = os.path.join(results_root, 'G')
+    if (os.path.exists(output_root)==False):
+        print(output_root, " does not exist.")
+        sys.exit(-1)
     try:
         os.mkdir(output_root)
     except OSError:
@@ -206,6 +204,12 @@ def set_up_output_structure(results_root):
         os.mkdir(output_one_zero)
     except OSError:
         print("zero_one directory has been created under G!")
+    output_permutation = os.path.join(output_root, 'permutation')
+    try:
+        os.mkdir(output_permutation)
+    except OSError:
+        print("Permutation directory has been created under G!")
+        
     '''
     Remove grouping directory since the grouping algorithm might not
     be accuarate given the heatmap of the block-diagonalized matrix
@@ -213,12 +217,13 @@ def set_up_output_structure(results_root):
     that part from the code
     '''
 
-def output(block_matrix, block_diagonal, number, results_root):
+def output(block_matrix, block_diagonal, permutation, number, results_root):
     '''
     output files
     '''
     output_block = os.path.join(results_root, 'G/block_A')
     output_one_zero = os.path.join(results_root, 'G/zero_one')
+    output_permutation = os.path.join(results_root, 'G/permutation')
     block_matrix_file = open(os.path.join(output_block, number+'.txt'), 'w')
     row, column = block_matrix.shape
     for i in range(row):
@@ -233,6 +238,10 @@ def output(block_matrix, block_diagonal, number, results_root):
             block_diagonal_file.write('%d ' %(block_diagonal[i,j]))
         block_diagonal_file.write('\n')
     block_diagonal_file.close()
+    permutation_file = open(os.path.join(output_permutation, number+'.txt'), 'w')
+    for i in permutation:
+        permutation_file.write('%d\n' %(i))
+    permutation_file.close()
     print('All Files related to iteration ', number, 'outputed!') 
     
 def main(argv):
@@ -263,11 +272,9 @@ def main(argv):
         permutation = RCM(symmetric_matrix)
         block_diagonal = get_block_diagonal(symmetric_matrix, permutation)
         block_matrix = get_block_diagonal(matrix, permutation)
-        output(block_matrix, block_diagonal, number, results_root)
+        output(block_matrix, block_diagonal, permutation, number, results_root)
     
 
 if __name__=="__main__":
     main(sys.argv[1:])
-
-
 
