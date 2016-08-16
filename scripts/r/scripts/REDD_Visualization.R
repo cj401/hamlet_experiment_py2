@@ -47,12 +47,14 @@ Visulization <- function(obs, Z, H, mean_files, output_path){
 }
 
 #import file
-experiment_name <- readline(prompt="Experiment name: ")
-obs <- read.table(paste("data",experiment_name,"obs.txt",sep="/"))
-Z <- read.table(paste("results",experiment_name,"z.txt",sep="/"), skip=1)
-H <- read.table(paste("results",experiment_name,"h.txt",sep="/"), skip=1)
-mean_root <- paste("results",experiment_name,"mean_by_state",sep="/")
+args <- commandArgs(trailingOnly = TRUE)
+data_path <- toString(args[2])
+results_path <- toString(args[1])
+obs <- read.table(paste("data",data_path,"obs.txt",sep="/"))
+Z <- read.table(paste("results",results_path,"z.txt",sep="/"), skip=1)
+H <- read.table(paste("results",results_path,"h.txt",sep="/"), skip=1)
+mean_root <- paste("results",results_path,"mean_by_state",sep="/")
 mean_files <- list.files(path=mean_root, pattern="*txt", full.names=TRUE)
-output_path <- paste("results",experiment_name,"Visualization.pdf",sep="/")
+output_path <- paste("results",results_path,"Visualization.pdf",sep="/")
 
 Visulization(obs, Z, H, mean_files, output_path)
