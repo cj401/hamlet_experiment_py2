@@ -125,30 +125,34 @@ collect_data_as_scalar <- function(data_list, summary_function = I, ...)
     return(list(iterations = iterations, values = result))
 }
 
-summarize_scalar_data_across_runs <- function(collapsed_data)
+summarize_scalar_data_across_runs <- function(collapsed_data, smoothing_window_size = 1)
 {
     result <- list()
+    center_iteration <-
+        floor(collapsed_data$iterations / smoothing_window_size) * smoothing_window_size +
+            0.5 * smoothing_window_size
     for(d in collapsed_data$values)
     {
+        dd <- apply(d, 2, function(x){tapply(x, center_iteration, mean)})
         result <-
             append(
                 result,
                 list(data.frame(
-                    mean = apply(d, 1, mean, na.rm = TRUE),
-                    se_upper = apply(d, 1, function(x) {mean(x, na.rm = TRUE) + sd(x, na.rm = TRUE) / sqrt(length(x))}),
-                    se_lower = apply(d, 1, function(x) {mean(x, na.rm = TRUE) - sd(x, na.rm = TRUE) / sqrt(length(x))}),
+                    mean = apply(dd, 1, mean, na.rm = TRUE),
+                    se_upper = apply(dd, 1, function(x) {mean(x, na.rm = TRUE) + sd(x, na.rm = TRUE) / sqrt(length(x))}),
+                    se_lower = apply(dd, 1, function(x) {mean(x, na.rm = TRUE) - sd(x, na.rm = TRUE) / sqrt(length(x))}),
                     cint_upper =
-                        apply(d, 1, function(x)
+                        apply(dd, 1, function(x)
                             {mean(x, na.rm = TRUE) + sqrt(var(x, na.rm = TRUE) / length(x)) * 2 * qt(0.995, length(x) - 1)}),
                     cint_lower =
-                        apply(d, 1, function(x)
+                        apply(dd, 1, function(x)
                             {mean(x, na.rm = TRUE) - sqrt(var(x, na.rm = TRUE) / length(x)) * 2 * qt(0.995, length(x) - 1)}),
                     quantile_upper =
-                        apply(d, 1, function(x) {quantile(x, 0.9)}),
+                        apply(dd, 1, function(x) {quantile(x, 0.9)}),
                     quantile_lower =
-                        apply(d, 1, function(x) {quantile(x, 0.1)}),
+                        apply(dd, 1, function(x) {quantile(x, 0.1)}),
                     median =
-                        apply(d, 1, median))))
+                        apply(dd, 1, median))))
 
     }
     names(result) <- names(collapsed_data$values)
@@ -224,7 +228,7 @@ plot_scalar_by_iteration <-
             results_list, summary_function = summary_function,
             ...
             )
-    summarized_data <- summarize_scalar_data_across_runs(collected_data)
+    summarized_data <- summarize_scalar_data_across_runs(collected_data, ...)
     t <- summarized_data$iterations
     index_subset = (t %% spacing == 0 & t > burnin_samples)
     ## calculate a suitable range to plot
@@ -251,8 +255,8 @@ plot_scalar_by_iteration <-
         lwr <- summarized_data$values[[g]][[paste(error_var,"_lower",sep = "")]]
         upr <- summarized_data$values[[g]][[paste(error_var,"_upper",sep = "")]]
         lines(t[index_subset], m[index_subset], lty = plot_vars[g])
-        lines(t[index_subset], lwr[index_subset], lty = plot_vars[g])
-        lines(t[index_subset], upr[index_subset], lty = plot_vars[g])
+        lines(t[index_subset], lwr[index_subset], lty = plot_vars[g], lwd = 0.25)
+        lines(t[index_subset], upr[index_subset], lty = plot_vars[g], lwd = 0.25)
         ## arrows(x0 = t[index_subset],
         ##        y0 = lwr[index_subset],
         ##        y1 = upr[index_subset],
