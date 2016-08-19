@@ -168,17 +168,23 @@ def get_n_dot(path, min_occurence = 0):
     Else, delete the state
     '''
     n_dot_file = open(os.path.join(path, 'n_dot.txt'), 'r')
+    output_keep_file = open(os.path.join(path, 'G/keep.txt'), 'w')
+    output_keep_file.write('iteration states_keep\n')
     n_dot = n_dot_file.readlines()[1:]
     n_dot_file.close()
     keep = {}
     for line in n_dot:
         iteration = line.split()[0]
+        output_keep_file.write(iteration)
+        output_keep_file.write("    ")
         to_keep = []
         i = 0
         for value in line.split()[1:]:
             if (int(value) > min_occurence):
+                output_keep_file.write(" %d" %(i))
                 to_keep.append(i)
             i += 1
+        output_keep_file.write("\n")
         keep[iteration] = to_keep
     return keep
 
@@ -242,7 +248,7 @@ def output(block_matrix, block_diagonal, permutation, number, results_root):
     for i in permutation:
         permutation_file.write('%d\n' %(i))
     permutation_file.close()
-    print('All Files related to iteration ', number, 'outputed!') 
+    print('All Files related to iteration ', number, 'outputed!')
     
 def main(argv):
     experiment = str(argv[0])
@@ -254,12 +260,12 @@ def main(argv):
             t = float(arg.split('=')[1])
     results_root = os.path.join('results',experiment)
     matrix_root = os.path.join(results_root, 'A')
+    set_up_output_structure(results_root)
     if (reduce == 'true'):
         try:
             keep_row_column = get_n_dot(results_root, m)
         except:
             keep_row_column = get_n_dot(results_root)
-    set_up_output_structure(results_root)
     for file_path in glob.glob(os.path.join(matrix_root,'*.txt')):
         matrix, number = read_matrix(file_path)
         if (reduce == 'true'):
@@ -277,4 +283,6 @@ def main(argv):
 
 if __name__=="__main__":
     main(sys.argv[1:])
+
+
 
