@@ -1,60 +1,64 @@
-library(mixtools)
-library(MASS)
-library(segmented)
-
-Visulization <- function(obs, Z, H, mean_files, output_path){
-  dimensions <- ncol(obs)
-  observations <- nrow(obs)
-  iterations <- nrow(Z)
-  h <- as.matrix(H[,2:dimensions+1])
-  z <- as.matrix(Z[,3:iterations+2])
-  iteration_num <- as.vector(Z[,1])
-  #Two cases: two dimension and higher dimension
-  if (dimensions = 2){
-    print("Data is two dimensional.")
-    pdf(output_path)
-    for (i in 1:iterations){
-      mean <- as.matrix(read.table(mean_files[i]))
-      cov <- matrix(0, dimensions, dimensions)
-      for (k in 1:dimensions){cov[k,k]=1./h[,k]}
-      plot(V2~V1, data=obs, col=z[i,], pch=16, cex=.8, main=toString(iteration_num[i]))
-      for (j in 1:observations){
-        contour <- ellipse(as.vector(mean[j,]), cov)
-        lines(contour, col=z[i,j])
-      }
+Normal_Plot <- function(df, iteration_nums){
+    min_data <- min(df$obs)
+    max_data <- max(df$obs)
+    margin <- sd(df$obs)
+    y <- rep(0,nrow(df))
+    plot(y~df$obs, col=df$relabel, ylim=c(0,1), cex=.8, ylab=" ", xlab=" ",
+    main=toString(iteration_nums))
+    for (i in 1:nrow(df)){
+        curve(dnorm(x, mean=df$mean[i], sd=df$sd[i]), col=df$relabel[i], lwd=df$width[i],
+        add=TRUE)
     }
-  }
-  else{
-    print("Data is more than two dimensional, PCA is used!")
-    pca <- prcomp(obs, scale.=TRUE)
-    pca_scores <- as.data.frame(pca$x)
-    transform <- cbind(as.vector(pca$rotation[,1]),as.vector(pca$rotation[,2]))
-    pdf(output_path)
-    for (i in 1:iterations){
-      mean <- as.matrix(read.table(mean_files[i]))
-      cov <- matrix(0, dimensions, dimensions)
-      for (k in 1:dimensions){cov[k,k]=1./h[,k]}
-      trans_cov <- t(transform) %*% cov %*% transform
-      plot(PC2 ~ PC1, data=pca_scores, col=z[i,], pch=16, cex=.8, main=toString(iteration_num[i]))
-      for (j in 1:observations){
-        trans_mean <- as.vector(mean[j,] %*% transform)
-        contour <- ellipse(as.vector(trans_mean), trans_cov)
-        lines(contour, col=z[i,j])
-      }
-    }
-  }
-  dev.off()
 }
 
-#import file
+
+Visulization <- function(obs, z, h, mean_files, n_dot, output_path){
+    n_obs <- nrow(obs)
+    iterations <- nrow(z)
+    iteration_num <- as.vector(z[,1])
+    obs <- as.vector(obs$V1)
+    h <- as.vector(h$value)
+    n_dot <- n_dot[,-1]
+    last_column = 2 + n_obs
+    z <- as.matrix(z[,3:last_column])
+    pdf(output_path)
+    for (i in 1:iterations){
+        mean_by_state <- read.table(mean_files[i])
+        mean <- as.vector(rowSums(mean_by_state))
+        state <- as.vector(z[i,])
+        sd <- rep(sqrt(1/h[i]),n_obs)
+        df <- data.frame(obs,state,mean,sd)
+        df$width <- NA
+        for (j in 1:n_obs){
+            col_label = df[j,]$state + 1
+            df[j,]$width <- 1 + n_dot[i,col_label] * 0.025
+        }
+        df$relabel <- NA
+        unique_element <- unique(df$state)
+        num_of_unique <- length(unique_element)
+        for (j in 1:n_obs){
+            for (k in 1:num_of_unique){
+                if(df[j,]$state == unique_element[k]){
+                    df[j,]$relabel = k
+                    break
+                }
+            }
+        }
+        Normal_Plot(df, iteration_num[i])
+    }
+    dev.off()
+}
+
+#import files
 args <- commandArgs(trailingOnly = TRUE)
 data_path <- toString(args[2])
 results_path <- toString(args[1])
 obs <- read.table(paste("data",data_path,"obs.txt",sep="/"))
-Z <- read.table(paste("results",results_path,"z.txt",sep="/"), skip=1)
-H <- read.table(paste("results",results_path,"h.txt",sep="/"), skip=1)
+z <- read.table(paste("results",results_path,"z.txt",sep="/"), skip=1)
+h <- read.table(paste("results",results_path,"h.txt",sep="/"), header=TRUE)
+n_dot <- read.table(paste("results",results_path,"n_dot.txt",sep="/"),skip=1)
 mean_root <- paste("results",results_path,"mean_by_state",sep="/")
 mean_files <- list.files(path=mean_root, pattern="*txt", full.names=TRUE)
 output_path <- paste("results",results_path,"Visualization.pdf",sep="/")
 
-Visulization(obs, Z, H, mean_files, output_path)
+Visulization(obs, z, h, mean_files, n_dot, output_path)
