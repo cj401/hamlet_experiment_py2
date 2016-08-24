@@ -1,7 +1,4 @@
 Normal_Plot <- function(df, iteration_nums){
-    min_data <- min(df$obs)
-    max_data <- max(df$obs)
-    margin <- sd(df$obs)
     y <- rep(0,nrow(df))
     plot(y~df$obs, col=df$relabel, ylim=c(0,1), cex=.8, ylab=" ", xlab=" ",
     main=toString(iteration_nums))
@@ -20,7 +17,7 @@ Visulization <- function(obs, z, h, mean_files, n_dot, output_path){
     h <- as.vector(h$value)
     n_dot <- n_dot[,-1]
     last_column = 2 + n_obs
-    z <- as.matrix(z[,3:last_column])
+    z <- as.matrix(z[,-c(1:2)])
     pdf(output_path)
     for (i in 1:iterations){
         mean_by_state <- read.table(mean_files[i])
@@ -49,7 +46,7 @@ Visulization <- function(obs, z, h, mean_files, n_dot, output_path){
     dev.off()
 }
 
-#import files
+
 args <- commandArgs(trailingOnly = TRUE)
 data_path <- toString(args[2])
 results_path <- toString(args[1])
