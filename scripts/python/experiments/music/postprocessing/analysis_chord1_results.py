@@ -9,12 +9,23 @@ import matplotlib.pyplot as plt
 
 HAMLET_ROOT = '../../../../../../'
 RESULTS_ROOT = os.path.join(HAMLET_ROOT, 'results')
+MUSIC_DATA_ROOT = os.path.join(HAMLET_ROOT, 'data/data/music')
+
+KULITTA_CHORD1_DATA_ROOT = os.path.join(MUSIC_DATA_ROOT, 'kulitta_chord1/music_chord1')
 
 LT_DATA_PATH = os.path.join(RESULTS_ROOT, 'music/music_chord1_10000iter/LT_hdp_hmm_w0')
 LT_100K_DATA_PATH = os.path.join(RESULTS_ROOT, 'music/music_chord1_100000iter/LT_hdp_hmm_w0')
 
-PATH_01_ROOT = os.path.join(LT_DATA_PATH, '01')
-PATH_02_ROOT = os.path.join(LT_DATA_PATH, '02')
+LT_PATH_01_ROOT = os.path.join(LT_DATA_PATH, '01')
+LT_PATH_02_ROOT = os.path.join(LT_DATA_PATH, '02')
+
+noLT_DATA_PATH = os.path.join(RESULTS_ROOT, 'music/music_chord1_10000iter/noLT_hdp_hmm_w0')
+noLT_100K_DATA_PATH = os.path.join(RESULTS_ROOT, 'music/music_chord1_100000iter/noLT_hdp_hmm_w0')
+
+noLT_PATH_01_ROOT = os.path.join(noLT_DATA_PATH, '01')
+noLT_PATH_02_ROOT = os.path.join(noLT_DATA_PATH, '02')
+
+# print os.listdir(noLT_PATH_01_ROOT)
 
 
 # ----------------------------------------------------------------------
@@ -55,6 +66,39 @@ def read_data(results_root):
     pi0 = numpy.loadtxt(os.path.join(path_pi0, filename_last_iter_pi0))
 
     return A, X, theta, pi0
+
+
+def read_state_to_chord_map(path):
+    state_to_chord_map = list()
+    with open(path, 'r') as fin:
+        for line in fin.readlines():
+            state_to_chord_map.append( eval(line.split(' ', 1)[1].strip()) )
+    return state_to_chord_map
+
+
+# print read_state_to_chord_map(os.path.join(KULITTA_CHORD1_DATA_ROOT, 'state_to_chord_map.txt'))
+
+
+# ----------------------------------------------------------------------
+# Threshold
+# ----------------------------------------------------------------------
+
+def threshold_binary(arr, threshold):
+    arr_binary = numpy.zeros(arr.shape)
+    arr_thresh = numpy.zeros(arr.shape)
+    arr_binary[arr > threshold] = 1
+
+    for i in range(arr.shape[0]):
+        jsum = 0
+        for j in range(arr.shape[1]):
+            if arr[i, j] > threshold:
+                arr_thresh[i, j] = arr[i, j]
+                jsum += arr[i, j]
+        if jsum > 0:
+            for j in range(arr.shape[1]):
+                arr_thresh[i, j] = arr_thresh[i, j] / jsum
+
+    return arr_binary, arr_thresh
 
 
 # ----------------------------------------------------------------------
@@ -118,16 +162,61 @@ def plot_bar(data, title='', val_threshold=0.01):
 # Script
 # ----------------------------------------------------------------------
 
-def plot_script(root, title=' '):
-    A, X, theta, pi0 = read_data(root)
-    plot_heatmap(A, title='A{0}{1}'.format(title, A.shape))
-    plot_heatmap(X, title='X{0}{1}'.format(title, X.shape))
-    # plot_scatter(theta, title='theta{}{0}'.format(title, theta.shape))
-    # plot_bar(pi0, title='pi0{}'.format(title))
+def get_emissions(arr):
+    state_emissions = list()
+    for i in range(arr.shape[0]):
+        emissions = list()
+        for j in range(arr.shape[1]):
+            if arr[i, j] > 0:
+                emissions.append(j)
+        state_emissions.append((i, tuple(emissions)))
+    return state_emissions
 
+
+def plot_script(root, title=' ', threshold=0.0, plot_p=False):
+    A, X, theta, pi0 = read_data(root)
+
+    # plot_bar(pi0, title='pi0{}'.format(title))
+    if plot_p:
+        plot_scatter(theta, title='theta{0}{1}'.format(title, theta.shape))
+
+    Abin, _ = threshold_binary(A, threshold=0.0)
+    if plot_p:
+        plot_heatmap(A, title='A{0}{1} {2}'.format(title, A.shape, numpy.sum(Abin)))
+
+    Abin, Athr = threshold_binary(A, threshold)
+    if plot_p:
+        plot_heatmap(Abin, 'A binary{0}{1} {2}'.format(title, Abin.shape, numpy.sum(Abin)))
+        plot_heatmap(Athr, 'A thresh{0}{1} {2}'.format(title, Athr.shape, numpy.sum(Abin)))
+
+    Xbin, _ = threshold_binary(X, threshold=0.0)
+    if plot_p:
+        plot_heatmap(X, title='X{0}{1} {2}'.format(title, X.shape, numpy.sum(Xbin)))
+
+    Xbin, Xthr = threshold_binary(X, threshold)
+    if plot_p:
+        plot_heatmap(Xbin, 'X binary{0}{1} {2}'.format(title, Xbin.shape, numpy.sum(Xbin)))
+        plot_heatmap(Xthr, 'X thresh{0}{1} {2}'.format(title, Xthr.shape, numpy.sum(Xbin)))
+
+    state_to_chord_map = read_state_to_chord_map(os.path.join(KULITTA_CHORD1_DATA_ROOT, 'state_to_chord_map.txt'))
+
+    print '\nState to Emissions:'
+    state_emissions = get_emissions(Xbin)
+    for state, emissions in state_emissions:
+        print state, emissions, [(Xthr[state, idx], state_to_chord_map[idx]) for idx in emissions]
+
+    print '\nEmission to States:'
+    emission_states = get_emissions(Xbin.T)
+    for emission, states in emission_states:
+        print emission, states
+
+
+print '\n---------- LT'
+plot_script(LT_PATH_01_ROOT, ' LT 01 ', threshold=0.01)
+print '\n---------- noLT'
+plot_script(noLT_PATH_01_ROOT, ' noLT 01 ', threshold=0.01)
+# plot_script(LT_PATH_02_ROOT, ' 02 ', threshold=0.1)
 '''
-plot_script(PATH_01_ROOT, ' 01 ')
-plot_script(PATH_02_ROOT, ' 02 ')
 plt.show()
 '''
 
@@ -191,4 +280,4 @@ def multidataset_stats(path_base, show_p=False):
 
 
 # multidataset_stats(LT_DATA_PATH)
-multidataset_stats(LT_100K_DATA_PATH)
+# multidataset_stats(LT_100K_DATA_PATH)

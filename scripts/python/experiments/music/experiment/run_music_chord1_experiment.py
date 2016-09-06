@@ -81,6 +81,39 @@ def collect_parameter_spec_list_music_chord1(parameters_path):
              experiment_tools.ParameterSpec('music_chord1_noLT.config', parameters_path)
     ]
 
+
+def collect_parameter_spec_list_music_chord1_J2(parameters_path):
+    """
+    Music chord 1 **NO** weight learning (w0), 10000 iterations, J=2
+    works with:
+    :return:
+    """
+    return [ experiment_tools.ParameterSpec('music_chord1_LT_J2.config', parameters_path),
+             experiment_tools.ParameterSpec('music_chord1_noLT_J2.config', parameters_path)
+    ]
+
+
+def collect_parameter_spec_list_music_chord1_J4(parameters_path):
+    """
+    Music chord 1 **NO** weight learning (w0), 10000 iterations, J=4
+    works with:
+    :return:
+    """
+    return [ experiment_tools.ParameterSpec('music_chord1_LT_J4.config', parameters_path),
+             experiment_tools.ParameterSpec('music_chord1_noLT_J4.config', parameters_path)
+    ]
+
+
+def collect_parameter_spec_list_music_chord1_J10(parameters_path):
+    """
+    Music chord 1 **NO** weight learning (w0), 10000 iterations, J=10
+    works with:
+    :return:
+    """
+    return [ experiment_tools.ParameterSpec('music_chord1_LT_J10.config', parameters_path),
+             experiment_tools.ParameterSpec('music_chord1_noLT_J10.config', parameters_path)
+    ]
+
 # ----------------------------------------------------------------------
 # Script
 # ----------------------------------------------------------------------
@@ -88,18 +121,79 @@ def collect_parameter_spec_list_music_chord1(parameters_path):
 
 match_select_music_chord1 = {0: ['music_chord1'.format(h) for h in [10.0]] }
 
-experiment_tools.run_experiment_script \
-    (main_path=HAMLET_ROOT,
-     data_dir=os.path.join(DATA_ROOT, 'music/kulitta_chord1/'),
-     results_dir=os.path.join(RESULTS_ROOT, 'music'),
-     replications=10,
-     offset=0,
-     parameter_spec_list=collect_parameter_spec_list_music_chord1(PARAMETERS_ROOT),
-     match_dict=match_select_music_chord1,
-     multiproc=True,
-     processor_pool_size=multiprocessing.cpu_count(),
-     rerun=False,
-     test=True,
-     select_subdirs_verbose=False)
+
+def run_exp1():
+    experiment_tools.run_experiment_script \
+        (main_path=HAMLET_ROOT,
+         data_dir=os.path.join(DATA_ROOT, 'music/kulitta_chord1/'),
+         results_dir=os.path.join(RESULTS_ROOT, 'music'),
+         replications=10,
+         offset=0,
+         parameter_spec_list=collect_parameter_spec_list_music_chord1(PARAMETERS_ROOT),
+         match_dict=match_select_music_chord1,
+         multiproc=True,
+         processor_pool_size=multiprocessing.cpu_count(),
+         rerun=False,
+         test=True,
+         select_subdirs_verbose=False)
 
 # print os.listdir(os.path.join(os.path.join(HAMLET_ROOT, DATA_ROOT), 'cocktail_s16_m12'))
+
+
+# ----------------------------------------------------------------------
+
+match_select_music_chord1_Js = {0: ['music_chord1'] }
+
+
+def run_exp_J2():
+    experiment_tools.run_experiment_script \
+        (main_path=HAMLET_ROOT,
+         data_dir=os.path.join(DATA_ROOT, 'music/kulitta_chord1/'),
+         results_dir=os.path.join(RESULTS_ROOT, 'music'),
+         replications=10,
+         offset=0,
+         parameter_spec_list=collect_parameter_spec_list_music_chord1_J2(PARAMETERS_ROOT),
+         match_dict=match_select_music_chord1_Js,
+         multiproc=True,
+         processor_pool_size=multiprocessing.cpu_count(),
+         rerun=False,
+         test=True,
+         select_subdirs_verbose=False)
+
+run_exp_J2()
+
+
+def run_exp_J4():
+    experiment_tools.run_experiment_script \
+        (main_path=HAMLET_ROOT,
+         data_dir=os.path.join(DATA_ROOT, 'music/kulitta_chord1/'),
+         results_dir=os.path.join(RESULTS_ROOT, 'music'),
+         replications=10,
+         offset=0,
+         parameter_spec_list=collect_parameter_spec_list_music_chord1_J4(PARAMETERS_ROOT),
+         match_dict=match_select_music_chord1_Js,
+         multiproc=True,
+         processor_pool_size=multiprocessing.cpu_count(),
+         rerun=False,
+         test=True,
+         select_subdirs_verbose=False)
+
+# run_exp_J4()
+
+
+def run_exp_J10():
+    experiment_tools.run_experiment_script \
+        (main_path=HAMLET_ROOT,
+         data_dir=os.path.join(DATA_ROOT, 'music/kulitta_chord1/'),
+         results_dir=os.path.join(RESULTS_ROOT, 'music'),
+         replications=10,
+         offset=0,
+         parameter_spec_list=collect_parameter_spec_list_music_chord1_J10(PARAMETERS_ROOT),
+         match_dict=match_select_music_chord1_Js,
+         multiproc=True,
+         processor_pool_size=multiprocessing.cpu_count(),
+         rerun=False,
+         test=True,
+         select_subdirs_verbose=False)
+
+# run_exp_J10()
