@@ -160,7 +160,7 @@ def run_exp_J2():
          test=True,
          select_subdirs_verbose=False)
 
-run_exp_J2()
+# run_exp_J2()
 
 
 def run_exp_J4():
@@ -197,3 +197,48 @@ def run_exp_J10():
          select_subdirs_verbose=False)
 
 # run_exp_J10()
+
+
+# ----------------------------------------------------------------------
+
+match_select_music_tsd_v1_CS = {0: ['music_tsd_v1_CS'] }
+
+
+def run_exp_tsd_v1_CS():
+    experiment_tools.run_experiment_script \
+        (main_path=HAMLET_ROOT,
+         data_dir=os.path.join(DATA_ROOT, 'music/kulitta_tsd/'),
+         results_dir=os.path.join(RESULTS_ROOT, 'music'),
+         replications=3,
+         offset=0,
+         parameter_spec_list=collect_parameter_spec_list_music_chord1(PARAMETERS_ROOT),
+         match_dict=match_select_music_tsd_v1_CS,
+         multiproc=True,
+         processor_pool_size=multiprocessing.cpu_count(),
+         rerun=False,
+         test=True,
+         select_subdirs_verbose=False)
+
+# run_exp_tsd_v1_CS()
+
+# ----------------------------------------------------------------------
+
+match_select_music_tsd_v1_triads = {0: ['music_tsd_v1_triads'] }
+
+
+def run_exp_tsd_v1_triads():
+    experiment_tools.run_experiment_script \
+        (main_path=HAMLET_ROOT,
+         data_dir=os.path.join(DATA_ROOT, 'music/kulitta_tsd/'),
+         results_dir=os.path.join(RESULTS_ROOT, 'music'),
+         replications=3,
+         offset=0,
+         parameter_spec_list=collect_parameter_spec_list_music_chord1(PARAMETERS_ROOT),
+         match_dict=match_select_music_tsd_v1_triads,
+         multiproc=True,
+         processor_pool_size=multiprocessing.cpu_count(),
+         rerun=False,
+         test=True,
+         select_subdirs_verbose=False)
+
+# run_exp_tsd_v1_triads()

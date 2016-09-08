@@ -20,9 +20,9 @@ DATA_SOURCE_CHORD_DICTIONARY_PATHS \
        (KULITTA_chord1_test1_DATA_ROOT, 'testgenCS100.txt'),
        (KULITTA_chord1_test2_DATA_ROOT, 'testgenCS105.txt'))
 
-KULITTA_chord1_tokens_hamlet_DATA_ROOT = os.path.join(KULITTA_CHORD1_ROOT, 'chord1_tokens')
+KULITTA_chord1_tokens_hamlet_DATA_ROOT = os.path.join(KULITTA_CHORD1_ROOT, 'music_chord1')  # 'chord1_tokens'
 
-KULITTA_chord1_tokens_test_hamlet_DATA_ROOT = os.path.join(KULITTA_chord1_tokens_hamlet_DATA_ROOT, 'test/chord1_tokens')
+KULITTA_chord1_tokens_test_hamlet_DATA_ROOT = os.path.join(KULITTA_chord1_tokens_hamlet_DATA_ROOT, 'test')
 
 # print os.listdir(MUSIC_DATA_ROOT)
 # print os.listdir(KULITTA_chord1_DATA_ROOT)
@@ -70,6 +70,44 @@ def test_read_kulitta_chord1_parse_tree_leaves():
     print chord_counter
 
 # test_read_kulitta_chord1_parse_tree_leaves()
+
+
+# ----------------------------
+
+ROMAN_TO_NUM_DICT = { 'I': 1, 'V': 5 }
+
+
+def read_kulitta_chord1_parse_tree_non_terminals(data_root, filename='testgen.txt'):
+    datapath = os.path.join(data_root, filename)
+    with open(datapath, 'r') as fin:
+        input_string_list = fin.readlines()
+        data = list()
+        for i, line in enumerate(input_string_list):
+            line = line.strip()
+            intuple = False
+            for j, c in enumerate(line):
+                if c == '(':
+                    intuple = True
+                    s = j + 1
+                elif c == ')' and intuple is True:
+                    intuple = False
+                    datum = line[s:j].split(' % ')
+                    chord_tuple = datum[0].strip().split(',')
+                    chord_val = int(chord_tuple[1])
+                    if chord_val == 0:
+                        chord_roman = chord_tuple[0]
+                        data.append(ROMAN_TO_NUM_DICT[chord_roman])
+
+        return data
+
+
+def test_read_kulitta_chord1_parse_tree_non_terminals():
+    data = read_kulitta_chord1_parse_tree_non_terminals(KULITTA_chord1_DATA_ROOT)
+    print len(data)
+    print data
+    print collections.Counter(data)
+
+# test_read_kulitta_chord1_parse_tree_non_terminals()
 
 
 # ------------------------------------------------------------
@@ -183,9 +221,12 @@ def generate_hamlet_data_from_kulitta_chord1 \
                  destination_filename_prefix='',
                  destination_filename_postfix=''):
 
+    # read data
     data = read_kulitta_chord1(data_root, data_source_filename)
     data_chord_roman = read_kulitta_chord1_parse_tree_leaves(data_root, data_chord_roman_source_filename)
+    data_chord_nonterminal = read_kulitta_chord1_parse_tree_non_terminals(data_root, data_chord_roman_source_filename)
 
+    # create dictionary of cords across potentially multiple obs sequences
     chord_dictionary_data = list()
     if data_source_chord_dictionary_paths is not None:
         for root, filename in data_source_chord_dictionary_paths:
@@ -193,50 +234,66 @@ def generate_hamlet_data_from_kulitta_chord1 \
 
     chord_to_int_dict = get_chord_to_int_dict(chord_dictionary_data)
 
+    # create destination directory tree if it does not already exist
     if not os.path.exists(destination_root):
         print 'Directory does not exit: {0}'.format(destination_root),
         print '... Creating'
         os.makedirs(destination_root)
 
-    test_obs_filename = '{0}obs{1}.txt'.format(destination_filename_prefix, destination_filename_postfix)
-    print 'Writing {0}'.format(test_obs_filename),
-    obs_path = os.path.join(destination_root, test_obs_filename)
+    # save observations (mapping chord to chord_idx)
+    obs_filename = '{0}obs{1}.txt'.format(destination_filename_prefix, destination_filename_postfix)
+    print 'Writing {0}'.format(obs_filename),
+    obs_path = os.path.join(destination_root, obs_filename)
     with open(obs_path, 'w') as fout:
         for chord, _ in data:
             fout.write('{0}\n'.format(chord_to_int_dict[chord]))
     print 'Done.'
 
-    test_state_to_chord_map_filename = '{0}state_to_chord_map{1}.txt'.format(destination_filename_prefix, destination_filename_postfix)
-    print 'Writing {0}'.format(test_state_to_chord_map_filename),
-    int_to_chord_dict = dict()
+    # save emission_to_chord_map
+    state_to_chord_map_filename = '{0}emission_to_chord_map{1}.txt'.format(destination_filename_prefix, destination_filename_postfix)
+    print 'Writing {0}'.format(state_to_chord_map_filename),
+    idx_to_chord_dict = dict()
     for chord, i in chord_to_int_dict.iteritems():
-        int_to_chord_dict[i] = chord
+        idx_to_chord_dict[i] = chord
     state_to_chord_map_path = os.path.join(destination_root,
-                                           test_state_to_chord_map_filename)
+                                           state_to_chord_map_filename)
     with open(state_to_chord_map_path, 'w') as fout:
-        for i in sorted(int_to_chord_dict.keys()):
-            fout.write('{0} {1}\n'.format(i, int_to_chord_dict[i]))
-
-    chord_roman_to_int_dict = get_chord_roman_to_int_dict()
+        for i in sorted(idx_to_chord_dict.keys()):
+            fout.write('{0} {1}\n'.format(i, idx_to_chord_dict[i]))
     print 'Done.'
 
-    test_chord_roman_filename = '{0}chord_roman{1}.txt'.format(destination_filename_prefix, destination_filename_postfix)
+    chord_roman_to_int_dict = get_chord_roman_to_int_dict()
+
+    chord_roman_filename \
+        = '{0}chord_roman{1}.txt'.format(destination_filename_prefix, destination_filename_postfix)
     print 'Writing chord_roman.txt',
-    chord_roman_path = os.path.join(destination_root, test_chord_roman_filename)
+    chord_roman_path = os.path.join(destination_root, chord_roman_filename)
     with open(chord_roman_path, 'w') as fout:
         for (chord_roman, _), _ in data_chord_roman:
             fout.write('{0}\n'.format(chord_roman_to_int_dict[chord_roman]))
+    print 'Done.'
+
+    chord_nonterminal_filename \
+        = '{0}chord_nonterminal{1}.txt'.format(destination_filename_prefix, destination_filename_postfix)
+    print 'Writing chord_nonterminal.txt',
+    chord_nonterminal_path = os.path.join(destination_root, chord_nonterminal_filename)
+    with open(chord_nonterminal_path, 'w') as fout:
+        for chord_nonterminal in data_chord_nonterminal:
+            fout.write('{0}\n'.format(chord_nonterminal))
     print 'Done.'
 
     print 'DONE.'
 
 
 def generate_chord1_script():
+
+    # training observations (seed 1)
     generate_hamlet_data_from_kulitta_chord1 \
         (data_root=KULITTA_chord1_DATA_ROOT,
          data_source_chord_dictionary_paths=DATA_SOURCE_CHORD_DICTIONARY_PATHS,
          destination_root=KULITTA_chord1_tokens_hamlet_DATA_ROOT)
 
+    # test (same directory as source training obs)  (same as seed 100)
     generate_hamlet_data_from_kulitta_chord1 \
         (data_root=KULITTA_chord1_test1_DATA_ROOT,
          data_source_chord_dictionary_paths=DATA_SOURCE_CHORD_DICTIONARY_PATHS,
@@ -246,6 +303,7 @@ def generate_chord1_script():
          destination_filename_prefix='test_',
          destination_filename_postfix='')
 
+    # testgen seed 100
     generate_hamlet_data_from_kulitta_chord1 \
         (data_root=KULITTA_chord1_test1_DATA_ROOT,
          data_source_chord_dictionary_paths=DATA_SOURCE_CHORD_DICTIONARY_PATHS,
@@ -255,6 +313,7 @@ def generate_chord1_script():
          destination_filename_prefix='test_',
          destination_filename_postfix='_seed100')
 
+    # testgen seed 105
     generate_hamlet_data_from_kulitta_chord1 \
         (data_root=KULITTA_chord1_test2_DATA_ROOT,
          data_source_chord_dictionary_paths=DATA_SOURCE_CHORD_DICTIONARY_PATHS,
@@ -263,6 +322,8 @@ def generate_chord1_script():
          data_chord_roman_source_filename='testgen105.txt',
          destination_filename_prefix='test_',
          destination_filename_postfix='_seed105')
+
+# generate_chord1_script()
 
 
 # ------------------------------------------------------------
