@@ -122,7 +122,7 @@ def collect_parameter_spec_list_music_simple_melody1(parameters_path):
     :return:
     """
     return [ experiment_tools.ParameterSpec('music_simple_melody1_LT.config', parameters_path),
-             experiment_tools.ParameterSpec('music_simple_melody1_chord1_noLT.config', parameters_path)
+             experiment_tools.ParameterSpec('music_simple_melody1_noLT.config', parameters_path)
     ]
 
 
