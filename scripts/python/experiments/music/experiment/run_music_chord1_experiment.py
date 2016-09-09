@@ -242,3 +242,26 @@ def run_exp_tsd_v1_triads():
          select_subdirs_verbose=False)
 
 # run_exp_tsd_v1_triads()
+
+
+# ----------------------------------------------------------------------
+
+match_select_music_simple_melody = {0: ['simple_melody1'] }
+
+
+def run_exp_simple_melody1():
+    experiment_tools.run_experiment_script \
+        (main_path=HAMLET_ROOT,
+         data_dir=os.path.join(DATA_ROOT, 'music/simple_melodies/'),
+         results_dir=os.path.join(RESULTS_ROOT, 'music'),
+         replications=3,
+         offset=0,
+         parameter_spec_list=collect_parameter_spec_list_music_chord1(PARAMETERS_ROOT),
+         match_dict=match_select_music_simple_melody,
+         multiproc=True,
+         processor_pool_size=multiprocessing.cpu_count(),
+         rerun=False,
+         test=True,
+         select_subdirs_verbose=False)
+
+# run_exp_simple_melody1()
