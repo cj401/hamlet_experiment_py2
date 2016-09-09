@@ -276,4 +276,4 @@ def run_exp_simple_melody1():
          test=True,
          select_subdirs_verbose=False)
 
-# run_exp_simple_melody1()
+run_exp_simple_melody1()
