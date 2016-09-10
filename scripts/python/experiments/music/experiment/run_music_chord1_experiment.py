@@ -126,6 +126,28 @@ def collect_parameter_spec_list_music_simple_melody1(parameters_path):
     ]
 
 
+def collect_parameter_spec_list_music_simple_melody1_duration(parameters_path):
+    """
+    Music simple melody 1 DURATION ONLY **NO** weight learning (w0), 100,000 iterations
+    works with:
+    :return:
+    """
+    return [ experiment_tools.ParameterSpec('music_simple_melody1_duration_LT.config', parameters_path),
+             experiment_tools.ParameterSpec('music_simple_melody1_duration_noLT.config', parameters_path)
+    ]
+
+
+def collect_parameter_spec_list_music_simple_melody1_pitch(parameters_path):
+    """
+    Music simple melody 1 PITCH ONLY **NO** weight learning (w0), 100,000 iterations
+    works with:
+    :return:
+    """
+    return [ experiment_tools.ParameterSpec('music_simple_melody1_pitch_LT.config', parameters_path),
+             experiment_tools.ParameterSpec('music_simple_melody1_pitch_noLT.config', parameters_path)
+    ]
+
+
 # ----------------------------------------------------------------------
 # Script
 # ----------------------------------------------------------------------
@@ -258,7 +280,7 @@ def run_exp_tsd_v1_triads():
 
 # ----------------------------------------------------------------------
 
-match_select_music_simple_melody = {0: ['music_simple_melody1'] }
+match_select_music_simple_melody = {0: [ 'music_simple_melody1' ] }
 
 
 def run_exp_simple_melody1():
@@ -276,4 +298,52 @@ def run_exp_simple_melody1():
          test=True,
          select_subdirs_verbose=False)
 
-run_exp_simple_melody1()
+# run_exp_simple_melody1()
+
+
+# ----------------------------------------------------------------------
+
+match_select_music_simple_melody_duration \
+    = {0: [ 'music_simple_melody1_duration_only' ] }
+
+
+def run_exp_simple_melody1_duration():
+    experiment_tools.run_experiment_script \
+        (main_path=HAMLET_ROOT,
+         data_dir=os.path.join(DATA_ROOT, 'music/simple_melodies/'),
+         results_dir=os.path.join(RESULTS_ROOT, 'music'),
+         replications=3,
+         offset=0,
+         parameter_spec_list=collect_parameter_spec_list_music_simple_melody1_duration(PARAMETERS_ROOT),
+         match_dict=match_select_music_simple_melody_duration,
+         multiproc=True,
+         processor_pool_size=multiprocessing.cpu_count(),
+         rerun=False,
+         test=True,
+         select_subdirs_verbose=False)
+
+# run_exp_simple_melody1_duration()
+
+
+# ----------------------------------------------------------------------
+
+match_select_music_simple_melody_pitch \
+    = {0: [ 'music_simple_melody1_pitch_only' ] }
+
+
+def run_exp_simple_melody1_pitch():
+    experiment_tools.run_experiment_script \
+        (main_path=HAMLET_ROOT,
+         data_dir=os.path.join(DATA_ROOT, 'music/simple_melodies/'),
+         results_dir=os.path.join(RESULTS_ROOT, 'music'),
+         replications=3,
+         offset=0,
+         parameter_spec_list=collect_parameter_spec_list_music_simple_melody1_pitch(PARAMETERS_ROOT),
+         match_dict=match_select_music_simple_melody_pitch,
+         multiproc=True,
+         processor_pool_size=multiprocessing.cpu_count(),
+         rerun=False,
+         test=True,
+         select_subdirs_verbose=False)
+
+# run_exp_simple_melody1_pitch()
