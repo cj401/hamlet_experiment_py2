@@ -193,13 +193,14 @@ def set_up_output_structure(results_root):
     set up the output directory structure
     '''
     output_root = os.path.join(results_root, 'G')
-    if (os.path.exists(output_root)==False):
-        print(output_root, " does not exist.")
-        sys.exit(-1)
     try:
         os.mkdir(output_root)
     except OSError:
-        print("G directory has been created!")
+        if (os.path.exists(results_root)==False):
+            print(output_root, " does not exist.")
+            sys.exit(-1)
+        else:
+            print("G directory has been created!")
     output_block = os.path.join(output_root, 'block_A')
     try:
         os.mkdir(output_block)
