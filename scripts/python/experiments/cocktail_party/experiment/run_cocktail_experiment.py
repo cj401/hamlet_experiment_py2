@@ -84,7 +84,7 @@ def collect_parameter_spec_list_cocktail16_w0(parameters_path):
 
 
 # ----------------------------------------------------------------------
-# Script
+# Scripts
 # ----------------------------------------------------------------------
 
 
@@ -115,49 +115,5 @@ def exp0(test=True):
 
 
 # Run me!
-exp0(test=True)
+# exp0(test=True)
 
-# print os.listdir(os.path.join(os.path.join(HAMLET_ROOT, DATA_ROOT), 'cocktail_s16_m12'))
-
-
-# ----------------------------------------------------------------------
-
-"""
-hyper_alpha: [0.01, 0.1, 5]
-HDP_hyperprior a_alpha
-HDP_hyperprior b_alpha
-
-hyper_beta: [0.01, 0.1, 5]
-HDP_hyperprior a_gamma
-HDP_hyperprior b_gamma
-
-hyper_blambda
-Isotropic_exponential_similarity blambda
-
-hyper_h
-Normal_noise_model a_h
-Normal_noise_model b_h
-"""
-
-
-def exp1():
-    """
-    Experiment varying hyperparameters: a_alpha, b_alpha
-    Using config cocktail16_inference_{BFact,LT,no_LT}
-    2000 iterations, J=600,
-    {a,b}_h=0.1 (prior over precision of noise)
-    :return:
-    """
-    experiment_tools.run_experiment_script \
-        (main_path=HAMLET_ROOT,
-         data_dir=os.path.join(DATA_ROOT, 'cocktail_s16_m12_hyper_alpha/'),
-         results_dir=os.path.join(RESULTS_ROOT, 'cocktail_s16_m12_hyper_alpha'),
-         replications=2,
-         offset=0,
-         parameter_spec_list=collect_parameter_spec_list_cocktail16_w0(PARAMETERS_ROOT),
-         match_dict=match_select_cp16,
-         multiproc=True,
-         processor_pool_size=multiprocessing.cpu_count(),
-         rerun=False,
-         test=True,
-         select_subdirs_verbose=False)

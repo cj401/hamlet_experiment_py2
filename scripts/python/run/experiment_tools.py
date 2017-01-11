@@ -839,8 +839,14 @@ def run_experiment_wrapper(experiment_spec_list,
 # -------------------------------
 
 
+# CTM 20170109: added model_filename_postfix slot for any to optionally
+# add a postfix to the model-name directory (for the results) that would
+# further differentiate the model based on parameters
+# (beyond model class (LT), transition prior type (HDP), dynamics (hmm),
+#  and whether learning (w0)
 ParameterSpec = util.namedtuple_with_defaults\
-    ('ParameterSpec', ['parameters_file', 'parameters_dir'])
+    ('ParameterSpec', ['parameters_file', 'parameters_dir',
+                       'model_filename_postfix'])
 
 
 def collect_parameter_spec_list_cp_W0(parameters_path):
@@ -1295,9 +1301,11 @@ def results_spec_fn(results_dir, pspec, dspec, replication_postfix,
     <results_dir>/<results_subdir>
     <results_subdir> := <results_root_name>/<data_subdir>/<model_subdir>/<postfix>
 
+    :param results_dir:
     :param pspec: ParameterSpec
     :param dspec: DataSpec
     :param replication_postfix: integer representing replication num
+    :param main_path:
     :return: ResultsSpec
     """
 
@@ -1347,6 +1355,9 @@ def results_spec_fn(results_dir, pspec, dspec, replication_postfix,
     if weights_learned:
         model_subdir += [ weights_learned ]
     model_subdir = '_'.join(model_subdir)
+
+    if pspec.model_filename_postfix:
+        model_subdir += '_{0}'.format(pspec.model_filename_postfix)
 
     # factorial_p = False
     # # add extra annotation for factorial model
