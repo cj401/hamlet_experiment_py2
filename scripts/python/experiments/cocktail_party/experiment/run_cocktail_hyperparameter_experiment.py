@@ -461,4 +461,10 @@ def exp_hyper_alpha():
          test=True,
          select_subdirs_verbose=False)
 
-exp_hyper_alpha()
+# GENERATE parameter spec files
+# generate_parameter_spec_ab_product_hyper_alpha(gen_param_files_p=True)
+
+# RUN EXPRIMENT
+# exp_hyper_alpha()
+
+
