@@ -434,6 +434,6 @@ def exp_10(test=True):
          select_subdirs_verbose=False)
 
 # run me!
-exp_10(test=True)
+# exp_10(test=True)
 
 # ----------------------------------------------------------------------

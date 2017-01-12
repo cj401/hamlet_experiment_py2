@@ -156,7 +156,7 @@ def collect_parameter_spec_list_music_simple_melody1_pitch(parameters_path):
 match_select_music_chord1 = {0: ['music_chord1'.format(h) for h in [10.0]] }
 
 
-def run_exp1():
+def run_exp1(test=True):
     experiment_tools.run_experiment_script \
         (main_path=HAMLET_ROOT,
          data_dir=os.path.join(DATA_ROOT, 'music/kulitta_chord1/'),
@@ -168,8 +168,11 @@ def run_exp1():
          multiproc=True,
          processor_pool_size=multiprocessing.cpu_count(),
          rerun=False,
-         test=True,
+         test=test,
          select_subdirs_verbose=False)
+
+# run me!
+run_exp1(test=True)
 
 # print os.listdir(os.path.join(os.path.join(HAMLET_ROOT, DATA_ROOT), 'cocktail_s16_m12'))
 
@@ -239,6 +242,10 @@ match_select_music_tsd_v1_CS = {0: ['music_tsd_v1_CS'] }
 
 
 def run_exp_tsd_v1_CS():
+    """
+    tsd == tonic, subdominant, dominant
+    :return:
+    """
     experiment_tools.run_experiment_script \
         (main_path=HAMLET_ROOT,
          data_dir=os.path.join(DATA_ROOT, 'music/kulitta_tsd/'),
