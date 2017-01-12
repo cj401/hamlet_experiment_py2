@@ -130,6 +130,9 @@ def collect_parameter_spec_list_latent_continue_syn_block_diag12_10000itr_hmc_h2
 # TODO: test experiment generation; ensure all paths correct
 
 # DONE: The following needs to be modified to match the directory structure of the latent_continue_syn data
+
+# 's' refers to a data-generating parameter and represents the sigma
+# governing the distribution of the state means
 match_select_latent_continue_syn_block_diag12 \
     = { 0: ['block_diag12_s{0}'.format(h) for h in [2.5, 4, 10]] }
 
@@ -400,3 +403,37 @@ def exp9():
 # ----------------------------------------------------------------------
 
 # print os.listdir(os.path.join(os.path.join(HAMLET_ROOT, DATA_ROOT), 'latent_continue_syn'))
+
+# ----------------------------------------------------------------------
+
+match_select_latent_continue_syn_block_diag12_s2 \
+    = { 0: ['block_diag40_s2'] }
+
+
+def exp_10(test=True):
+    """
+    Using block_diag40_s2 dataset (10 states of 4 blocks ???? , for a total of 40 states)
+        with s=2 (variance of state locations)
+    Using parameter files block_diag12_{LT,noLT}_10000itr.config
+        i.e., collect_parameter_spec_list_latent_continue_syn_block_diag12_10000itr
+    10,000 iterations, J=100, {HMC: L=100, epsilon=0.0001}
+    :return:
+    """
+    experiment_tools.run_experiment_script \
+        (main_path=HAMLET_ROOT,
+         data_dir=os.path.join(DATA_ROOT, 'continuous_latent_syn/'),
+         results_dir=os.path.join(RESULTS_ROOT, 'continuous_latent_syn_10000itr_diag12'),
+         replications=10,
+         offset=0,
+         parameter_spec_list=collect_parameter_spec_list_latent_continue_syn_block_diag12_10000itr_hmc(PARAMETERS_ROOT),
+         match_dict=match_select_latent_continue_syn_block_diag12_s2,
+         multiproc=True,
+         processor_pool_size=multiprocessing.cpu_count(),
+         rerun=False,
+         test=test,
+         select_subdirs_verbose=False)
+
+# run me!
+exp_10(test=True)
+
+# ----------------------------------------------------------------------
