@@ -494,7 +494,7 @@ def exp_11_cauchy(test=True):
     """
     Using block_diag40_s2 dataset (10 states of 4 blocks ???? , for a total of 40 states)
         with s=2 (variance of observed state mean locations)
-    Using cauchy kernel
+    Using Cauchy kernel
     Using parameter files block_diag40_{LT,noLT}_lambda1_cauchy.config
         i.e., collect_parameter_spec_list_latent_continue_syn_block_diag40_lambda1
     10,000 iterations, J=100, {HMC: L=100, epsilon=0.0001}
