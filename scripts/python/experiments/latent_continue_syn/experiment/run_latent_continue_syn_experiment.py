@@ -101,6 +101,17 @@ def collect_parameter_spec_list_latent_continue_syn_block_diag12_10000itr_hmc(pa
              experiment_tools.ParameterSpec('block_diag12_noLT_10000itr_hmc.config', parameters_path) ]
 
 
+def collect_parameter_spec_list_latent_continue_syn_block_diag40_lambda1(parameters_path):
+    """
+    Latent continuous state synthetic experiment parameters
+    J=100, to accommodate the 40-state block-diagonal data
+    10,000 iterations, hmc
+    :return:
+    """
+    return [ experiment_tools.ParameterSpec('block_diag40_LT_lambda1.config', parameters_path),
+             experiment_tools.ParameterSpec('block_diag40_noLT_lambda1.config', parameters_path) ]
+
+
 def collect_parameter_spec_list_latent_continue_syn_block_diag12_10000itr_hmc_h01(parameters_path):
     """
     Latent continuous state synthetic experiment parameters
@@ -437,3 +448,30 @@ def exp_10(test=True):
 # exp_10(test=True)
 
 # ----------------------------------------------------------------------
+
+
+def exp_11(test=True):
+    """
+    Using block_diag40_s2 dataset (10 states of 4 blocks ???? , for a total of 40 states)
+        with s=2 (variance of observed state mean locations)
+    Using parameter files block_diag40_{LT,noLT}_lambda1.config
+        i.e., collect_parameter_spec_list_latent_continue_syn_block_diag40_lambda1
+    10,000 iterations, J=100, {HMC: L=100, epsilon=0.0001}
+    :return:
+    """
+    experiment_tools.run_experiment_script \
+        (main_path=HAMLET_ROOT,
+         data_dir=os.path.join(DATA_ROOT, 'continuous_latent_syn/'),
+         results_dir=os.path.join(RESULTS_ROOT, 'continuous_latent_syn_diag40_lambda1'),
+         replications=10,
+         offset=0,
+         parameter_spec_list=collect_parameter_spec_list_latent_continue_syn_block_diag40_lambda1(PARAMETERS_ROOT),
+         match_dict=match_select_latent_continue_syn_block_diag12_s2,
+         multiproc=True,
+         processor_pool_size=multiprocessing.cpu_count(),
+         rerun=False,
+         test=test,
+         select_subdirs_verbose=False)
+
+# run me!
+# exp_11(test=True)
