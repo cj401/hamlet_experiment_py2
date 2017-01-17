@@ -327,7 +327,9 @@ def generate_parameter_spec_ab_product_outer(module, param_var, avals, bvals,
 
 def generate_parameter_spec_ab_product_hyper_alpha(gen_param_files_p=False):
     return generate_parameter_spec_ab_product_outer\
-        (module='HDP_hyperprior', param_var='alpha', avals=(0.01, 0.1, 1, 5), bvals=(0.01, 0.1, 1, 5),
+        (module='HDP_hyperprior', param_var='alpha',
+         avals=(0.01, 5), bvals=(0.01, 5),
+         # avals=(0.01, 0.1, 1, 5), bvals=(0.01, 0.1, 1, 5),
          gen_param_files_p=gen_param_files_p)
 
 # generate_parameter_spec_ab_product_hyper_alpha(gen_param_files_p=True)
@@ -491,7 +493,6 @@ Normal_noise_model b_h
 """
 
 
-
 def exp_hyper_alpha(test=True):
     """
     Experiment varying hyperparameters: a_alpha, b_alpha
@@ -515,10 +516,10 @@ def exp_hyper_alpha(test=True):
          select_subdirs_verbose=False)
 
 # GENERATE parameter spec files
-generate_parameter_spec_ab_product_hyper_alpha(gen_param_files_p=True)
+# generate_parameter_spec_ab_product_hyper_alpha(gen_param_files_p=True)
 
 # RUN EXPRIMENT
-# exp_hyper_alpha(test=False)
+exp_hyper_alpha(test=True)
 
 
 # ----------------------------------------------------------------------
