@@ -327,7 +327,7 @@ def generate_parameter_spec_ab_product_outer(module, param_var, avals, bvals,
 
 def generate_parameter_spec_ab_product_hyper_alpha(gen_param_files_p=False):
     return generate_parameter_spec_ab_product_outer\
-        (module='HDP_hyperprior', param_var='alpha', avals=(0.01, 0.1, 5), bvals=(0.01, 0.1, 5),
+        (module='HDP_hyperprior', param_var='alpha', avals=(0.01, 0.1, 1, 5), bvals=(0.01, 0.1, 1, 5),
          gen_param_files_p=gen_param_files_p)
 
 # generate_parameter_spec_ab_product_hyper_alpha(gen_param_files_p=True)
@@ -349,7 +349,7 @@ def generate_parameter_spec_ab_product_hyper_alpha_debug(gen_param_files_p=False
 
 def generate_parameter_spec_ab_product_hyper_gamma(gen_param_files_p=False):
     return generate_parameter_spec_ab_product_outer\
-        (module='HDP_hyperprior', param_var='gamma', avals=(0.01, 0.1, 5), bvals=(0.01, 0.1, 5),
+        (module='HDP_hyperprior', param_var='gamma', avals=(0.01, 0.1, 1, 5), bvals=(0.01, 0.1, 1, 5),
          gen_param_files_p=gen_param_files_p)
 
 # generate_parameter_spec_ab_product_hyper_gamma(gen_param_files_p=True)
@@ -357,7 +357,7 @@ def generate_parameter_spec_ab_product_hyper_gamma(gen_param_files_p=False):
 
 def generate_parameter_spec_ab_product_hyper_h(gen_param_files_p=False):
     return generate_parameter_spec_ab_product_outer\
-        (module='Normal_noise_model', param_var='h', avals=(0.01, 0.1, 5), bvals=(0.01, 0.1, 5),
+        (module='Normal_noise_model', param_var='h', avals=(0.01, 0.1, 1, 5), bvals=(0.01, 0.1, 1, 5),
          gen_param_files_p=gen_param_files_p)
 
 # generate_parameter_spec_ab_product_hyper_h(gen_param_files_p=True)
@@ -422,7 +422,11 @@ def collect_parameter_spec_list_cocktail16_w0_hyper_alpha():
             for parameters_file, parameters_dir, model_filename_postfix in spec_list]
 
 
-def collect_parameter_spec_list_cocktail16_w0_hyper_alpha_debug():
+def collect_parameter_spec_list_cocktail16_w0_hyper_alpha_lambda1p6():
+    """
+    Add the lambda1p6 (i.e., lambda fixed to value 1.6)
+    :return:
+    """
     spec_list = generate_parameter_spec_ab_product_hyper_alpha_debug(gen_param_files_p=False)
     pspec_list = [experiment_tools.ParameterSpec(parameters_file, parameters_dir, model_filename_postfix)
                   for parameters_file, parameters_dir, model_filename_postfix in spec_list]
@@ -498,7 +502,7 @@ def exp_hyper_alpha(test=True):
     experiment_tools.run_experiment_script \
         (main_path=HAMLET_ROOT,
          data_dir=os.path.join(DATA_ROOT, 'cocktail_s16_m12/'),
-         results_dir=os.path.join(RESULTS_ROOT, 'cocktail_s16_m12_hyper_alpha'),
+         results_dir=os.path.join(RESULTS_ROOT, 'cocktail_s16_m12/hyper_alpha'),
          replications=5,
          offset=0,
          parameter_spec_list=collect_parameter_spec_list_cocktail16_w0_hyper_alpha(),
@@ -510,13 +514,15 @@ def exp_hyper_alpha(test=True):
          select_subdirs_verbose=False)
 
 # GENERATE parameter spec files
-# generate_parameter_spec_ab_product_hyper_alpha(gen_param_files_p=True)
+generate_parameter_spec_ab_product_hyper_alpha(gen_param_files_p=True)
 
 # RUN EXPRIMENT
 # exp_hyper_alpha(test=False)
 
 
-def exp_hyper_alpha_debug(test=True):
+# ----------------------------------------------------------------------
+
+def exp_hyper_alpha_plus_lambda1p6(test=True):
     """
     Experiment varying hyperparameters: a_alpha, b_alpha
     {a,b}_alpha \in (1.0, 0.1)
@@ -528,10 +534,10 @@ def exp_hyper_alpha_debug(test=True):
     spec_list = experiment_tools.run_experiment_script \
         (main_path=HAMLET_ROOT,
          data_dir=os.path.join(DATA_ROOT, 'cocktail_s16_m12/'),
-         results_dir=os.path.join(RESULTS_ROOT, 'cocktail_s16_m12_hyper_alpha_debug_20170111'),
+         results_dir=os.path.join(RESULTS_ROOT, 'cocktail_s16_m12/hyper_alpha'),
          replications=5,
          offset=0,
-         parameter_spec_list=collect_parameter_spec_list_cocktail16_w0_hyper_alpha_debug(),
+         parameter_spec_list=collect_parameter_spec_list_cocktail16_w0_hyper_alpha_lambda1p6(),
          match_dict=match_select_cp16,
          multiproc=True,
          processor_pool_size=multiprocessing.cpu_count(),
@@ -543,7 +549,38 @@ def exp_hyper_alpha_debug(test=True):
 
 # NOTE: This only generates the four {a,b}_alpha variations;
 # the lambda1p6 need to be generated manually...
-# generate_parameter_spec_ab_product_hyper_alpha_debug(gen_param_files_p=True)
+# collect_parameter_spec_list_cocktail16_w0_hyper_alpha_lambda1p6(gen_param_files_p=True)
 
 # Run hyper_alpha debug experiment
-exp_hyper_alpha_debug(test=True)
+# exp_hyper_alpha_plus_lambda1p6(test=True)
+
+
+# ----------------------------------------------------------------------
+
+def exp_hyper_gamma(test=True):
+    """
+    Experiment varying hyperparameters: a_gamma, b_gamma
+    Using config cocktail16_inference_{BFact,LT,no_LT}
+    2000 iterations, J=600,
+    {a,b}_h=0.1 (prior over precision of noise)
+    :return:
+    """
+    experiment_tools.run_experiment_script \
+        (main_path=HAMLET_ROOT,
+         data_dir=os.path.join(DATA_ROOT, 'cocktail_s16_m12/'),
+         results_dir=os.path.join(RESULTS_ROOT, 'cocktail_s16_m12/hyper_gamma'),
+         replications=5,
+         offset=0,
+         parameter_spec_list=collect_parameter_spec_list_cocktail16_w0_hyper_gamma(),
+         match_dict=match_select_cp16,
+         multiproc=True,
+         processor_pool_size=multiprocessing.cpu_count(),
+         rerun=False,
+         test=test,
+         select_subdirs_verbose=False)
+
+# GENERATE parameter spec files
+# generate_parameter_spec_ab_product_hyper_gamma(gen_param_files_p=True)
+
+# RUN EXPRIMENT
+# exp_hyper_gamma(test=False)
