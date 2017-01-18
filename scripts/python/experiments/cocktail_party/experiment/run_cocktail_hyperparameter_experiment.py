@@ -328,6 +328,23 @@ def generate_parameter_spec_ab_product_outer(module, param_var, avals, bvals,
     return parameter_spec_parameters
 
 
+def generate_parameter_spec_ab_product_hyper_regression_test(param_var='alpha',
+                                                             gen_param_files_p=False):
+    """
+    Version of parameter spec for regression testing
+    a,b values only = 1.0
+    Runs through models: BFact, LT, noLT, Sticky, StickyLT
+    - intended for debugging
+    :param param_var:
+    :param gen_param_files_p:
+    :return:
+    """
+    return generate_parameter_spec_ab_product_outer\
+        (module='HDP_hyperprior', param_var=param_var, avals=(1,), bvals=(1,),
+         # source_param_files=('cocktail16_inference_LT_HMM_W0-J600.config',),
+         gen_param_files_p=gen_param_files_p)
+
+
 def generate_parameter_spec_ab_product_hyper_alpha(gen_param_files_p=False):
     return generate_parameter_spec_ab_product_outer\
         (module='HDP_hyperprior', param_var='alpha',
@@ -420,6 +437,20 @@ def test_collect_parameter_spec_list_cocktail16_w0_hyper_alpha():
 # The following work: will just collect the ParameterSpecs
 
 
+def collect_parameter_spec_list_cocktail16_w0_hyper_regression(param_var='alpha'):
+    """
+    REGRESSION TEST Version of get parameter_spec_list for hyper
+    sets a/b_<hyper_param_var>
+    :param param_var:
+    :return:
+    """
+    spec_list = generate_parameter_spec_ab_product_hyper_regression_test(param_var=param_var)
+    return spec_list
+
+
+# ----------------------------------------------------------------------
+
+
 def collect_parameter_spec_list_cocktail16_w0_hyper_alpha():
     spec_list = generate_parameter_spec_ab_product_hyper_alpha(gen_param_files_p=False)
     return [experiment_tools.ParameterSpec(parameters_file, parameters_dir, model_filename_postfix)
@@ -494,6 +525,39 @@ Normal_noise_model a_h
 Normal_noise_model b_h
 """
 
+
+# ----------------------------------------------------------------------
+
+# TODO: generate parameter files that run only 5 iterations
+
+def exp_hyper_regression(test=True, param_var='alpha'):
+    """
+    REGRESSION TEST
+    Using hyperparameter experiment as base, but a/b=1.0
+    Using config cocktail16_inference_{BFact,LT,no_LT}
+    2000 iterations, J=600,
+    {a,b}_h=0.1 (prior over precision of noise)
+    :return:
+    """
+    experiment_tools.run_experiment_script \
+        (main_path=HAMLET_ROOT,
+         data_dir=os.path.join(DATA_ROOT, 'cocktail_s16_m12/'),
+         results_dir=os.path.join(RESULTS_ROOT, 'cocktail_s16_m12/hyper_{0}_REGRESSION'.format(param_var)),
+         replications=1,
+         offset=0,
+         parameter_spec_list=collect_parameter_spec_list_cocktail16_w0_hyper_regression(param_var=param_var),
+         match_dict={0: ['h{0}_nocs'.format(h) for h in [10.0]],
+                     1: ['cp{0}'.format(i) for i in range(1)]},
+         multiproc=True,
+         processor_pool_size=multiprocessing.cpu_count(),
+         rerun=False,
+         test=test,
+         select_subdirs_verbose=False)
+
+# exp_hyper_regression(test=True)
+
+
+# ----------------------------------------------------------------------
 
 def exp_hyper_alpha(test=True):
     """
