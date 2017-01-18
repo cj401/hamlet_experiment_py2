@@ -291,7 +291,7 @@ def test_generate_parameter_spec_ab_product(gen_param_files_p=False):
 
 def generate_parameter_spec_ab_product_outer(module, param_var, avals, bvals,
                                              source_param_files=('cocktail16_inference_BFact_HMM_W0.config',
-                                                                 'cocktail16_inference_LT_HMM_W0-J600.config',
+                                                                 # 'cocktail16_inference_LT_HMM_W0-J600.config',
                                                                  'cocktail16_inference_noLT_HMM_W0-J600.config'),
                                              dest_param_dir=None,
                                              gen_param_files_p=False,
@@ -328,7 +328,7 @@ def generate_parameter_spec_ab_product_outer(module, param_var, avals, bvals,
 def generate_parameter_spec_ab_product_hyper_alpha(gen_param_files_p=False):
     return generate_parameter_spec_ab_product_outer\
         (module='HDP_hyperprior', param_var='alpha',
-         avals=(0.01, 5), bvals=(0.01, 5),
+         avals=(0.1, 1), bvals=(0.1, 1),
          # avals=(0.01, 0.1, 1, 5), bvals=(0.01, 0.1, 1, 5),
          gen_param_files_p=gen_param_files_p)
 
@@ -491,7 +491,6 @@ hyper_h: [0.01, 0.1, 5]
 Normal_noise_model a_h
 Normal_noise_model b_h
 """
-
 
 
 def exp_hyper_alpha(test=True):
