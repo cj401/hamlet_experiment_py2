@@ -109,6 +109,7 @@ SpeakerSpec = util.namedtuple_with_defaults\
                      'verbose'])
 '''
 
+
 class SpeakerSpec:
     def __init__(self,
                  speaker_loc=None,

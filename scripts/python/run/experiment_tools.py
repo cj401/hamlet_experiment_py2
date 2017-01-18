@@ -1346,6 +1346,11 @@ def results_spec_fn(results_dir, pspec, dspec, replication_postfix,
 
     if factorial_p:
         pass
+    elif 'HDP_hyperprior:sticky_c_kappa' in params and 'HDP_hyperprior:sticky_d_kappa' in params:
+        if lt_p(params):
+            model_subdir.append('StickyLT')
+        else:
+            model_subdir.append('Sticky')
     elif lt_p(params):
         model_subdir.append('LT')
     else:

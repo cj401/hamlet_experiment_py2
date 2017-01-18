@@ -290,9 +290,11 @@ def test_generate_parameter_spec_ab_product(gen_param_files_p=False):
 # ----------------------------------------------------------------------
 
 def generate_parameter_spec_ab_product_outer(module, param_var, avals, bvals,
-                                             source_param_files=('cocktail16_inference_BFact_HMM_W0.config',
-                                                                 # 'cocktail16_inference_LT_HMM_W0-J600.config',
-                                                                 'cocktail16_inference_noLT_HMM_W0-J600.config'),
+                                             source_param_files=(#'cocktail16_inference_BFact_HMM_W0.config',
+                                                                 'cocktail16_inference_sticky_HMM_W0-J600.config',
+                                                                 #'cocktail16_inference_LT_HMM_W0-J600.config',
+                                                                 #'cocktail16_inference_noLT_HMM_W0-J600.config',
+                                                                 'cocktail16_inference_stickyLT_HMM_W0-J600.config'),
                                              dest_param_dir=None,
                                              gen_param_files_p=False,
                                              verbose=False):
@@ -306,6 +308,7 @@ def generate_parameter_spec_ab_product_outer(module, param_var, avals, bvals,
     :param dest_param_dir: Optionally specify the destination parameter directory; default to None
         If None, then will be 'cocktail16_hyper_{0}'.format(param_var)
     :param gen_param_files_p:
+    :param verbose:
     :return:
     """
     source_param_dir = PARAMETERS_ROOT
@@ -328,8 +331,7 @@ def generate_parameter_spec_ab_product_outer(module, param_var, avals, bvals,
 def generate_parameter_spec_ab_product_hyper_alpha(gen_param_files_p=False):
     return generate_parameter_spec_ab_product_outer\
         (module='HDP_hyperprior', param_var='alpha',
-         avals=(0.1, 1), bvals=(0.1, 1),
-         # avals=(0.01, 0.1, 1, 5), bvals=(0.01, 0.1, 1, 5),
+         avals=(0.01, 0.1, 1, 5), bvals=(0.01, 0.1, 1, 5),
          gen_param_files_p=gen_param_files_p)
 
 # generate_parameter_spec_ab_product_hyper_alpha(gen_param_files_p=True)
