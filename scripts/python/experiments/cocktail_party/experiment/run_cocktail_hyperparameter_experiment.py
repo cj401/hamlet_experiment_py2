@@ -290,10 +290,10 @@ def test_generate_parameter_spec_ab_product(gen_param_files_p=False):
 # ----------------------------------------------------------------------
 
 def generate_parameter_spec_ab_product_outer(module, param_var, avals, bvals,
-                                             source_param_files=(#'cocktail16_inference_BFact_HMM_W0.config',
+                                             source_param_files=('cocktail16_inference_BFact_HMM_W0.config',
                                                                  'cocktail16_inference_sticky_HMM_W0-J600.config',
-                                                                 #'cocktail16_inference_LT_HMM_W0-J600.config',
-                                                                 #'cocktail16_inference_noLT_HMM_W0-J600.config',
+                                                                 'cocktail16_inference_LT_HMM_W0-J600.config',
+                                                                 'cocktail16_inference_noLT_HMM_W0-J600.config',
                                                                  'cocktail16_inference_stickyLT_HMM_W0-J600.config'),
                                              dest_param_dir=None,
                                              gen_param_files_p=False,
@@ -371,7 +371,9 @@ def generate_parameter_spec_ab_product_hyper_alpha_debug(gen_param_files_p=False
 
 def generate_parameter_spec_ab_product_hyper_gamma(gen_param_files_p=False):
     return generate_parameter_spec_ab_product_outer\
-        (module='HDP_hyperprior', param_var='gamma', avals=(0.01, 0.1, 1, 5), bvals=(0.01, 0.1, 1, 5),
+        (module='HDP_hyperprior', param_var='gamma',
+         avals=(0.01, 5), bvals=(0.01, 5),
+         # avals=(0.01, 0.1, 1, 5), bvals=(0.01, 0.1, 1, 5),
          gen_param_files_p=gen_param_files_p)
 
 # generate_parameter_spec_ab_product_hyper_gamma(gen_param_files_p=True)
@@ -379,7 +381,9 @@ def generate_parameter_spec_ab_product_hyper_gamma(gen_param_files_p=False):
 
 def generate_parameter_spec_ab_product_hyper_h(gen_param_files_p=False):
     return generate_parameter_spec_ab_product_outer\
-        (module='Normal_noise_model', param_var='h', avals=(0.01, 0.1, 1, 5), bvals=(0.01, 0.1, 1, 5),
+        (module='Normal_noise_model', param_var='h',
+         avals=(0.01, 5), bvals=(0.01, 5),
+         # avals=(0.01, 0.1, 1, 5), bvals=(0.01, 0.1, 1, 5),
          gen_param_files_p=gen_param_files_p)
 
 # generate_parameter_spec_ab_product_hyper_h(gen_param_files_p=True)
@@ -586,7 +590,7 @@ def exp_hyper_alpha(test=True):
 # generate_parameter_spec_ab_product_hyper_alpha(gen_param_files_p=True)
 
 # RUN EXPRIMENT
-exp_hyper_alpha(test=True)
+# exp_hyper_alpha(test=True)
 
 
 # ----------------------------------------------------------------------
@@ -649,7 +653,7 @@ def exp_hyper_gamma(test=True):
          select_subdirs_verbose=False)
 
 # GENERATE parameter spec files
-# generate_parameter_spec_ab_product_hyper_gamma(gen_param_files_p=True)
+generate_parameter_spec_ab_product_hyper_gamma(gen_param_files_p=True)
 
 # RUN EXPRIMENT
 # exp_hyper_gamma(test=False)
