@@ -653,7 +653,7 @@ def exp_hyper_gamma(test=True):
          select_subdirs_verbose=False)
 
 # GENERATE parameter spec files
-generate_parameter_spec_ab_product_hyper_gamma(gen_param_files_p=True)
+# generate_parameter_spec_ab_product_hyper_gamma(gen_param_files_p=True)
 
 # RUN EXPRIMENT
 # exp_hyper_gamma(test=False)
