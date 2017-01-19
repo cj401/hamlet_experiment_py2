@@ -4,7 +4,7 @@ import multiprocessing
 
 
 # ----------------------------------------------------------------------
-# Ensure <hamlet>/experiment/scripts/python/ in sys.path (if possible)
+# Ensure <hamlet>/experiment/scripts/python/ in sys.path  (if possible)
 # ----------------------------------------------------------------------
 
 def seq_equal(s1, s2):
