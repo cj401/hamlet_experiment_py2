@@ -239,6 +239,7 @@ def generate_parameter_spec_list(source_param_dir,
                                  module,
                                  param_var,
                                  vals,
+                                 model_filename_postfix_fn=None,  # hack to add model names for results model dir
                                  gen_param_files_p=False,
                                  verbose=False):
     change_set = [((('{0} {1}'.format(module, param_var), '{0}'.format(val), None),), val)
@@ -282,6 +283,13 @@ def generate_parameter_spec_list(source_param_dir,
                                              parameter_changes=parameter_changes,
                                              verbose=verbose)
 
+            # DO THIS HERE
+            # because this is just added to the experiment parameter_spec (for the experiment
+            # results model directory name), not the parameter filename
+            if model_filename_postfix_fn:
+                model_filename_postfix = model_filename_postfix_fn(source_param_file_basename) \
+                                         + '_' + model_filename_postfix
+
             parameter_spec_parameters.append((new_param_filename, dest_param_dir, model_filename_postfix))
 
             i += 1
@@ -290,6 +298,17 @@ def generate_parameter_spec_list(source_param_dir,
 
 
 def test_generate_parameter_spec_list(gen_param_files_p=False, verbose=True):
+
+    def get_kernel_from_param_filename(param_filename):
+        if 'cauchy' in param_filename:
+            return 'Kcauchy'
+        elif 'gaussian' in param_filename:
+            return 'Kgaussian'
+        elif 'laplace' in param_filename:
+            return 'Klaplace'
+        else:
+            return 'Kunknown'
+
     source_param_dir = PARAMETERS_ROOT
     source_param_files = ('cocktail16_inference_LTcauchy_HMM_W0-J600.config',
                           'cocktail16_inference_LTgaussian_HMM_W0-J600.config',
@@ -305,6 +324,7 @@ def test_generate_parameter_spec_list(gen_param_files_p=False, verbose=True):
                                        module='Isotropic_exponential_similarity',
                                        param_var='b_lambda',
                                        vals=(0.1, 1),
+                                       model_filename_postfix_fn=get_kernel_from_param_filename,
                                        gen_param_files_p=gen_param_files_p,
                                        verbose=verbose)
 
@@ -553,6 +573,17 @@ def generate_parameter_spec_ab_product_hyper_h(gen_param_files_p=False):
 # ----------------------------------------------------------------------
 
 def generate_parameter_spec_list_kernel_blambda(gen_param_files_p=False):
+
+    def get_kernel_from_param_filename(param_filename):
+        if 'cauchy' in param_filename:
+            return 'Kcauchy'
+        elif 'gaussian' in param_filename:
+            return 'Kgaussian'
+        elif 'laplace' in param_filename:
+            return 'Klaplace'
+        else:
+            return 'Kunknown'
+
     return generate_parameter_spec_list \
         (source_param_dir=PARAMETERS_ROOT,
          source_param_files=('cocktail16_inference_LTcauchy_HMM_W0-J600.config',
@@ -565,6 +596,7 @@ def generate_parameter_spec_list_kernel_blambda(gen_param_files_p=False):
          module='Isotropic_exponential_similarity',
          param_var='b_lambda',
          vals=(0.1, 1),
+         model_filename_postfix_fn=get_kernel_from_param_filename,
          gen_param_files_p=gen_param_files_p,
          verbose=False)
 
