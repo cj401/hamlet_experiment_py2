@@ -655,5 +655,36 @@ def exp_hyper_gamma(test=True):
 # GENERATE parameter spec files
 # generate_parameter_spec_ab_product_hyper_gamma(gen_param_files_p=True)
 
-# RUN EXPRIMENT
+# RUN EXPERIMENT
 # exp_hyper_gamma(test=False)
+
+
+# ----------------------------------------------------------------------
+
+def exp_hyper_h(test=True):
+    """
+    Experiment varying hyperparameters: a_h, b_h
+    Using config cocktail16_inference_{BFact,LT,no_LT,Sticky,StickyLT}
+    2000 iterations, J=600,
+    {a,b}_h=0.1 (prior over precision of noise)
+    :return:
+    """
+    experiment_tools.run_experiment_script \
+        (main_path=HAMLET_ROOT,
+         data_dir=os.path.join(DATA_ROOT, 'cocktail_s16_m12/'),
+         results_dir=os.path.join(RESULTS_ROOT, 'cocktail_s16_m12/hyper_h'),
+         replications=5,
+         offset=0,
+         parameter_spec_list=collect_parameter_spec_list_cocktail16_w0_hyper_h(),
+         match_dict=match_select_cp16,
+         multiproc=True,
+         processor_pool_size=multiprocessing.cpu_count(),
+         rerun=False,
+         test=test,
+         select_subdirs_verbose=False)
+
+# GENERATE parameter spec files
+# generate_parameter_spec_ab_product_hyper_h(gen_param_files_p=True)
+
+# RUN EXPERIMENT
+# exp_hyper_h(test=True)
