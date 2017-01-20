@@ -4,7 +4,7 @@ import multiprocessing
 
 
 # ----------------------------------------------------------------------
-# Ensure <hamlet>/experiment/scripts/python/ in sys.path  (if possible)
+# Ensure <hamlet>/experiment/scripts/python/ in sys.path (if possible)
 # ----------------------------------------------------------------------
 
 def seq_equal(s1, s2):
@@ -72,11 +72,26 @@ RESULTS_ROOT = experiment_tools.RESULTS_ROOT
 # ----------------------------------------------------------------------
 
 def float2string(f):
+    """
+    Helper to take floats and replace decimal with 'p'
+    E.g., 0.01 becomes '0p01'
+    :param f:
+    :return:
+    """
     charlist = list('{0}'.format(f))
     for i, c in enumerate(charlist):
         if c == '.':
             charlist[i] = 'p'
     return ''.join(charlist)
+
+
+def shorten_param_name(s):
+    """
+    Helper to take param name and remove underscores
+    E.g., 'b_lambda' become 'blambda'
+    :return:
+    """
+    return s.replace('_', '')
 
 
 class PSpec(object):
@@ -172,7 +187,13 @@ def generate_parameter_spec_file(source_pspec_path,
     os.chdir(HAMLET_ROOT)
 
     pspec = PSpec(source_pspec_path)
+
+    print parameter_changes
+
     for module_var, value, comment in parameter_changes:
+        print 'module_var', module_var
+        print 'value', value
+        print 'comment', comment
         pspec.change_value(module_var, value, comment)
     if verbose: pspec.show()
     pspec.save(dest_dir=destination_dir, filename=dest_pspec_name)
@@ -180,11 +201,25 @@ def generate_parameter_spec_file(source_pspec_path,
     os.chdir(cwd)
 
 
-def test_generate_parameter_spec_file():
-    dest_path = os.path.join(PARAMETERS_ROOT, 'cocktail16_hyper_alpha')
+def test_generate_parameter_spec_file1():
+    dest_path = os.path.join(PARAMETERS_ROOT, 'cocktail16_kernel')
+    source_path = os.path.join(PARAMETERS_ROOT, 'cocktail16_inference_LT_HMM_W0-J600.config')
+    parameter_changes = (('Isotropic_exponential_similarity b_lambda', '8', '// varying b_lambda'),)
+
+    generate_parameter_spec_file(source_path,
+                                 dest_path,
+                                 'cocktail16_inference_LT_HMM_W0_blambda8_test.config',
+                                 parameter_changes,
+                                 verbose=True)
+
+# test_generate_parameter_spec_file1()
+
+
+def test_generate_parameter_spec_file2():
+    dest_path = os.path.join(PARAMETERS_ROOT, 'cocktail16_kernel')  # cocktail16_hyper_alpha
     source_path = os.path.join(PARAMETERS_ROOT, 'cocktail16_inference_BFact_HMM_W0.config')
-    parameter_changes = (('HDP_hyperprior a_alpha', 0.01, '// shape parameter for alpha_ prior varying'),
-                         ('HDP_hyperprior b_alpha', 5, None))
+    parameter_changes = (('HDP_hyperprior a_alpha', '0.01', '// shape parameter for alpha_ prior varying'),
+                         ('HDP_hyperprior b_alpha', '5', None))
 
     generate_parameter_spec_file(source_path,
                                  dest_path,
@@ -192,7 +227,112 @@ def test_generate_parameter_spec_file():
                                  parameter_changes,
                                  verbose=True)
 
-# test_generate_parameter_spec_file()
+# test_generate_parameter_spec_file2()
+
+
+# ----------------------------------------------------------------------
+
+
+def generate_parameter_spec_list(source_param_dir,
+                                 source_param_files,
+                                 dest_param_dir,
+                                 module,
+                                 param_var,
+                                 vals,
+                                 model_filename_postfix_fn=None,  # hack to add model names for results model dir
+                                 gen_param_files_p=False,
+                                 verbose=False):
+    change_set = [((('{0} {1}'.format(module, param_var), '{0}'.format(val), None),), val)
+                  for val in vals]
+
+    parameter_spec_parameters = list()
+
+    i = 0
+
+    print 'len(source_param_files)', len(source_param_files)
+
+    for source_param_file in source_param_files:
+        source_param_file_basename = source_param_file.split('.')[0]
+
+        print i, source_param_file
+
+        for parameter_changes, val in change_set:
+            model_filename_postfix = '{0}{1}'.format(shorten_param_name(param_var), float2string(val))
+            new_param_file_basename = source_param_file_basename + '_{0}'.format(model_filename_postfix)
+            new_param_filename = new_param_file_basename + '.config'
+
+            param_spec = experiment_tools.ParameterSpec\
+                (new_param_filename, dest_param_dir, model_filename_postfix)
+
+            if verbose:
+                print '\n({0}) -------------------------------'.format(i)
+                print 'source_param_dir:', source_param_dir
+                print 'source_param_file:', source_param_file
+                print 'source_param_file_basename:', source_param_file_basename
+                print 'dest_param_dir:', dest_param_dir
+                print 'model_filename_postfix:', model_filename_postfix
+                print 'new_param_file_basename:', new_param_file_basename
+                print 'new_param_filename:', new_param_filename
+                print 'parameter_changes:', parameter_changes
+                print 'param_spec:', param_spec
+
+            if gen_param_files_p:
+                generate_parameter_spec_file(source_pspec_path=os.path.join(source_param_dir, source_param_file),
+                                             destination_dir=dest_param_dir,
+                                             dest_pspec_name=new_param_filename,
+                                             parameter_changes=parameter_changes,
+                                             verbose=verbose)
+
+            # DO THIS HERE
+            # because this is just added to the experiment parameter_spec (for the experiment
+            # results model directory name), not the parameter filename
+            if model_filename_postfix_fn:
+                model_filename_postfix = model_filename_postfix_fn(source_param_file_basename) \
+                                         + '_' + model_filename_postfix
+
+            parameter_spec_parameters.append((new_param_filename, dest_param_dir, model_filename_postfix))
+
+            i += 1
+
+    return parameter_spec_parameters
+
+
+def test_generate_parameter_spec_list(gen_param_files_p=False, verbose=True):
+
+    def get_kernel_from_param_filename(param_filename):
+        if 'cauchy' in param_filename:
+            return 'Kcauchy'
+        elif 'gaussian' in param_filename:
+            return 'Kgaussian'
+        elif 'laplace' in param_filename:
+            return 'Klaplace'
+        else:
+            return 'Kunknown'
+
+    source_param_dir = PARAMETERS_ROOT
+    source_param_files = ('cocktail16_inference_LTcauchy_HMM_W0-J600.config',
+                          'cocktail16_inference_LTgaussian_HMM_W0-J600.config',
+                          'cocktail16_inference_LTlaplace_HMM_W0-J600.config',
+                          'cocktail16_inference_stickyLTcauchy_HMM_W0-J600.config',
+                          'cocktail16_inference_stickyLTgaussian_HMM_W0-J600.config',
+                          'cocktail16_inference_stickyLTlaplace_HMM_W0-J600.config')
+    dest_param_dir = os.path.join(PARAMETERS_ROOT, 'cocktail16_kernel')
+    parameter_spec_parameters \
+        = generate_parameter_spec_list(source_param_dir=source_param_dir,
+                                       source_param_files=source_param_files,
+                                       dest_param_dir=dest_param_dir,
+                                       module='Isotropic_exponential_similarity',
+                                       param_var='b_lambda',
+                                       vals=(0.1, 1),
+                                       model_filename_postfix_fn=get_kernel_from_param_filename,
+                                       gen_param_files_p=gen_param_files_p,
+                                       verbose=verbose)
+
+    print '\n-------------------------------\nparameter_spec_parameters:'
+    for i, parameter_spec_parameter in enumerate(parameter_spec_parameters):
+        print i, parameter_spec_parameter
+
+# test_generate_parameter_spec_list(gen_param_files_p=True, verbose=False)
 
 
 # ----------------------------------------------------------------------
@@ -217,6 +357,7 @@ def generate_parameter_spec_ab_product(source_param_dir,
     i = 0
     for source_param_file in source_param_files:
         source_param_file_basename = source_param_file.split('.')[0]
+
         for parameter_changes, (aval, bval) in change_set:
             # aval = parameter_changes[0][1]
             # bval = parameter_changes[1][1]
@@ -289,6 +430,39 @@ def test_generate_parameter_spec_ab_product(gen_param_files_p=False):
 
 # ----------------------------------------------------------------------
 
+
+def generate_parameter_spec_list_outer(module, param_var, vals,
+                                       source_param_files,
+                                       dest_param_dir=None,
+                                       gen_param_files_p=False,
+                                       verbose=False):
+    """
+
+    :param module:
+    :param param_var:
+    :param vals:
+    :param source_param_files:
+    :param dest_param_dir:
+    :param gen_param_files_p:
+    :param verbose:
+    :return:
+    """
+    source_param_dir = PARAMETERS_ROOT
+
+    if dest_param_dir is None:
+        dest_param_dir = os.path.join(PARAMETERS_ROOT, 'cocktail16_hyper_{0}'.format(param_var))
+
+    parameter_spec_parameters \
+        = generate_parameter_spec_list(source_param_dir=source_param_dir,
+                                       source_param_files=source_param_files,
+                                       dest_param_dir=dest_param_dir,
+                                       module=module, param_var=param_var,
+                                       vals=vals,
+                                       gen_param_files_p=gen_param_files_p,
+                                       verbose=verbose)
+    return parameter_spec_parameters
+
+
 def generate_parameter_spec_ab_product_outer(module, param_var, avals, bvals,
                                              source_param_files=('cocktail16_inference_BFact_HMM_W0.config',
                                                                  'cocktail16_inference_sticky_HMM_W0-J600.config',
@@ -300,6 +474,7 @@ def generate_parameter_spec_ab_product_outer(module, param_var, avals, bvals,
                                              verbose=False):
     """
     Generalizes test_ version as outer-wrapper for hyperparameter experiments based on cocktail16 configs
+    In particular: allows for specifying parameters directory that is *subdirectory* of PARAMATERS_ROOT
     :param module:
     :param param_var:
     :param avals:
@@ -328,6 +503,10 @@ def generate_parameter_spec_ab_product_outer(module, param_var, avals, bvals,
     return parameter_spec_parameters
 
 
+# ----------------------------------------------------------------------
+#
+# ----------------------------------------------------------------------
+
 def generate_parameter_spec_ab_product_hyper_regression_test(param_var='alpha',
                                                              gen_param_files_p=False):
     """
@@ -344,6 +523,8 @@ def generate_parameter_spec_ab_product_hyper_regression_test(param_var='alpha',
          # source_param_files=('cocktail16_inference_LT_HMM_W0-J600.config',),
          gen_param_files_p=gen_param_files_p)
 
+
+# ----------------------------------------------------------------------
 
 def generate_parameter_spec_ab_product_hyper_alpha(gen_param_files_p=False):
     return generate_parameter_spec_ab_product_outer\
@@ -387,6 +568,37 @@ def generate_parameter_spec_ab_product_hyper_h(gen_param_files_p=False):
          gen_param_files_p=gen_param_files_p)
 
 # generate_parameter_spec_ab_product_hyper_h(gen_param_files_p=True)
+
+
+# ----------------------------------------------------------------------
+
+def generate_parameter_spec_list_kernel_blambda(gen_param_files_p=False):
+
+    def get_kernel_from_param_filename(param_filename):
+        if 'cauchy' in param_filename:
+            return 'Kcauchy'
+        elif 'gaussian' in param_filename:
+            return 'Kgaussian'
+        elif 'laplace' in param_filename:
+            return 'Klaplace'
+        else:
+            return 'Kunknown'
+
+    return generate_parameter_spec_list \
+        (source_param_dir=PARAMETERS_ROOT,
+         source_param_files=('cocktail16_inference_LTcauchy_HMM_W0-J600.config',
+                             'cocktail16_inference_LTgaussian_HMM_W0-J600.config',
+                             'cocktail16_inference_LTlaplace_HMM_W0-J600.config',
+                             'cocktail16_inference_stickyLTcauchy_HMM_W0-J600.config',
+                             'cocktail16_inference_stickyLTgaussian_HMM_W0-J600.config',
+                             'cocktail16_inference_stickyLTlaplace_HMM_W0-J600.config'),
+         dest_param_dir=os.path.join(PARAMETERS_ROOT, 'cocktail16_kernel_blambda'),
+         module='Isotropic_exponential_similarity',
+         param_var='b_lambda',
+         vals=(0.1, 1),
+         model_filename_postfix_fn=get_kernel_from_param_filename,
+         gen_param_files_p=gen_param_files_p,
+         verbose=False)
 
 
 # ----------------------------------------------------------------------
@@ -499,6 +711,14 @@ def collect_parameter_spec_list_cocktail16_w0_hyper_gamma():
 
 def collect_parameter_spec_list_cocktail16_w0_hyper_h():
     spec_list = generate_parameter_spec_ab_product_hyper_h(gen_param_files_p=False)
+    return [experiment_tools.ParameterSpec(parameters_file, parameters_dir, model_filename_postfix)
+            for parameters_file, parameters_dir, model_filename_postfix in spec_list]
+
+
+# ----------------------------------------------------------------------
+
+def collect_parameter_spec_list_cocktail16_w0_kernel_blambda():
+    spec_list = generate_parameter_spec_list_kernel_blambda(gen_param_files_p=False)
     return [experiment_tools.ParameterSpec(parameters_file, parameters_dir, model_filename_postfix)
             for parameters_file, parameters_dir, model_filename_postfix in spec_list]
 
@@ -655,16 +875,25 @@ def exp_hyper_gamma(test=True):
 # GENERATE parameter spec files
 # generate_parameter_spec_ab_product_hyper_gamma(gen_param_files_p=True)
 
-# RUN EXPERIMENT
+# RUN EXPRIMENT
 # exp_hyper_gamma(test=False)
 
 
 # ----------------------------------------------------------------------
+# Kernel + blambda experiments
+# ----------------------------------------------------------------------
 
-def exp_hyper_h(test=True):
+'''
+{LT, noLT} X {cauchy, gaussian, laplace}
+rep = 5
+blambda = (0.01, 1)
+'''
+
+
+def exp_kernel_blambda(test=True):
     """
-    Experiment varying hyperparameters: a_h, b_h
-    Using config cocktail16_inference_{BFact,LT,no_LT,Sticky,StickyLT}
+    Experiment varying hyperparameters: kernels {cauchy, gaussian, laplace} and b_lambda {0.01, 1}
+    Using config cocktail16_inference_{LT, StickyLT}
     2000 iterations, J=600,
     {a,b}_h=0.1 (prior over precision of noise)
     :return:
@@ -672,10 +901,10 @@ def exp_hyper_h(test=True):
     experiment_tools.run_experiment_script \
         (main_path=HAMLET_ROOT,
          data_dir=os.path.join(DATA_ROOT, 'cocktail_s16_m12/'),
-         results_dir=os.path.join(RESULTS_ROOT, 'cocktail_s16_m12/hyper_h'),
+         results_dir=os.path.join(RESULTS_ROOT, 'cocktail_s16_m12/kernel_blambda'),
          replications=5,
          offset=0,
-         parameter_spec_list=collect_parameter_spec_list_cocktail16_w0_hyper_h(),
+         parameter_spec_list=collect_parameter_spec_list_cocktail16_w0_kernel_blambda(),
          match_dict=match_select_cp16,
          multiproc=True,
          processor_pool_size=multiprocessing.cpu_count(),
@@ -684,7 +913,9 @@ def exp_hyper_h(test=True):
          select_subdirs_verbose=False)
 
 # GENERATE parameter spec files
-# generate_parameter_spec_ab_product_hyper_h(gen_param_files_p=True)
+# generate_parameter_spec_list_kernel_blambda(gen_param_files_p=True)
 
-# RUN EXPERIMENT
-# exp_hyper_h(test=True)
+# RUN EXPRIMENT
+# exp_kernel_blambda(test=True)
+
+# ----------------------------------------------------------------------
