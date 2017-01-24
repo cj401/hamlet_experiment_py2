@@ -1,4 +1,4 @@
-EXPERIMENT_ROOT = "../../../"
+EXPERIMENT_ROOT = "../../../../"
 
 matrify.data <- function(path, filename, skip = 0)
 {
