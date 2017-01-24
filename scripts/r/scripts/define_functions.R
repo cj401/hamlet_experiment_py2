@@ -105,7 +105,7 @@ get_matrix_data <- function(specs, output_type, paths)
     return(data_list)
 }
 
-collect_data_as_scalar <- function(data_list, summary_function = I, ...)
+collect_data_as_scalar <- function(data_list, summary_function = I)
 {
     result = list()
     for(l in data_list)
@@ -114,7 +114,7 @@ collect_data_as_scalar <- function(data_list, summary_function = I, ...)
         iterations <- l[[1]][,1]
         for(df in l)
         {
-            newdata <- summary_function(df[,-1], ...)
+            newdata <- summary_function(df[,-1])
             length(newdata) <- length(iterations)
             vals <- cbind(vals, newdata)
         }
@@ -125,8 +125,9 @@ collect_data_as_scalar <- function(data_list, summary_function = I, ...)
     return(list(iterations = iterations, values = result))
 }
 
-summarize_scalar_data_across_runs <- function(collapsed_data, smoothing_window_size = 1)
+summarize_scalar_data_across_runs <- function(collapsed_data, smoothing_window_size)
 {
+    print(paste("Summarizing data with smoothing window", smoothing_window_size))
     result <- list()
     center_iteration <-
         floor(collapsed_data$iterations / smoothing_window_size) * smoothing_window_size +
@@ -156,7 +157,7 @@ summarize_scalar_data_across_runs <- function(collapsed_data, smoothing_window_s
 
     }
     names(result) <- names(collapsed_data$values)
-    return(list(iterations = collapsed_data$iterations, values = result))
+    return(list(iterations = unique(center_iteration), values = result))
 }
 
 summarize_matrix_data_across_iterations <-
@@ -216,23 +217,21 @@ plot_scalar_by_iteration <-
         specs,
         output_type,
         paths,
+        smoothing_window_size,
         summary_function = I,
         error_var = "cint",
         yrange = c(-Inf, Inf),
-        burnin_samples = 10,
-        smoothing_window_size = 50,
-        ...
+        burnin_samples = 10
         )
 {
     results_list <- get_scalar_or_vector_data(specs, output_type, paths)
     collected_data <-
         collect_data_as_scalar(
-            results_list, summary_function = summary_function,
-            ...
+            results_list, summary_function = summary_function
             )
     summarized_data <- summarize_scalar_data_across_runs(collected_data, smoothing_window_size)
     t <- summarized_data$iterations
-    index_subset = (t %% spacing == 0 & t > burnin_samples)
+    index_subset = t > burnin_samples
     ## calculate a suitable range to plot
     lowest_val <- Inf
     highest_val <- -Inf
@@ -344,23 +343,25 @@ make_key_scalar_plots <-
         burnin_samples,
         paths,
         comparison_name,
-        plot.vars = c("F1_score", "precision", "recall",
-               "accuracy"),
-        smoothing_window_size = 1,
-        ...
+        smoothing_window_size,
+        plot.vars = c("F1_score", "precision", "recall", "accuracy")
         )
 {
     specs <- get_specs(query_file, results_dir, data_set, comparison_name)
     for(v in plot.vars)
     {
-        plot_scalar_by_iteration(specs, v, burnin_samples = burnin_samples, paths = paths, ...)
+        plot_scalar_by_iteration(
+            specs, v, burnin_samples = burnin_samples, paths = paths,
+            summary_function = I,
+            smoothing_window_size)
     }
     if("n_dot" %in% plot.vars)
     {
         plot_scalar_by_iteration(
             specs, "n_dot", burnin_samples = burnin_samples,
             summary_function = count_nonzero_entries_per_row,
-            paths = paths, ...)
+            paths = paths,
+            smoothing_window_size)
     }
     ## if(binary)
     ## {
@@ -380,12 +381,11 @@ make_scalar_plots_batch <-
         data_set,        #name of root directory after results_root
         burnin_samples,  #number of logged iteration to discard as burnin
         path_glob,       #a glob expression indicating which datasets within data_set to use
+        smoothing_window_size,
         extra.plot.vars = c(),
         base.plot.vars = c("F1_score", "precision", "recall",
                "accuracy"),
-        project_root = "../../../",
-        smoothing_window_size = 1,
-        ...
+        project_root = "../../../"
         )
 {
     specs <-
@@ -415,7 +415,7 @@ make_scalar_plots_batch <-
                 paths = root,
                 comparison_name = comp,
                 plot.vars = c(base.plot.vars, extra.plot.vars),
-                ...
+                smoothing_window_size
             )
             print("........done.")
         }
