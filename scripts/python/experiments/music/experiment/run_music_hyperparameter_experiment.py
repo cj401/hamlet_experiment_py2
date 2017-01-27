@@ -574,6 +574,7 @@ def exp_hyper_regression(test=True, param_var='alpha'):
 exp_hyper_regression(test=True)
 
 
+'''
 # ----------------------------------------------------------------------
 
 def exp_hyper_alpha(test=True):
@@ -605,7 +606,6 @@ def exp_hyper_alpha(test=True):
 # exp_hyper_alpha(test=True)
 
 
-'''
 # ----------------------------------------------------------------------
 
 def exp_hyper_alpha_plus_lambda1p6(test=True):
