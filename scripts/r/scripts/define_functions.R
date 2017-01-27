@@ -105,7 +105,7 @@ get_matrix_data <- function(specs, output_type, paths)
     return(data_list)
 }
 
-collect_data_as_scalar <- function(data_list, summary_function = I, ...)
+collect_data_as_scalar <- function(data_list, summary_function = I)
 {
     result = list()
     for(l in data_list)
@@ -114,7 +114,7 @@ collect_data_as_scalar <- function(data_list, summary_function = I, ...)
         iterations <- l[[1]][,1]
         for(df in l)
         {
-            newdata <- summary_function(df[,-1], ...)
+            newdata <- summary_function(df[,-1])
             length(newdata) <- length(iterations)
             vals <- cbind(vals, newdata)
         }
@@ -125,8 +125,9 @@ collect_data_as_scalar <- function(data_list, summary_function = I, ...)
     return(list(iterations = iterations, values = result))
 }
 
-summarize_scalar_data_across_runs <- function(collapsed_data, smoothing_window_size = 1)
+summarize_scalar_data_across_runs <- function(collapsed_data, smoothing_window_size)
 {
+    print(paste("Summarizing data with smoothing window", smoothing_window_size))
     result <- list()
     center_iteration <-
         floor(collapsed_data$iterations / smoothing_window_size) * smoothing_window_size +
@@ -156,7 +157,7 @@ summarize_scalar_data_across_runs <- function(collapsed_data, smoothing_window_s
 
     }
     names(result) <- names(collapsed_data$values)
-    return(list(iterations = collapsed_data$iterations, values = result))
+    return(list(iterations = unique(center_iteration), values = result))
 }
 
 summarize_matrix_data_across_iterations <-
@@ -210,29 +211,26 @@ summarize_matrix_data_across_iterations_and_runs <-
     return(result)
 }
 
-
 plot_scalar_by_iteration <-
     function(
         specs,
         output_type,
         paths,
+        smoothing_window_size,
         summary_function = I,
         error_var = "cint",
         yrange = c(-Inf, Inf),
-        burnin_samples = 10,
-        smoothing_window_size = 50,
-        ...
+        burnin_samples = 10
         )
 {
     results_list <- get_scalar_or_vector_data(specs, output_type, paths)
     collected_data <-
         collect_data_as_scalar(
-            results_list, summary_function = summary_function,
-            ...
+            results_list, summary_function = summary_function
             )
     summarized_data <- summarize_scalar_data_across_runs(collected_data, smoothing_window_size)
     t <- summarized_data$iterations
-    index_subset = (t %% spacing == 0 & t > burnin_samples)
+    index_subset = t > burnin_samples
     ## calculate a suitable range to plot
     lowest_val <- Inf
     highest_val <- -Inf
@@ -319,7 +317,6 @@ plot_binary_matrices <- function(specs, data, paths)
     dev.off()
 }
 
-
 count_nonzero_entries_per_row <- function(data_matrix)
 {
     return(apply(data_matrix, 1, function(x){return(sum(x != 0))}))
@@ -344,23 +341,25 @@ make_key_scalar_plots <-
         burnin_samples,
         paths,
         comparison_name,
-        plot.vars = c("F1_score", "precision", "recall",
-               "accuracy"),
-        smoothing_window_size = 1,
-        ...
+        smoothing_window_size,
+        plot.vars = c("F1_score", "precision", "recall", "accuracy")
         )
 {
     specs <- get_specs(query_file, results_dir, data_set, comparison_name)
     for(v in plot.vars)
     {
-        plot_scalar_by_iteration(specs, v, burnin_samples = burnin_samples, paths = paths, ...)
+        plot_scalar_by_iteration(
+            specs, v, burnin_samples = burnin_samples, paths = paths,
+            summary_function = I,
+            smoothing_window_size)
     }
     if("n_dot" %in% plot.vars)
     {
         plot_scalar_by_iteration(
             specs, "n_dot", burnin_samples = burnin_samples,
             summary_function = count_nonzero_entries_per_row,
-            paths = paths, ...)
+            paths = paths,
+            smoothing_window_size)
     }
     ## if(binary)
     ## {
@@ -380,12 +379,11 @@ make_scalar_plots_batch <-
         data_set,        #name of root directory after results_root
         burnin_samples,  #number of logged iteration to discard as burnin
         path_glob,       #a glob expression indicating which datasets within data_set to use
+        smoothing_window_size,
         extra.plot.vars = c(),
         base.plot.vars = c("F1_score", "precision", "recall",
                "accuracy"),
-        project_root = "../../../",
-        smoothing_window_size = 1,
-        ...
+        project_root = "../../../../data/"
         )
 {
     specs <-
@@ -415,13 +413,12 @@ make_scalar_plots_batch <-
                 paths = root,
                 comparison_name = comp,
                 plot.vars = c(base.plot.vars, extra.plot.vars),
-                ...
+                smoothing_window_size
             )
             print("........done.")
         }
     }
 }
-
 
 collect.iterations <- function(path)
 {
@@ -464,3 +461,235 @@ create.thetastar.array <- function(root, exclusions)
         the.array <- abind(the.array, collect.iterations(subdir), along = 4)
     }
 }
+
+plot_scalar_density_by_model <- 
+    function(
+      specs, 
+      output_type,
+      paths,
+      xrange = c(-Inf, Inf),
+      yrange = c(-Inf, Inf),
+      burnin_samples = 10
+    )
+{
+      results_list <- get_scalar_or_vector_data(specs, output_type, paths)
+      collected_data <- collect_data_as_scalar(results_list)
+      density_data <- collect_data_for_density_plot(collected_data, burnin_samples)
+      x_lowest_val <- Inf
+      x_highest_val <- -Inf
+      y_lowest_val <- Inf
+      y_highest_val <- -Inf
+      #print(density_data)
+      for (l in density_data)
+      {
+        x_lowest_val = max(min(x_lowest_val, min(density(l, na.rm=TRUE)$x)), xrange[1])
+        x_highest_val = min(max(x_highest_val, max(density(l, na.rm=TRUE)$x)), xrange[2])
+        y_lowest_val = max(min(y_lowest_val, min(density(l, na.rm=TRUE)$y)), yrange[1])
+        y_highest_val = min(max(y_highest_val, max(density(l, na.rm=TRUE)$y)), yrange[2])
+      }
+      output_path <- paste(paths$fig_root, specs$results, "/", specs$comparison, "/", specs$dataset, "/", sep = "")
+      if(!dir.exists(output_path)) dir.create(output_path, recursive = TRUE)
+      pdf(paste(output_path, "/", output_type, "_density.pdf", sep = ""))
+      plot(
+        NULL, xlim = c(x_lowest_val, x_highest_val), ylim=c(y_lowest_val, y_highest_val),
+        xlab = output_type, ylab = "density")
+      groups <- specs$models
+      plot_vars <- 1:length(unique(groups))
+      names(plot_vars) <- unique(groups)
+      for (g in unique(groups))
+      {
+        lines(density(density_data[[g]]), lty = plot_vars[g], col = plot_vars[g], lwd = 0.25)
+      }
+      legend("topright", lty = plot_vars, col = plot_vars, legend = unique(groups))
+      dev.off()
+}
+
+collect_data_for_density_plot <- function(collapsed_data, burnin_samples)
+{
+    #print(paste("Burnin samples is ", burnin_samples))
+    result <- list()
+    t <- collapsed_data$iterations
+    index_subset = t > burnin_samples
+    for (d in collapsed_data$values)
+    {
+      result <- append(result, list(c(data.matrix(d[index_subset,]))))
+    }
+    names(result) <- names(collapsed_data$values)
+    return (result)
+}
+
+plot_acf_by_model_and_run <- 
+    function(
+        specs,
+        output_type,
+        paths
+        )
+{
+      results_list <- get_scalar_or_vector_data(specs, output_type, paths)
+      output_dir <- paste(paths$fig_root, specs$results, "/", specs$comparison, "/", specs$dataset, "/", sep = "")
+      if(!dir.exists(output_dir)) dir.create(output_dir, recursive = TRUE)
+      models <- names(results_list)
+      for (m in models)
+      {
+        num_runs <- length(results_list[[m]])
+        for (i in 1:num_runs)
+        {
+          output_subdir <- paste(m,"/",formatC(i, width=2, flag="0"),"/",sep="")
+          output_path <- paste(output_dir, output_subdir, sep="")
+          if(!dir.exists(output_path)) dir.create(output_path, recursive = TRUE)
+          pdf(paste(output_path, "/", output_type, "_acf.pdf", sep=""))
+          acf(results_list[[m]][[i]][,-1], main=output_type)
+          dev.off()
+        }
+      }
+}
+
+plot_A_and_block_A <- 
+  function(specs, paths, block_code_path, threshold)
+{
+    output_dir <- paste(paths$fig_root, specs$results, "/", specs$comparison, "/", specs$dataset, "/", sep = "")
+    if(!dir.exists(output_dir)) dir.create(output_dir, recursive = TRUE)
+    models <- specs$models
+    for (m in models)
+    {
+      cur_path <- getwd()
+      model_dir <- paste(paths$results, "/",
+                         specs$results, "/",
+                         specs$dataset, "/",
+                         m, "/", sep="")
+      setwd(model_dir)
+      items <- Sys.glob("*")
+      setwd(cur_path)
+      for (i in items)
+      {
+        print("hi")
+        print(i)
+        if (!dir.exists(paste(model_dir, "/", i, "/G/", sep="")))
+        {
+          generate_block_diagonal_matrix(block_code_path, paste(model_dir, "/", i, "/", sep=""), threshold)
+        }
+        model_A_dir <- paste(model_dir, "/", i, "/A/", sep="")
+        model_block_A_dir <- paste(model_dir, "/", i, "/G/block_A/", sep="")
+        setwd(model_A_dir)
+        iterations <- as.numeric(substr(Sys.glob("*.txt"),1,5))
+        last_iteration <- max(iterations)
+        last_iteration_file <- paste(formatC(last_iteration, width=5, flag="0"), "txt", sep=".")
+        setwd(cur_path)
+        A_ <- as.matrix(read.table(paste(model_A_dir, last_iteration_file, sep="")))
+        block_A_ <- as.matrix(read.table(paste(model_block_A_dir, last_iteration_file, sep="")))
+        J_ <- nrow(A_)
+        block_J_ <- nrow(block_A_)
+        output_subdir <- paste(m,"/",i,"/",sep="")
+        output_path <- paste(output_dir, output_subdir, sep="")
+        if(!dir.exists(output_path)) dir.create(output_path, recursive = TRUE)
+        pdf(paste(output_path, "/", "A.pdf", sep=""))
+        if (J_ == 1) image(t(A_), col=heat.colors(100), xaxt="n", yaxt="n")
+        else image(t(A_)[J_:1,], col=heat.colors(100), xaxt="n", yaxt="n")
+        dev.off()
+        pdf(paste(output_path, "/", "block_A.pdf", sep=""))
+        if (block_J_ == 1) image(t(block_A_), col=heat.colors(100), xaxt="n", yaxt="n")
+        else image(t(block_A_)[block_J_:1,], col=heat.colors(100), xaxt="n", yaxt="n")
+        dev.off()
+      }
+    }
+}
+
+generate_block_diagonal_matrix <- function(block_code_path, A_directory, threshold)
+{
+  print("generate_G...")
+  t_command <- paste("t=", threshold, sep="")
+  print(paste("python", block_code_path, A_directory, "true", t_command, sep=" "))
+  system(paste("python", block_code_path, A_directory, "true", t_command, sep=" "))
+}
+
+make_plots <-
+  function(
+    query_file,
+    data_set,
+    burnin_samples,
+    path_glob,
+    smoothing_window_size,
+    plot.vars,
+    project_root,
+    threshold,
+    block_code_path
+    )
+{
+    specs <- read.table(paste("../queries/", query_file, sep=""), header = TRUE)
+    comparisons <- specs$comparison
+    root <- get_directories(project_root = project_root)
+    cur_path <- getwd()
+    results_dir <- paste(root$results, "/", data_set, sep="")
+    setwd(results_dir)
+    paths <- Sys.glob(path_glob)
+    setwd(cur_path)
+    for (p in paths)
+    {
+      print(p)
+      for (comp in unique(comparisons))
+      {
+        print(paste("    ", comp, sep = ""))
+        make_key_plots(query_file = query_file,
+                       results_dir = data_set, 
+                       data_set = p,
+                       burnin_samples = burnin_samples,
+                       paths = root,
+                       comparison_name = comp,
+                       plot.vars = plot.vars,
+                       smoothing_window_size = smoothing_window_size,
+                       threshold = threshold,
+                       block_code_path = block_code_path)
+        print("...........done.")
+      }
+    }
+}
+
+make_key_plots <-
+  function(
+    query_file,
+    results_dir,
+    data_set,
+    burnin_samples,
+    paths,
+    comparison_name,
+    smoothing_window_size,
+    plot.vars,
+    threshold,
+    block_code_path
+    )
+{
+    specs <- get_specs(query_file, results_dir, data_set, comparison_name)
+    no_density_and_acf <- c("F1_score", "precision", "recall", "accuracy", "n_dot")
+    plot_A = FALSE
+    if ("A" %in% plot.vars)
+    {
+      plot_A = TRUE
+      plot.vars <- plot.vars[plot.vars != "A"]
+    }
+    for (v in plot.vars)
+    {
+      plot_scalar_by_iteration(
+        specs, v, burnin_samples = burnin_samples, paths = paths,
+        summary_function = I,
+        smoothing_window_size)
+      if (!(v %in% no_density_and_acf))
+      {
+        plot_scalar_density_by_model(specs = specs,
+                                     output_type = v,
+                                     paths = paths,
+                                     burnin_samples = burnin_samples)
+        plot_acf_by_model_and_run(specs = specs,
+                                  output_type = v,
+                                  paths = paths)
+      }
+    }
+    if (plot_A)
+    {
+      plot_A_and_block_A(specs = specs,
+                         paths = paths,
+                         block_code_path = block_code_path,
+                         threshold = threshold)
+    }
+}
+
+
