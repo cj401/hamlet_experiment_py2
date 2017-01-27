@@ -171,6 +171,8 @@ def generate_parameter_spec_file(source_pspec_path,
     cwd = os.getcwd()
     os.chdir(HAMLET_ROOT)
 
+    # print '>>>>> source_pspec_path', source_pspec_path
+
     pspec = PSpec(source_pspec_path)
     for module_var, value, comment in parameter_changes:
         pspec.change_value(module_var, value, comment)
@@ -208,6 +210,7 @@ def generate_parameter_spec_ab_product(source_param_dir,
                                        bvals,
                                        gen_param_files_p=False,
                                        verbose=False):
+
     change_set = [((('{0} a_{1}'.format(module, param_var), '{0}'.format(aval), None),
                     ('{0} b_{1}'.format(module, param_var), '{0}'.format(bval), None)),
                    (aval, bval))
@@ -296,7 +299,7 @@ def generate_parameter_spec_ab_product_outer(module, param_var, avals, bvals,
                                                                  'music_bach_sticky_HMM_W0-J600.config',
                                                                  'music_bach_LT_HMM_W0-J600.config',
                                                                  'music_bach_noLT_HMM_W0-J600.config',
-                                                                 'music_bach_stickyLT_HMM_W0-J600.config.config'),
+                                                                 'music_bach_stickyLT_HMM_W0-J600.config'),
                                              dest_param_dir=None,
                                              gen_param_files_p=False,
                                              verbose=False):
@@ -342,7 +345,8 @@ def generate_parameter_spec_ab_product_hyper_regression_test(param_var='alpha',
     :return:
     """
     return generate_parameter_spec_ab_product_outer\
-        (module='HDP_hyperprior', param_var=param_var, avals=(1,), bvals=(1,),
+        (module='HDP_hyperprior', param_var=param_var,
+         avals=(1,), bvals=(1,),
          # source_param_files=('cocktail16_inference_LT_HMM_W0-J600.config',),
          gen_param_files_p=gen_param_files_p)
 
@@ -451,9 +455,9 @@ def collect_parameter_spec_list_cocktail16_w0_hyper_regression(param_var='alpha'
     :param param_var:
     :return:
     """
-    spec_list = generate_parameter_spec_ab_product_hyper_regression_test(param_var=param_var)
-    return spec_list
-
+    spec_list = generate_parameter_spec_ab_product_hyper_regression_test(param_var=param_var, gen_param_files_p=False)
+    return [experiment_tools.ParameterSpec(parameters_file, parameters_dir, model_filename_postfix)
+            for parameters_file, parameters_dir, model_filename_postfix in spec_list]
 
 # ----------------------------------------------------------------------
 
@@ -563,9 +567,12 @@ def exp_hyper_regression(test=True, param_var='alpha'):
          test=test,
          select_subdirs_verbose=False)
 
-# exp_hyper_regression(test=True)
 
-'''
+# generate_parameter_spec_ab_product_hyper_regression_test(gen_param_files_p=True)
+
+# print collect_parameter_spec_list_cocktail16_w0_hyper_regression(param_var='alpha')
+exp_hyper_regression(test=True)
+
 
 # ----------------------------------------------------------------------
 
@@ -598,6 +605,7 @@ def exp_hyper_alpha(test=True):
 # exp_hyper_alpha(test=True)
 
 
+'''
 # ----------------------------------------------------------------------
 
 def exp_hyper_alpha_plus_lambda1p6(test=True):
