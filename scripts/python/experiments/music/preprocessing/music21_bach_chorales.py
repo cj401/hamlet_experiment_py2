@@ -638,6 +638,11 @@ def generate_music21_bach_chorale_hamlet_dataset\
 
                     fout.write('{0}\n'.format(new_symbol))
 
+        # make copy of <root>/test_obs/001.txt to <root>/test_obs.txt
+        if i == 0:
+            dst_test_obs_path = os.path.join(dest_dir, 'test_obs.txt')
+            shutil.copy(dst_path, dst_test_obs_path)
+
         test_manifest_map[dst_score_filename] = name
 
     '''
@@ -836,7 +841,8 @@ def generate_bach_data(data_postfix='_test'):
                                                  num_train=200,
                                                  mode='major',
                                                  gen_analysis_meta_p=True)
-    
+
+    '''
     bach_minor_root = os.path.join(BACH_CHORALE_NOMINAL_ROOT, 'bach_minor{0}'.format(data_postfix))
     
     generate_music21_bach_chorale_hamlet_dataset(BACH_CHORALE_NOMINAL_SOURCE_ROOT,
@@ -844,6 +850,7 @@ def generate_bach_data(data_postfix='_test'):
                                                  num_train=160,
                                                  mode='minor',
                                                  gen_analysis_meta_p=True)
+    '''
 
 generate_bach_data(data_postfix='_01')
 
