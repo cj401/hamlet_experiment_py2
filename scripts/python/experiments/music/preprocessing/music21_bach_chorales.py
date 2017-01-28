@@ -541,9 +541,9 @@ def generate_music21_bach_chorale_hamlet_dataset\
     shutil.copy(source_score_mode_filepath, dest_score_mode_filepath)
 
     # copy <source_root>/symbol_to_chord_map.txt
-    print '(4) Copying <source_root>/symbol_to_chord_map.txt to <dest_dir/properties_dir>'
+    print '(4) Copying <source_root>/symbol_to_chord_map.txt to <dest_dir/properties_dir>/orig_symbol_to_chord_map.txt'
     source_symbol_to_chord_map_filepath = os.path.join(source_root, 'symbol_to_chord_map.txt')
-    dest_symbol_to_chord_map_filepath = os.path.join(properties_dir, 'symbol_to_chord_map.txt')
+    dest_symbol_to_chord_map_filepath = os.path.join(properties_dir, 'orig_symbol_to_chord_map.txt')
     shutil.copy(source_symbol_to_chord_map_filepath, dest_symbol_to_chord_map_filepath)
 
     # determine names based on mode: None=all, major, minor
@@ -561,6 +561,39 @@ def generate_music21_bach_chorale_hamlet_dataset\
 
     data_properties.append(('num_test_files', '{0}'.format(len(test_names))))
 
+    # bookkeeping of mapping of original symbols to new symbols
+    orig_to_new_symbol_map = dict()
+    new_to_orig_symbol_map = dict()
+    new_symbol_idx = 0
+
+    # read train_names score sources
+    # renumber, store renumbering in new_to_orig_symbol_map
+    # save to obs/
+    print '(5) Reading train_names original scores, renumber, save to obs/'
+    obs_manifest_map = dict()
+    for i, name in enumerate(train_names):
+        src_score_filename = '{0}.txt'.format(name)
+        src_path = os.path.join(source_score_root, src_score_filename)
+        dst_score_filename = '{0}.txt'.format(str(i + 1).zfill(3))  # filenames start at 001
+        dst_path = os.path.join(obs_dir, dst_score_filename)
+        with open(src_path, 'r') as fin:
+            with open(dst_path, 'w') as fout:
+                for line in fin.readlines():
+                    orig_symbol = int(line.strip())
+
+                    if orig_symbol in orig_to_new_symbol_map:
+                        new_symbol = orig_to_new_symbol_map[orig_symbol]
+                    else:
+                        new_symbol = new_symbol_idx
+                        orig_to_new_symbol_map[orig_symbol] = new_symbol_idx
+                        new_to_orig_symbol_map[new_symbol_idx] = orig_symbol
+                        new_symbol_idx += 1
+
+                    fout.write('{0}\n'.format(new_symbol))
+
+        obs_manifest_map[dst_score_filename] = name
+
+    '''
     # copy scores for train_names to obs/
     print '(5) Copying scores for train_names to obs/'
     obs_manifest_map = dict()
@@ -571,6 +604,7 @@ def generate_music21_bach_chorale_hamlet_dataset\
         dst_path = os.path.join(obs_dir, dst_filename)
         shutil.copy(src_path, dst_path)
         obs_manifest_map[dst_filename] = name
+    '''
 
     # save manifest_obs.txt
     print '(6) Saving manifest_obs.txt'
@@ -579,6 +613,34 @@ def generate_music21_bach_chorale_hamlet_dataset\
         for obs_filename in sorted(obs_manifest_map.keys()):
             fout.write('{0} {1}\n'.format(obs_filename, obs_manifest_map[obs_filename]))
 
+    # read test_names score sources
+    # renumber, store renumbering in new_to_orig_symbol_map
+    # save to test_obs/
+    print '(7) Reading test_names original scores, renumber, save to test_obs/'
+    test_manifest_map = dict()
+    for i, name in enumerate(test_names):
+        src_score_filename = '{0}.txt'.format(name)
+        src_path = os.path.join(source_score_root, src_score_filename)
+        dst_score_filename = '{0}.txt'.format(str(i + 1).zfill(3))  # filenames start at 001
+        dst_path = os.path.join(test_dir, dst_score_filename)
+        with open(src_path, 'r') as fin:
+            with open(dst_path, 'w') as fout:
+                for line in fin.readlines():
+                    orig_symbol = int(line.strip())
+
+                    if orig_symbol in orig_to_new_symbol_map:
+                        new_symbol = orig_to_new_symbol_map[orig_symbol]
+                    else:
+                        new_symbol = new_symbol_idx
+                        orig_to_new_symbol_map[orig_symbol] = new_symbol_idx
+                        new_to_orig_symbol_map[new_symbol_idx] = orig_symbol
+                        new_symbol_idx += 1
+
+                    fout.write('{0}\n'.format(new_symbol))
+
+        test_manifest_map[dst_score_filename] = name
+
+    '''
     # copy scores for test_name to test_obs/
     print '(7) Copying scores for test_name to test_obs/'
     test_manifest_map = dict()
@@ -592,6 +654,7 @@ def generate_music21_bach_chorale_hamlet_dataset\
             dst_test_obs_path = os.path.join(dest_dir, 'test_obs.txt')
             shutil.copy(src_path, dst_test_obs_path)
         test_manifest_map[dst_filename] = name
+    '''
 
     # save manifest_test_obs.txt
     print '(8) Saving manifest_test_obs.txt'
@@ -600,13 +663,32 @@ def generate_music21_bach_chorale_hamlet_dataset\
         for obs_filename in sorted(test_manifest_map.keys()):
             fout.write('{0} {1}\n'.format(obs_filename, test_manifest_map[obs_filename]))
 
+    # save new_to_orig_symbol_map
+    print '(9) Saving new_to_orig_symbol_map.txt'
+    new_to_orig_symbol_map_path = os.path.join(properties_dir, 'new_to_orig_symbol_map.txt')
+    with open(new_to_orig_symbol_map_path, 'w') as fout:
+        for new_symbol, orig_symbol in new_to_orig_symbol_map.iteritems():
+            fout.write('{0} {1}\n'.format(new_symbol, orig_symbol))
+
+    # Record total number of new_symbols
+    # NOTE: there are three possible interpretations
+    # (a) The total number of symbols in a 0-based index scheme (i.e.: [0,...,K-1]) (so there are K symbols)
+    # (b) The highest index of a 1-based index scheme (i.e.: [1,...,K]) (so there are K symbols)
+    # (c) The highest index of a 0-based index scheme (i.e.: [0,...,K]) (so there are K+1 symbols)
+    # Current scheme assumes (a) or (c) b/c symbols start 0-based.
+    # Currently assuming (c) is the case, by: new_symbol_idx - 1
+    # if (a) is correct, then need just: new_symbol_idx
+    data_properties.append(('# total_symbols', '{0}'.format(new_symbol_idx - 1)))
+    data_properties.append(('Dirichlet_multinomial_emissions K', '{0}'.format(new_symbol_idx - 1)))
+
     # ----- Analysis metadata: chord frequencies in obs / test_obs:
 
     if gen_analysis_meta_p:
-        print '(9) Generating analysis metadata for chord frequencies in obs and test_obs'
+        print '(10) Generating analysis metadata for chord frequencies in obs and test_obs'
 
         # read <source> symbol_to_chord_map.txt into symbol_to_chord_map dict
-        print '(9a) Reading <source_root>/symbol_to_chord_map.txt'
+        # NOTE: these are orig_symbols
+        print '(10a) Reading <source_root>/symbol_to_chord_map.txt'
         symbol_to_chord_map = dict()
         with open(source_symbol_to_chord_map_filepath, 'r') as fin:
             for line in fin.readlines():
@@ -616,7 +698,8 @@ def generate_music21_bach_chorale_hamlet_dataset\
                 symbol_to_chord_map[symbol] = chord
 
         # read <dest_obs>/*.txt into obs_symbol_corpus_frequency_dict, counting symbol freq
-        print '(9b) Reading <dest_obs>/*.txt symbols'
+        # NOTE: these are new_symbols
+        print '(10b) Reading <dest_obs>/*.txt symbols'
         total_obs_chords = 0
         obs_symbol_corpus_frequency_dict = dict()
         for obs_filename in os.listdir(obs_dir):
@@ -631,7 +714,8 @@ def generate_music21_bach_chorale_hamlet_dataset\
                         obs_symbol_corpus_frequency_dict[symbol] = 1
 
         # read <dest_test_obs>/*.txt into test_obs_symbol_corpus_frequency_dict, counting symbol freq
-        print '(9c) Reading <dest_test_obs>/*.txt symbols'
+        # NOTE: these are new_symbols
+        print '(10c) Reading <dest_test_obs>/*.txt symbols'
         total_test_obs_chords = 0
         test_obs_symbol_corpus_frequency_dict = dict()
         for test_obs_filename in os.listdir(test_dir):
@@ -655,49 +739,62 @@ def generate_music21_bach_chorale_hamlet_dataset\
         #     positive int : frequency in obs/
         #     0 : occurs in test_obs/ but not obs/
         #     -1 : occurs in source corpus but neither obs/ or test_obs/
-        print '(9d) Saving chord_corpus_frequency_obs.txt'
-        unique_obs_chords = set()
+        print '(10d) Saving chord_corpus_frequency_obs.txt'
+        unique_obs_symbols = set()
         chords_in_test_not_in_train = set()
         chord_corpus_frequency_obs_filepath = os.path.join(properties_dir, 'chord_corpus_frequency_obs.txt')
+
         with open(chord_corpus_frequency_obs_filepath, 'w') as fout:
-            for symbol, chord in symbol_to_chord_map.iteritems():
-                if symbol in obs_symbol_corpus_frequency_dict:
-                    unique_obs_chords.add(symbol)
-                    fout.write('{0} {1}\n'.format(chord, obs_symbol_corpus_frequency_dict[symbol]))
-                elif symbol in test_obs_symbol_corpus_frequency_dict:
-                    chords_in_test_not_in_train.add(symbol)
+            for orig_symbol, chord in symbol_to_chord_map.iteritems():
+
+                # map orig_symbol to new_symbol, if was used in new corpus
+                new_symbol = None
+                if orig_symbol in orig_to_new_symbol_map:
+                    new_symbol = orig_to_new_symbol_map[orig_symbol]
+
+                if new_symbol in obs_symbol_corpus_frequency_dict:
+                    unique_obs_symbols.add(new_symbol)
+                    fout.write('{0} {1}\n'.format(chord, obs_symbol_corpus_frequency_dict[new_symbol]))
+                elif new_symbol in test_obs_symbol_corpus_frequency_dict:
+                    chords_in_test_not_in_train.add(new_symbol)
                     fout.write('{0} {1}\n'.format(chord, 0))
                 else:
                     fout.write('{0} {1}\n'.format(chord, -1))
 
         # create chord_corpus_frequency_test_obs.txt
-        print '(9e) Saving chord_corpus_frequency_test_obs.txt'
-        unique_test_obs_chords = set()
+        print '(10e) Saving chord_corpus_frequency_test_obs.txt'
+        unique_test_obs_symbols = set()
         chords_in_train_not_in_test = set()
         chord_corpus_frequency_test_obs_filepath = os.path.join(properties_dir, 'chord_corpus_frequency_test_obs.txt')
         with open(chord_corpus_frequency_test_obs_filepath, 'w') as fout:
-            for symbol, chord in symbol_to_chord_map.iteritems():
-                if symbol in test_obs_symbol_corpus_frequency_dict:
-                    unique_test_obs_chords.add(symbol)
-                    fout.write('{0} {1}\n'.format(chord, test_obs_symbol_corpus_frequency_dict[symbol]))
-                elif symbol in obs_symbol_corpus_frequency_dict:
-                    chords_in_train_not_in_test.add(symbol)
+            for orig_symbol, chord in symbol_to_chord_map.iteritems():
+
+                # map orig_symbol to new_symbol, if it was used in new corpus
+                new_symbol = None
+                if orig_symbol in orig_to_new_symbol_map:
+                    new_symbol = orig_to_new_symbol_map[orig_symbol]
+
+                if new_symbol in test_obs_symbol_corpus_frequency_dict:
+                    unique_test_obs_symbols.add(new_symbol)
+                    fout.write('{0} {1}\n'.format(chord, test_obs_symbol_corpus_frequency_dict[new_symbol]))
+                elif new_symbol in obs_symbol_corpus_frequency_dict:
+                    chords_in_train_not_in_test.add(new_symbol)
                     fout.write('{0} {1}\n'.format(chord, 0))
                 else:
                     fout.write('{0} {1}\n'.format(chord, -1))
 
         data_properties.append(('total_train_chords', '{0}'.format(total_obs_chords)))
-        data_properties.append(('total_unique_train_chords', '{0}'.format(len(unique_obs_chords))))
+        data_properties.append(('total_unique_train_chords', '{0}'.format(len(unique_obs_symbols))))
         data_properties.append(
             ('total_unique_chords_in_train_not_in_test', '{0}'.format(len(chords_in_train_not_in_test))))
         data_properties.append(('total_test_chords', '{0}'.format(total_test_obs_chords)))
-        data_properties.append(('total_unique_test_chords', '{0}'.format(len(unique_test_obs_chords))))
+        data_properties.append(('total_unique_test_chords', '{0}'.format(len(unique_test_obs_symbols))))
         data_properties.append(
             ('total_unique_chords_in_test_not_in_train', '{0}'.format(len(chords_in_test_not_in_train))))
 
         data_properties.append(('# per test: total_chords, num_unique_chords, total_chords_not_in_train,'
                                 + ' num_unique_chords_not_in_train', ''))
-        print '(9f) Collect number of chords in test sets NOT in training corpus'
+        print '(10f) Collect number of chords in test sets NOT in training corpus'
         for test_obs_filename in os.listdir(test_dir):
             dst_test_obs_path = os.path.join(test_dir, test_obs_filename)
             with open(dst_test_obs_path, 'r') as fin:
@@ -719,7 +816,7 @@ def generate_music21_bach_chorale_hamlet_dataset\
                                                 total_chords_in_test_not_in_train,
                                                 len(unique_chords_in_test_not_in_train))))
 
-    print '(10) Saving summary.txt'
+    print '(11) Saving summary.txt'
     data_properties_filepath = os.path.join(properties_dir, 'summary.txt')
     with open(data_properties_filepath, 'w') as fout:
         for prop, value in data_properties:
@@ -730,7 +827,7 @@ def generate_music21_bach_chorale_hamlet_dataset\
 
 # ----------------------------------------------------------------------
 
-def generate_bach_data(data_postfix='_02'):
+def generate_bach_data(data_postfix='_test'):
     
     bach_major_root = os.path.join(BACH_CHORALE_NOMINAL_ROOT, 'bach_major{0}'.format(data_postfix))
     
@@ -748,7 +845,7 @@ def generate_bach_data(data_postfix='_02'):
                                                  mode='minor',
                                                  gen_analysis_meta_p=True)
 
-# generate_bach_data(data_postfix='_test')
+generate_bach_data(data_postfix='_01')
 
 
 # ----------------------------------------------------------------------

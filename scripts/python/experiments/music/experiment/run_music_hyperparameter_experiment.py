@@ -272,8 +272,8 @@ def generate_parameter_spec_ab_product(source_param_dir,
 def test_generate_parameter_spec_ab_product(gen_param_files_p=False):
     source_param_dir = PARAMETERS_ROOT
     source_param_files = ('music_bach_BFact_HMM_W0.config',
-                          'music_bach_LT_HMM_W0-J600.config',
-                          'music_bach_noLT_HMM_W0-J600.config')
+                          'music_bach_major_LT.config',
+                          'music_bach_major_noLT.config')
     dest_param_dir = os.path.join(PARAMETERS_ROOT, 'cocktail16_hyper_alpha')
     parameter_spec_parameters\
         = generate_parameter_spec_ab_product(source_param_dir=source_param_dir,
@@ -295,11 +295,12 @@ def test_generate_parameter_spec_ab_product(gen_param_files_p=False):
 # ----------------------------------------------------------------------
 
 def generate_parameter_spec_ab_product_outer(module, param_var, avals, bvals,
-                                             source_param_files=(# 'music_bach_BFact_HMM_W0.config',
-                                                                 'music_bach_sticky_HMM_W0-J600.config',
-                                                                 'music_bach_LT_HMM_W0-J600.config',
-                                                                 'music_bach_noLT_HMM_W0-J600.config',
-                                                                 'music_bach_stickyLT_HMM_W0-J600.config'),
+                                             source_param_files=('music_bach_major_LT.config',
+                                                                 'music_bach_major_noLT.config'
+                                                                 # 'music_bach_BFact_HMM_W0.config',
+                                                                 # 'music_bach_sticky_HMM_W0-J600.config',
+                                                                 # 'music_bach_stickyLT_HMM_W0-J600.config'
+                                                                ),
                                              dest_param_dir=None,
                                              gen_param_files_p=False,
                                              verbose=False):
@@ -370,7 +371,7 @@ def generate_parameter_spec_ab_product_hyper_alpha_debug(gen_param_files_p=False
     """
     return generate_parameter_spec_ab_product_outer\
         (module='HDP_hyperprior', param_var='alpha', avals=(1, 0.1), bvals=(1, 0.1),
-         source_param_files=('music_bach_LT_HMM_W0-J600.config',),
+         source_param_files=('music_bach_major_LT.config',),
          dest_param_dir=os.path.join(PARAMETERS_ROOT, 'music_bach_hyper_alpha_debug'),
          gen_param_files_p=gen_param_files_p)
 
@@ -571,7 +572,7 @@ def exp_hyper_regression(test=True, param_var='alpha'):
 # generate_parameter_spec_ab_product_hyper_regression_test(gen_param_files_p=True)
 
 # print collect_parameter_spec_list_cocktail16_w0_hyper_regression(param_var='alpha')
-exp_hyper_regression(test=True)
+# exp_hyper_regression(test=True)
 
 
 '''
