@@ -197,7 +197,7 @@ def set_up_output_structure(results_root):
         os.mkdir(output_root)
     except OSError:
         if (os.path.exists(results_root)==False):
-            print(output_root, " does not exist.")
+            print(results_root, " does not exist.")
             sys.exit(-1)
         else:
             print("G directory has been created!")
@@ -259,7 +259,8 @@ def main(argv):
             m = int(arg.split('=')[1])
         elif('t' in arg):
             t = float(arg.split('=')[1])
-    results_root = os.path.join('results',experiment)
+    #results_root = os.path.join('results',experiment)
+    results_root = experiment
     matrix_root = os.path.join(results_root, 'A')
     set_up_output_structure(results_root)
     if (reduce == 'true'):
