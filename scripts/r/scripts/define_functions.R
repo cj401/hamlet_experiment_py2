@@ -42,7 +42,7 @@ get_scalar_or_vector_data <- function(specs, output_type, paths)
                 specs$results, "/",
                 specs$dataset, "/",
                 m, "/", sep = "")
-        ## print(model_dir)
+        #print(model_dir)
         setwd(model_dir)
         items <- Sys.glob("*")
         setwd(cur_path)
@@ -70,39 +70,85 @@ get_matrix_data <- function(specs, output_type, paths)
     groups <- specs$models
     data_list <- rep(list(list()), length(groups))
     names(data_list) <- unique(groups)
-    for(i in 1:length(specs$items))
+    for (m in groups)
     {
-        data_path <-
-            paste(
-                paths$data, "/", specs$results, "/",
-                specs$items[i], "/",
-                output_type, "/", sep = ""
-                )
+      cur_path <- getwd()
+      model_dir <- 
+        paste(
+          paths$results, "/", 
+          specs$results, "/",
+          specs$dataset, "/",
+          m, "/", sep = "")
+      setwd(model_dir)
+      items <- Sys.glob("*")
+      setwd(cur_path)
+      for (i in items)
+      {
+        data_path <- 
+          paste(
+            model_dir, "/",
+            i, "/",
+            output_type, "/",
+            sep="")
         file_names <- dir(data_path)
         first_matrix <-
-            as.matrix(
-                read.table(
-                    paste(data_path, file_names[1], sep = ""),
-                    header = FALSE))
+          as.matrix(
+            read.table(
+              paste(data_path, file_names[1], sep = ""),
+              header = FALSE))
         r <- nrow(first_matrix)
         c <- ncol(first_matrix)
         matrix_stack <- array(0, dim = c(r,c,length(file_names)))
         for(t in 1:length(file_names))
         {
-            next_matrix <-
-                as.matrix(
-                    read.table(
-                        paste(data_path, file_names[t], sep = ""),
-                        header = FALSE))
-            matrix_stack[,,t] <- next_matrix
+          next_matrix <-
+            as.matrix(
+              read.table(
+                paste(data_path, file_names[t], sep = ""),
+                header = FALSE))
+          matrix_stack[,,t] <- next_matrix
         }
-        data_list[[groups[i]]] <-
-            append(
-                data_list[[groups[i]]],
-                list(matrix_stack)
-                )
+        data_list[[m]] <- 
+          append(data_list[[m]], list(matrix_stack))
+      }
     }
     return(data_list)
+    
+    #for(i in 1:length(specs$models))
+    #{
+     #   data_path <-
+     #      paste(
+     #           paths$results, "/", 
+     #           specs$results, "/",
+     #           specs$dataset, "/",
+     #           specs$models[i], "/",
+     #           output_type, "/", sep = ""
+     #           )
+      #  file_names <- dir(data_path)
+      #  first_matrix <-
+      #      as.matrix(
+      #          read.table(
+      #              paste(data_path, file_names[1], sep = ""),
+      #              header = FALSE))
+      #  r <- nrow(first_matrix)
+      #  c <- ncol(first_matrix)
+      #  matrix_stack <- array(0, dim = c(r,c,length(file_names)))
+      #  for(t in 1:length(file_names))
+      #  {
+      #      next_matrix <-
+      #          as.matrix(
+      #              read.table(
+      #                  paste(data_path, file_names[t], sep = ""),
+      #                  header = FALSE))
+      #      matrix_stack[,,t] <- next_matrix
+      #  }
+      #  data_list[[groups[i]]] <-
+      #      append(
+      #          data_list[[groups[i]]],
+      #          list(matrix_stack)
+      #          )
+#    }
+#    return(data_list)
 }
 
 collect_data_as_scalar <- function(data_list, summary_function = I)
@@ -241,7 +287,7 @@ plot_scalar_by_iteration <-
         highest_val = min(max(highest_val, max(l[[paste(error_var,"_upper", sep = "")]][index_subset], na.rm = TRUE)), yrange[2])
     }
     output_path <- paste(paths$fig_root, specs$results, "/", specs$comparison, "/", specs$dataset, "/", sep = "")
-    if(!dir.exists(output_path)) dir.create(output_path, recursive = TRUE)
+    if(!file.exists(output_path)) dir.create(output_path, recursive = TRUE)
     pdf(paste(output_path, "/", output_type, ".pdf", sep = ""))
     plot(
         NULL, xlim = c(0, n_iterations), ylim = c(lowest_val, highest_val),
@@ -275,46 +321,71 @@ format_data_for_binary_matrix_plot <-
         burnin_samples = 1
         )
 {
-    ground_truth_data <-
-        as.matrix(
-            read.table(
-                paste(paths$data, "/", "states.txt", sep = "")))
+    #ground_truth_data <-
+        #as.matrix(
+            #read.table(
+                #paste(paths$data, "/", "states.txt", sep = "")))
     data_list <- get_matrix_data(specs, output_type, paths)
     result_matrices <-
         summarize_matrix_data_across_iterations_and_runs(
             data_list,
             iteration_summary_function, run_summary_function,
             burnin_samples)
-    return(list(gt = ground_truth_data, results = result_matrices))
+    #return(list(gt = ground_truth_data, results = result_matrices))
+    return (result_matrices)
 }
 
-plot_binary_matrices <- function(specs, data, paths)
-{
-    T <- nrow(data$gt)
-    D <- ncol(data$gt)
-    groups <- names(data$results)
-    G <- length(groups)
-    pdf(
-        paste(
-            paths$vis, specs$results, "/grids.pdf", sep = ""))
-    par(mfrow = c(G + 1, 1), mar = c(1,3,1,1), mgp = c(1,1,0))
-    image(data$gt, x = seq(0.5, T + 0.5), y = seq(0.5, D + 0.5),
-          col = gray.colors(100), xlab = "", ylab = "Ground Truth",
-          xaxt = "n", yaxt = "n")
-    for(g in groups)
-    {
-        m <- data$results[[g]]
+#plot_binary_matrices <- function(specs, data, paths)
+#{
+ #   T <- nrow(data$gt)
+ #  D <- ncol(data$gt)
+ #   groups <- names(data$results)
+ #   G <- length(groups)
+ #   pdf(
+ #      paste(
+ #           paths$vis, specs$results, "/grids.pdf", sep = ""))
+ #   par(mfrow = c(G + 1, 1), mar = c(1,3,1,1), mgp = c(1,1,0))
+ #   image(data$gt, x = seq(0.5, T + 0.5), y = seq(0.5, D + 0.5),
+ #         col = gray.colors(100), xlab = "", ylab = "Ground Truth",
+ #         xaxt = "n", yaxt = "n")
+ #   for(g in groups)
+ #   {
+ #       m <- data$results[[g]]
         ## image(data$gt, x = seq(0.5, T + 0.5), y = seq(0.5, D + 0.5),
         ##       col = gray.colors(100), xlab = "", ylab = g,
         ##       xaxt = "n", yaxt = "n")
         ## image(0.5 + sign(data$gt - m) * (data$gt - m)^2 / 2, x = seq(0.5, T + 0.5), y = seq(0.5, D + 0.5),
         ##       col = gray.colors(100), xlab = "", ylab = g,
         ##       xaxt = "n", yaxt = "n")
-        image(m, x = seq(0.5, T + 0.5), y = seq(0.5, D + 0.5),
-              col = gray.colors(100), xlab = "", ylab = g,
-              xaxt = "n", yaxt = "n")
-    }
+ #       image(m, x = seq(0.5, T + 0.5), y = seq(0.5, D + 0.5),
+ #             col = gray.colors(100), xlab = "", ylab = g,
+ #             xaxt = "n", yaxt = "n")
+ #   }
+ #   dev.off()
+#}
+
+plot_binary_matrices <- function(specs, binary_matrices, paths)
+{
+  output_dir <- paste(paths$fig_root, "/",
+                      specs$results, "/",
+                      specs$comparison, "/",
+                      specs$dataset, "/",
+                      sep="")
+  if (!file.exists(output_dir)) dir.create(output_dir, recursive = TRUE)
+  models <- names(binary_matrices)
+  for (m in models)
+  {
+    output_path <- paste(output_dir, "/", m, "/", sep="")
+    if (!file.exists(output_path)) dir.create(output_path, recursive = TRUE)
+    pdf(paste(output_path, "binary_state.pdf", sep=""))
+    m <- binary_matrices[[m]]
+    T <- nrow(m)
+    D <- ncol(m)
+    image(m, x = seq(0.5, T + 0.5), y = seq(0.5, D + 0.5), 
+          col = gray.colors(100), xlab="", ylab="", 
+          xaxt="n", yaxt="n")
     dev.off()
+  }
 }
 
 count_nonzero_entries_per_row <- function(data_matrix)
@@ -488,7 +559,7 @@ plot_scalar_density_by_model <-
         y_highest_val = min(max(y_highest_val, max(density(l, na.rm=TRUE)$y)), yrange[2])
       }
       output_path <- paste(paths$fig_root, specs$results, "/", specs$comparison, "/", specs$dataset, "/", sep = "")
-      if(!dir.exists(output_path)) dir.create(output_path, recursive = TRUE)
+      if(!file.exists(output_path)) dir.create(output_path, recursive = TRUE)
       pdf(paste(output_path, "/", output_type, "_density.pdf", sep = ""))
       plot(
         NULL, xlim = c(x_lowest_val, x_highest_val), ylim=c(y_lowest_val, y_highest_val),
@@ -527,7 +598,7 @@ plot_acf_by_model_and_run <-
 {
       results_list <- get_scalar_or_vector_data(specs, output_type, paths)
       output_dir <- paste(paths$fig_root, specs$results, "/", specs$comparison, "/", specs$dataset, "/", sep = "")
-      if(!dir.exists(output_dir)) dir.create(output_dir, recursive = TRUE)
+      if(!file.exists(output_dir)) dir.create(output_dir, recursive = TRUE)
       models <- names(results_list)
       for (m in models)
       {
@@ -536,7 +607,7 @@ plot_acf_by_model_and_run <-
         {
           output_subdir <- paste(m,"/",formatC(i, width=2, flag="0"),"/",sep="")
           output_path <- paste(output_dir, output_subdir, sep="")
-          if(!dir.exists(output_path)) dir.create(output_path, recursive = TRUE)
+          if(!file.exists(output_path)) dir.create(output_path, recursive = TRUE)
           pdf(paste(output_path, "/", output_type, "_acf.pdf", sep=""))
           acf(results_list[[m]][[i]][,-1], main=output_type)
           dev.off()
@@ -548,7 +619,7 @@ plot_A_and_block_A <-
   function(specs, paths, block_code_path, threshold)
 {
     output_dir <- paste(paths$fig_root, specs$results, "/", specs$comparison, "/", specs$dataset, "/", sep = "")
-    if(!dir.exists(output_dir)) dir.create(output_dir, recursive = TRUE)
+    if(!file.exists(output_dir)) dir.create(output_dir, recursive = TRUE)
     models <- specs$models
     for (m in models)
     {
@@ -562,9 +633,7 @@ plot_A_and_block_A <-
       setwd(cur_path)
       for (i in items)
       {
-        print("hi")
-        print(i)
-        if (!dir.exists(paste(model_dir, "/", i, "/G/", sep="")))
+        if (!file.exists(paste(model_dir, "/", i, "/G/", sep="")))
         {
           generate_block_diagonal_matrix(block_code_path, paste(model_dir, "/", i, "/", sep=""), threshold)
         }
@@ -581,7 +650,7 @@ plot_A_and_block_A <-
         block_J_ <- nrow(block_A_)
         output_subdir <- paste(m,"/",i,"/",sep="")
         output_path <- paste(output_dir, output_subdir, sep="")
-        if(!dir.exists(output_path)) dir.create(output_path, recursive = TRUE)
+        if(!file.exists(output_path)) dir.create(output_path, recursive = TRUE)
         pdf(paste(output_path, "/", "A.pdf", sep=""))
         if (J_ == 1) image(t(A_), col=heat.colors(100), xaxt="n", yaxt="n")
         else image(t(A_)[J_:1,], col=heat.colors(100), xaxt="n", yaxt="n")
@@ -612,7 +681,8 @@ make_plots <-
     plot.vars,
     project_root,
     threshold,
-    block_code_path
+    block_code_path,
+    binary
     )
 {
     specs <- read.table(paste("../queries/", query_file, sep=""), header = TRUE)
@@ -638,7 +708,8 @@ make_plots <-
                        plot.vars = plot.vars,
                        smoothing_window_size = smoothing_window_size,
                        threshold = threshold,
-                       block_code_path = block_code_path)
+                       block_code_path = block_code_path,
+                       binary = binary)
         print("...........done.")
       }
     }
@@ -655,7 +726,8 @@ make_key_plots <-
     smoothing_window_size,
     plot.vars,
     threshold,
-    block_code_path
+    block_code_path,
+    binary
     )
 {
     specs <- get_specs(query_file, results_dir, data_set, comparison_name)
@@ -689,6 +761,15 @@ make_key_plots <-
                          paths = paths,
                          block_code_path = block_code_path,
                          threshold = threshold)
+    }
+    if (binary)
+    {
+      binary_matrices <-
+                format_data_for_binary_matrix_plot(
+                     specs, "thetastar", paths=paths,
+                     burnin_samples = burnin_samples
+                     )
+             plot_binary_matrices(specs, binary_matrices, paths)
     }
 }
 
