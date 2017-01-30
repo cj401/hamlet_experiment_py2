@@ -40,7 +40,11 @@ option_list = list(
               metavar="character"),
   make_option(c("--binary"), type="character",
               default="0",
-              help="whether to plot binary matrix", metavar="character")
+              help="whether to plot binary matrix", metavar="character"),
+  make_option(c("-g", "--groundtruth"), type="character",
+              default=NULL,
+              help="the data directory for groundtruth matrix", 
+              metavar="character")
 );
 
 opt_parser = OptionParser(option_list = option_list)
@@ -49,6 +53,13 @@ if (is.null(opt$query_file)||is.null(opt$data_set))
 {
   print_help(opt_parser)
   stop("Arugment for query file and data_set must be provided.\n", call.=FALSE)
+}
+if (as.numeric(opt$binary))
+{
+  if (is.null(opt$groundtruth))
+  {
+    stop("Argument for data directory must be provided if binary option is called", call.=FALSE)
+  }
 }
 plot.vars <- strsplit(opt$vars, ",")[[1]]
 if ("base" %in% plot.vars)
@@ -67,4 +78,5 @@ make_plots(opt$query_file,
           opt$project_root,
           as.numeric(opt$threshold),
           opt$block_matrix_code,
-          as.numeric(opt$binary))
+          as.numeric(opt$binary),
+          opt$groundtruth)
