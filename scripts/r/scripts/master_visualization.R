@@ -37,7 +37,10 @@ option_list = list(
   make_option(c("-c", "--block_matrix_code"), type="character",
               default="../../python/experiments/latent_continue_syn/postprocessing/block_diag_analysis.py",
               help = "block diagonal matrix construction code path relative to this script",
-              metavar="character")
+              metavar="character"),
+  make_option(c("--binary"), type="character",
+              default="0",
+              help="whether to plot binary matrix", metavar="character")
 );
 
 opt_parser = OptionParser(option_list = option_list)
@@ -63,4 +66,5 @@ make_plots(opt$query_file,
           plot.vars,
           opt$project_root,
           as.numeric(opt$threshold),
-          opt$block_matrix_code)
+          opt$block_matrix_code,
+          as.numeric(opt$binary))
