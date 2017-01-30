@@ -318,21 +318,21 @@ format_data_for_binary_matrix_plot <-
         specs, output_type, paths,
         iteration_summary_function = mean,
         run_summary_function = mean,
-        burnin_samples = 1
+        burnin_samples = 1,
+        groundtruth
         )
 {
-    #ground_truth_data <-
-        #as.matrix(
-            #read.table(
-                #paste(paths$data, "/", "states.txt", sep = "")))
+    ground_truth_data <-
+        as.matrix(
+            read.table(
+                paste(paths$data, "/", groundtruth, "/", "states.txt", sep = "")))
     data_list <- get_matrix_data(specs, output_type, paths)
     result_matrices <-
         summarize_matrix_data_across_iterations_and_runs(
             data_list,
             iteration_summary_function, run_summary_function,
             burnin_samples)
-    #return(list(gt = ground_truth_data, results = result_matrices))
-    return (result_matrices)
+    return(list(gt = ground_truth_data, results = result_matrices))
 }
 
 #plot_binary_matrices <- function(specs, data, paths)
@@ -364,7 +364,7 @@ format_data_for_binary_matrix_plot <-
  #   dev.off()
 #}
 
-plot_binary_matrices <- function(specs, binary_matrices, paths)
+plot_binary_matrices <- function(specs, data, paths)
 {
   output_dir <- paste(paths$fig_root, "/",
                       specs$results, "/",
@@ -372,13 +372,20 @@ plot_binary_matrices <- function(specs, binary_matrices, paths)
                       specs$dataset, "/",
                       sep="")
   if (!file.exists(output_dir)) dir.create(output_dir, recursive = TRUE)
-  models <- names(binary_matrices)
-  for (m in models)
+  T <- nrow(data$gt)
+  D <- ncol(data$gt)
+  pdf(paste(output_dir, "/groundtruth.pdf", sep=""))
+  image(data$gt, x = seq(0.5, T + 0.5), y = seq(0.5, D + 0.5), 
+        col = gray.colors(100), xlab="", ylab="", 
+        xaxt="n", yaxt="n")
+  dev.off()
+  models <- names(data$results)
+  for (ms in models)
   {
-    output_path <- paste(output_dir, "/", m, "/", sep="")
+    output_path <- paste(output_dir, "/", ms, "/", sep="")
     if (!file.exists(output_path)) dir.create(output_path, recursive = TRUE)
     pdf(paste(output_path, "binary_state.pdf", sep=""))
-    m <- binary_matrices[[m]]
+    m <- data$results[[ms]]
     T <- nrow(m)
     D <- ncol(m)
     image(m, x = seq(0.5, T + 0.5), y = seq(0.5, D + 0.5), 
@@ -682,7 +689,8 @@ make_plots <-
     project_root,
     threshold,
     block_code_path,
-    binary
+    binary,
+    groundtruth
     )
 {
     specs <- read.table(paste("../queries/", query_file, sep=""), header = TRUE)
@@ -709,7 +717,8 @@ make_plots <-
                        smoothing_window_size = smoothing_window_size,
                        threshold = threshold,
                        block_code_path = block_code_path,
-                       binary = binary)
+                       binary = binary,
+                       groundtruth = groundtruth)
         print("...........done.")
       }
     }
@@ -727,7 +736,8 @@ make_key_plots <-
     plot.vars,
     threshold,
     block_code_path,
-    binary
+    binary,
+    groundtruth
     )
 {
     specs <- get_specs(query_file, results_dir, data_set, comparison_name)
@@ -767,7 +777,8 @@ make_key_plots <-
       binary_matrices <-
                 format_data_for_binary_matrix_plot(
                      specs, "thetastar", paths=paths,
-                     burnin_samples = burnin_samples
+                     burnin_samples = burnin_samples,
+                     groundtruth = groundtruth
                      )
              plot_binary_matrices(specs, binary_matrices, paths)
     }
