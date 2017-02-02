@@ -27,7 +27,7 @@ option_list = list(
                       2. variables you want to include seperate by comma",
               metavar="character"),
   make_option(c("-r","--project_root"), type="character",
-              default = "../../../../data",
+              default = "../../../../data/",
               help = "project root directory relative to where the this script lives",
               metavar="character"),
   make_option(c("-t","--threshold"), type="character", 
