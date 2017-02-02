@@ -698,6 +698,7 @@ make_plots <-
     root <- get_directories(project_root = project_root)
     cur_path <- getwd()
     results_dir <- paste(root$results, "/", data_set, sep="")
+    print(results_dir)
     setwd(results_dir)
     paths <- Sys.glob(path_glob)
     setwd(cur_path)
