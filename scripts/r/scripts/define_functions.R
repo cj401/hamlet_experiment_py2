@@ -616,7 +616,7 @@ plot_acf_by_model_and_run <-
           output_path <- paste(output_dir, output_subdir, sep="")
           if(!file.exists(output_path)) dir.create(output_path, recursive = TRUE)
           pdf(paste(output_path, "/", output_type, "_acf.pdf", sep=""))
-          acf(results_list[[m]][[i]][,-1], main=output_type)
+          acf(results_list[[m]][[i]][,-1], main=output_type, na.action=TRUE)
           dev.off()
         }
       }
@@ -638,36 +638,66 @@ plot_A_and_block_A <-
       setwd(model_dir)
       items <- Sys.glob("*")
       setwd(cur_path)
-      for (i in items)
+      if ("BFact" %in% strsplit(m, "_")[[1]])
       {
-        if (!file.exists(paste(model_dir, "/", i, "/G/", sep="")))
+        for (i in items)
         {
-          generate_block_diagonal_matrix(block_code_path, paste(model_dir, "/", i, "/", sep=""), threshold)
+          #setwd(paste(model_dir, "/", i, "/", sep=""))
+          #num_chains <- max(as.numeric(list.files(pattern="[0-9]")), na.rm=TRUE)
+          #setwd(cur_path)
+          model_A_dir <- paste(model_dir, "/", i, "/0/A/", sep="")
+          setwd(model_A_dir)
+          iterations <- as.numeric(substr(Sys.glob("*.txt"),1,5))
+          last_iteration <- max(iterations)
+          last_iteration_file <- paste(formatC(last_iteration, width=5, flag="0"), "txt", sep=".")
+          setwd(cur_path)
+          output_path <- paste(output_dir, "/", m, "/", i, "/", sep="")
+          if(!file.exists(output_path)) dir.create(output_path, recursive = TRUE)
+          pdf(paste(output_path, "/", "A.pdf", sep=""))
+          par(mfrow = c(4,4), mar = c(1,1,1,1))
+          for (j in 0:15)
+          {
+            A_ <- as.matrix(read.table(paste(model_dir, "/", i, "/", j, "/", last_iteration_file, sep="")))
+            J_ <- nrow(A_)
+            if (J_ == 1) image(t(A_), col=heat.colors(100), xaxt="n", yaxt="n")
+            else image(t(A_)[J_:1,], col=heat.colors(100), xaxt="n", yaxt="n")
+          }
+          dev.off()
         }
-        model_A_dir <- paste(model_dir, "/", i, "/A/", sep="")
-        model_block_A_dir <- paste(model_dir, "/", i, "/G/block_A/", sep="")
-        setwd(model_A_dir)
-        iterations <- as.numeric(substr(Sys.glob("*.txt"),1,5))
-        last_iteration <- max(iterations)
-        last_iteration_file <- paste(formatC(last_iteration, width=5, flag="0"), "txt", sep=".")
-        setwd(cur_path)
-        A_ <- as.matrix(read.table(paste(model_A_dir, last_iteration_file, sep="")))
-        block_A_ <- as.matrix(read.table(paste(model_block_A_dir, last_iteration_file, sep="")))
-        J_ <- nrow(A_)
-        block_J_ <- nrow(block_A_)
-        output_subdir <- paste(m,"/",i,"/",sep="")
-        output_path <- paste(output_dir, output_subdir, sep="")
-        if(!file.exists(output_path)) dir.create(output_path, recursive = TRUE)
-        pdf(paste(output_path, "/", "A.pdf", sep=""))
-        if (J_ == 1) image(t(A_), col=heat.colors(100), xaxt="n", yaxt="n")
-        else image(t(A_)[J_:1,], col=heat.colors(100), xaxt="n", yaxt="n")
-        dev.off()
-        pdf(paste(output_path, "/", "block_A.pdf", sep=""))
-        if (block_J_ == 1) image(t(block_A_), col=heat.colors(100), xaxt="n", yaxt="n")
-        else image(t(block_A_)[block_J_:1,], col=heat.colors(100), xaxt="n", yaxt="n")
-        dev.off()
       }
-    }
+      else
+      {
+        for (i in items)
+        {
+          if (!file.exists(paste(model_dir, "/", i, "/G/", sep="")))
+          {
+            generate_block_diagonal_matrix(block_code_path, paste(model_dir, "/", i, "/", sep=""), threshold)
+          }
+          model_A_dir <- paste(model_dir, "/", i, "/A/", sep="")
+          model_block_A_dir <- paste(model_dir, "/", i, "/G/block_A/", sep="")
+          setwd(model_A_dir)
+          iterations <- as.numeric(substr(Sys.glob("*.txt"),1,5))
+          last_iteration <- max(iterations)
+          last_iteration_file <- paste(formatC(last_iteration, width=5, flag="0"), "txt", sep=".")
+          setwd(cur_path)
+          A_ <- as.matrix(read.table(paste(model_A_dir, last_iteration_file, sep="")))
+          block_A_ <- as.matrix(read.table(paste(model_block_A_dir, last_iteration_file, sep="")))
+          J_ <- nrow(A_)
+          block_J_ <- nrow(block_A_)
+          output_subdir <- paste(m,"/",i,"/",sep="")
+          output_path <- paste(output_dir, output_subdir, sep="")
+          if(!file.exists(output_path)) dir.create(output_path, recursive = TRUE)
+          pdf(paste(output_path, "/", "A.pdf", sep=""))
+          if (J_ == 1) image(t(A_), col=heat.colors(100), xaxt="n", yaxt="n")
+          else image(t(A_)[J_:1,], col=heat.colors(100), xaxt="n", yaxt="n")
+          dev.off()
+          pdf(paste(output_path, "/", "block_A.pdf", sep=""))
+          if (block_J_ == 1) image(t(block_A_), col=heat.colors(100), xaxt="n", yaxt="n")
+          else image(t(block_A_)[block_J_:1,], col=heat.colors(100), xaxt="n", yaxt="n")
+          dev.off()
+        }
+      }
+      }
 }
 
 generate_block_diagonal_matrix <- function(block_code_path, A_directory, threshold)
@@ -768,10 +798,10 @@ make_key_plots <-
     }
     if (plot_A)
     {
-      plot_A_and_block_A(specs = specs,
-                         paths = paths,
-                         block_code_path = block_code_path,
-                         threshold = threshold)
+        plot_A_and_block_A(specs = specs,
+                           paths = paths,
+                           block_code_path = block_code_path,
+                           threshold = threshold)
     }
     if (binary)
     {
