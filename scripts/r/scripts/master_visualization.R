@@ -40,10 +40,10 @@ option_list = list(
               metavar="character"),
   make_option(c("--binary"), type="character",
               default="0",
-              help="whether to plot binary matrix", metavar="character"),
+              help="whether to plot binary matrix, to plot, binary==1", metavar="character"),
   make_option(c("-g", "--groundtruth"), type="character",
               default=NULL,
-              help="the data directory for groundtruth matrix", 
+              help="the data directory for groundtruth matrix: data/.../state.txt (...part)", 
               metavar="character")
 );
 
