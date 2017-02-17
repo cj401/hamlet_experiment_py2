@@ -765,12 +765,26 @@ def exp_hyper_regression(test=True, param_var='alpha'):
 
 def exp_bach_lambda_epsilon(test=True):
     """
+    Experiment using music_bach_major_LT.config as base
+    cartesian project of the following parameters:
+        Isotropic_exponential_similarity lambda = {0.01, 0.1, 1.0, 5.0, 10.0}
+        Continuous_state_model epsilon = {0.0001, 0.0005, 0.001, 0.005}
 
+    NOTE: both config files have the following settings:
+    J=200
+    HDP_hyperprior a_gamma 1.0
+    HDP_hyperprior b_gamma 0.1
     :param test:
     :return:
     """
-    # TODO
-    pass
+    experiment_tools.run_experiment_script\
+        (main_path=HAMLET_ROOT,
+         data_dir=os.path.join(DATA_ROOT, 'music/bach_chorale_nominal/'),
+         results_dir=os.path.join(RESULTS_ROOT, 'music/bach_nominal/lambda_epsilon'),
+         replications=5,
+         offset=0,
+         parameter_spec_list = collect_parameter_spec_list_music_bach_
+         )
 
 # GENERATE parameter spec files
 # generate_parameter_spec_lambda_epsilon(gen_param_files_p=True, verbose=True)
