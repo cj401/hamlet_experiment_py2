@@ -697,9 +697,37 @@ def collect_parameter_spec_list_cocktail16_w0_hyper_h():
 
 
 # ----------------------------------------------------------------------
+
+def collect_parameter_spec_list_music_bach_lambda_epsilon():
+    """
+    parameter_spec list for bach lambda_epsilon experiment
+    also includes music_bach_major_noLT.config
+    :return:
+    """
+    spec_list = generate_parameter_spec_lambda_epsilon(gen_param_files_p=False, verbose=False)
+    pspec_list = [experiment_tools.ParameterSpec(parameters_file, parameters_dir, model_filename_postfix)
+                  for parameters_file, parameters_dir, model_filename_postfix in spec_list]
+
+    pspec_list += \
+        [experiment_tools.ParameterSpec \
+             (parameters_file='music_bach_major_noLT.config',
+              parameters_dir='experiment/parameters',
+              model_filename_postfix='')]
+
+    return pspec_list
+
+
+def test_collect_parameter_spec_list_music_bach_lambda_epsilon():
+    pspec_list = collect_parameter_spec_list_music_bach_lambda_epsilon()
+    for pspec in pspec_list:
+        print pspec
+
+# test_collect_parameter_spec_list_music_bach_lambda_epsilon()
+
+
+# ----------------------------------------------------------------------
 # Scripts
 # ----------------------------------------------------------------------
-
 
 match_select_cp16 = {0: ['h{0}_nocs'.format(h) for h in [10.0]],
                      1: ['cp{0}'.format(i) for i in range(1)]}
@@ -722,76 +750,6 @@ hyper_h: [0.01, 0.1, 5]
 Normal_noise_model a_h
 Normal_noise_model b_h
 """
-
-
-# ----------------------------------------------------------------------
-
-# TODO: generate parameter files that run only 5 iterations
-
-match_select_bach = {0: ['bach_{0}_{1}'.format(m, i) for m in ['major'] for i in ['01']]}
-
-
-def exp_hyper_regression(test=True, param_var='alpha'):
-    """
-    REGRESSION TEST
-    Using hyperparameter experiment as base, but a/b=1.0
-    Using config music_bach_{LT,no_LT,sticky,stickyLT}
-    2000 iterations, J=600,
-    {a,b}_h=0.1 (prior over precision of noise)
-    :return:
-    """
-    experiment_tools.run_experiment_script \
-        (main_path=HAMLET_ROOT,
-         data_dir=os.path.join(DATA_ROOT, 'music/bach_chorale_nominal/'),
-         results_dir=os.path.join(RESULTS_ROOT, 'music/bach_nominal/hyper_{0}_REGRESSION'.format(param_var)),
-         replications=1,
-         offset=0,
-         parameter_spec_list=collect_parameter_spec_list_cocktail16_w0_hyper_regression(param_var=param_var),
-         match_dict=match_select_bach,
-         multiproc=True,
-         processor_pool_size=multiprocessing.cpu_count(),
-         rerun=False,
-         test=test,
-         select_subdirs_verbose=False)
-
-
-# generate_parameter_spec_ab_product_hyper_regression_test(gen_param_files_p=True)
-
-# print collect_parameter_spec_list_cocktail16_w0_hyper_regression(param_var='alpha')
-# exp_hyper_regression(test=True)
-
-
-# ----------------------------------------------------------------------
-
-def exp_bach_lambda_epsilon(test=True):
-    """
-    Experiment using music_bach_major_LT.config as base
-    cartesian project of the following parameters:
-        Isotropic_exponential_similarity lambda = {0.01, 0.1, 1.0, 5.0, 10.0}
-        Continuous_state_model epsilon = {0.0001, 0.0005, 0.001, 0.005}
-
-    NOTE: both config files have the following settings:
-    J=200
-    HDP_hyperprior a_gamma 1.0
-    HDP_hyperprior b_gamma 0.1
-    :param test:
-    :return:
-    """
-    experiment_tools.run_experiment_script\
-        (main_path=HAMLET_ROOT,
-         data_dir=os.path.join(DATA_ROOT, 'music/bach_chorale_nominal/'),
-         results_dir=os.path.join(RESULTS_ROOT, 'music/bach_nominal/lambda_epsilon'),
-         replications=5,
-         offset=0,
-         parameter_spec_list = collect_parameter_spec_list_music_bach_
-         )
-
-# GENERATE parameter spec files
-# generate_parameter_spec_lambda_epsilon(gen_param_files_p=True, verbose=True)
-
-# RUN EXPRIMENT
-# exp_bach_lambda_epsilon(test=True)
-
 
 '''
 # ----------------------------------------------------------------------
@@ -922,3 +880,80 @@ def exp_hyper_h(test=True):
 # exp_hyper_h(test=True)
 
 '''
+
+
+# ----------------------------------------------------------------------
+
+# TODO: generate parameter files that run only 5 iterations
+
+match_select_bach = {0: ['bach_{0}_{1}'.format(m, i) for m in ['major'] for i in ['01']]}
+
+
+def exp_hyper_regression(test=True, param_var='alpha'):
+    """
+    REGRESSION TEST
+    Using hyperparameter experiment as base, but a/b=1.0
+    Using config music_bach_{LT,no_LT,sticky,stickyLT}
+    2000 iterations, J=600,
+    {a,b}_h=0.1 (prior over precision of noise)
+    :return:
+    """
+    experiment_tools.run_experiment_script \
+        (main_path=HAMLET_ROOT,
+         data_dir=os.path.join(DATA_ROOT, 'music/bach_chorale_nominal/'),
+         results_dir=os.path.join(RESULTS_ROOT, 'music/bach_nominal/hyper_{0}_REGRESSION'.format(param_var)),
+         replications=1,
+         offset=0,
+         parameter_spec_list=collect_parameter_spec_list_cocktail16_w0_hyper_regression(param_var=param_var),
+         match_dict=match_select_bach,
+         multiproc=True,
+         processor_pool_size=multiprocessing.cpu_count(),
+         rerun=False,
+         test=test,
+         select_subdirs_verbose=False)
+
+
+# generate_parameter_spec_ab_product_hyper_regression_test(gen_param_files_p=True)
+
+# print collect_parameter_spec_list_cocktail16_w0_hyper_regression(param_var='alpha')
+# exp_hyper_regression(test=True)
+
+
+# ----------------------------------------------------------------------
+
+def exp_bach_lambda_epsilon(test=True):
+    """
+    Experiment using music_bach_major_LT.config as base
+    cartesian project of the following parameters:
+        Isotropic_exponential_similarity lambda = {0.01, 0.1, 1.0, 5.0, 10.0}
+        Continuous_state_model epsilon = {0.0001, 0.0005, 0.001, 0.005}
+
+    NOTE: both config files have the following settings:
+    J=200
+    HDP_hyperprior a_gamma 1.0
+    HDP_hyperprior b_gamma 0.1
+    :param test:
+    :return:
+    """
+    experiment_tools.run_experiment_script\
+        (main_path=HAMLET_ROOT,
+         data_dir=os.path.join(DATA_ROOT, 'music/bach_chorale_nominal/'),
+         results_dir=os.path.join(RESULTS_ROOT, 'music/bach_nominal/lambda_epsilon'),
+         replications=5,
+         offset=0,
+         parameter_spec_list=collect_parameter_spec_list_music_bach_lambda_epsilon(),
+         match_dict=match_select_bach,
+         multiproc=True,
+         processor_pool_size=multiprocessing.cpu_count(),
+         rerun=False,
+         test=test,
+         select_subdirs_verbose=False)
+
+# GENERATE parameter spec files
+# generate_parameter_spec_lambda_epsilon(gen_param_files_p=True, verbose=True)
+
+# RUN EXPRIMENT
+# exp_bach_lambda_epsilon(test=True)
+
+
+# ----------------------------------------------------------------------
