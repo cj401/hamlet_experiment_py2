@@ -100,7 +100,8 @@ test_find_binary_segments()
 
 ColumnData = collections.namedtuple\
     ('ColumnData',
-     ['figures',
+     ['data',
+      # 'figures',  # CTM 20170214 is this being used??
       'indices',
       'idx_to_downscale_dict',
       'sum',

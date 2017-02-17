@@ -3,14 +3,21 @@ import random
 
 import numpy as np
 import numpy.random
-import prettytable  # This requires that prettytable has been installed!
+import prettytable  # This requires that PrettyTable has been installed!
 
 from utilities import util
 
 __author__ = 'clayton'
 
 
+# --------------------------------------------------------------------
+
 def collect_frequencies(arr):
+    """
+    Construct a Counter that counts the frequencies of elements in an array
+    :param arr:
+    :return:
+    """
     c = util.Counter()
     for v in arr:
         c[v] += 1
@@ -18,18 +25,22 @@ def collect_frequencies(arr):
 
 
 def sample_idx(pvec):
+    """
+    Sample index according to weights assigned to each index
+    :param pvec: vector of weights
+    :return: index (int)
+    """
     r = random.random()
     return next((i for i, v in enumerate(np.cumsum(pvec)) if r <= v))
 
 
-def sample_idx_test(pvec, reps=100000):
+def test_sample_idx(pvec, reps=100000):
     f = collect_frequencies([sample_idx(pvec) for i in range(reps)])
     f.normalize()
     return [abs(f[idx] - pvec[idx]) for idx in range(len(pvec))]
 
 
 # --------------------------------------------------------------------
-
 
 def sample_Dirichlet(dim=3, k=2, beta=None, size=None):
     """
@@ -320,6 +331,7 @@ def generate_normal_emissions(bseqs, W, h, center_scale_data_p=True):
             linear_combined_latent_states_original,
             #W_centered_scaled
             )
+
 
 def test_generate_normal_emissions():
 
@@ -940,6 +952,7 @@ conv4 = dict(state_size=2,
              A=np.array([[0.18148085, 0.81851915],
                          [0.45375021, 0.54624979]]),
              omegas=np.array([0.8, 1.58805976, 1.60533681]))
+
 
 def conv_to_string(conv):
     lines = list()

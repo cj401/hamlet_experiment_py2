@@ -1,6 +1,7 @@
 import sys
 import os
 import multiprocessing
+import itertools
 
 
 # ----------------------------------------------------------------------
@@ -201,6 +202,178 @@ def test_generate_parameter_spec_file():
 
 # ----------------------------------------------------------------------
 
+def generate_parameter_product(parameter_product_spec):
+    """
+    Given parameter_product_spec consisting of a sequence of <param_set>s,
+    where <param_set> has this format:
+        (<module_name_string>, <param_var_name_string>, (<val1>, <val2>, ...))
+    e.g.,
+        (('m1', 'p1', (1, 2, 3)),
+         ('m2', 'p2', ('a', 'b', 'c', 'd')))
+
+    (1) Compute the param_var_val_sets: for each param_set, get module-param-val tuple
+    e.g., for param_set ('m1', 'p1', (1, 2, 3))
+        becomes:
+        (('m1', 'p1', 1), ('m1', 'p1', 2), ('m1', 'p1', 3))
+    (2) use itertools to compute the cartesian product of each param_var_val_set
+    e.g.,
+        ((('m1', 'p1', 1), ('m2', 'p2', 'a')),
+         (('m1', 'p1', 1), ('m2', 'p2', 'b')),
+         ...
+         (('m1', 'p1', 2), ('m2', 'p2', 'a')),
+         (('m1', 'p1', 2), ('m2', 'p2', 'b')),
+         ...
+         (('m1', 'p1', 3), ('m2', 'p2', 'd')) )
+
+    :param parameter_product_spec:
+    :return:
+    """
+
+    param_var_val_sets = list()
+    for module, param_var, values in parameter_product_spec:
+        param_var_val_sets.append(tuple([('{0}'.format(module),
+                                          '{0}'.format(param_var),
+                                          '{0}'.format(float2string(val)))
+                                         for val in values]))
+
+        '''
+        :param make_chanage_set_p: flag to control whether to make parameter tuples a change_set
+        make_chanage_set_p: when true, converts module-parameter-value triples into change_set
+        with format: (<module-parameter-string>, <value-string>, None)
+        e.g., ('m1', 'p1', 1) becomes: ('m1 p1', '1', None)
+
+        if make_chanage_set_p:
+            param_var_val_sets.append(tuple([('{0} {1}'.format(module, param_var),
+                                              '{0}'.format(val),
+                                              None)
+                                             for val in values]))
+        else:
+            param_var_val_sets.append(tuple([('{0}'.format(module),
+                                              '{0}'.format(param_var),
+                                              '{0}'.format(val))
+                                             for val in values]))
+        '''
+
+    return tuple(itertools.product(*param_var_val_sets))
+
+
+def test_generate_parameter_product():
+    # <module>, <variable>, <values_list>
+    parameter_product_spec = (('m1', 'p1', (1, 2, 3)),
+                              ('m2', 'p2', ('a', 'b', 'c', 'd')),
+                              ('m3', 'p3', ('x', 'y')))
+    pvvs = generate_parameter_product(parameter_product_spec)
+    print '----'
+    for v in pvvs:
+        print v
+
+# test_generate_parameter_product()
+
+
+# ----------------------------------------------------------------------
+
+def generate_parameter_spec_product(source_param_dir,
+                                    source_param_files,
+                                    dest_param_dir,
+                                    parameter_product_spec,  # seq of (<module>, <param>, (<values>... ))
+                                    gen_param_files_p=False,
+                                    verbose=False):
+
+    if verbose:
+        print 'generate_parameter_spec_product()'
+        print 'parameter_product_spec:', parameter_product_spec
+
+    change_set = generate_parameter_product(parameter_product_spec)
+
+    parameter_spec_parameters = list()
+
+    i = 0
+    for source_param_file in source_param_files:
+        source_param_file_basename = source_param_file.split('.')[0]
+        for param_change_specs in change_set:
+
+            # convert param_changes_spec to parameter_changes and
+            # gather param_val_names for model_filename_postfix
+            param_names = list()        # list of names of param + val for model_filename_postfix
+            parameter_changes = list()  # list of ('<module> <param>', '<val>', None)
+            for module, param_var, value in param_change_specs:
+                param_names.append('{0}{1}'.format(param_var, value))
+                parameter_changes.append(('{0} {1}'.format(module, param_var), '{0}'.format(value), None))
+
+            # construct new_param_filename
+            model_filename_postfix = '_'.join(param_names)
+            new_param_file_basename = source_param_file_basename + '_{0}'.format(model_filename_postfix)
+            new_param_filename = new_param_file_basename + '.config'
+
+            param_spec = experiment_tools.ParameterSpec\
+                (new_param_filename, dest_param_dir, model_filename_postfix)
+
+            if verbose:
+                print '\n({0}) -------------------------------'.format(i)
+                print 'source_param_dir:', source_param_dir
+                print 'source_param_file:', source_param_file
+                print 'source_param_file_basename:', source_param_file_basename
+                print 'dest_param_dir:', dest_param_dir
+                print 'model_filename_postfix:', model_filename_postfix
+                print 'new_param_file_basename:', new_param_file_basename
+                print 'new_param_filename:', new_param_filename
+                print 'parameter_changes:', parameter_changes
+                print 'param_spec:', param_spec
+
+            if gen_param_files_p:
+                generate_parameter_spec_file(source_pspec_path=os.path.join(source_param_dir, source_param_file),
+                                             destination_dir=dest_param_dir,
+                                             dest_pspec_name=new_param_filename,
+                                             parameter_changes=parameter_changes,
+                                             verbose=verbose)
+
+            parameter_spec_parameters.append((new_param_filename, dest_param_dir, model_filename_postfix))
+
+            i += 1
+
+    return parameter_spec_parameters
+
+
+def test_generate_parameter_spec_product():
+    parameter_product_spec = (('Isotropic_exponential_similarity',
+                               'lambda', (0.01, 0.1, 1.0, 5.0, 10.0)),
+                              ('Continuous_state_model',
+                               'epsilon', (0.0001, 0.0005, 0.001, 0.005)))
+    pspec_params = generate_parameter_spec_product \
+        (source_param_dir=PARAMETERS_ROOT,
+         source_param_files=('music_bach_major_LT.config',),
+         dest_param_dir=os.path.join(PARAMETERS_ROOT, 'music_bach_lambda_epsilon'),
+         parameter_product_spec=parameter_product_spec,
+         gen_param_files_p=False,
+         verbose=True)
+
+    for pspec_param in pspec_params:
+        print pspec_param
+
+# test_generate_parameter_spec_product()
+
+
+# ----------------------------------------------------------------------
+
+def generate_parameter_spec_lambda_epsilon(gen_param_files_p=False, verbose=False):
+    parameter_product_spec = (('Isotropic_exponential_similarity',
+                               'lambda', (0.01, 0.1, 1.0, 5.0, 10.0)),
+                              ('Continuous_state_model',
+                               'epsilon', (0.0001, 0.0005, 0.001, 0.005)))
+    return generate_parameter_spec_product \
+        (source_param_dir=PARAMETERS_ROOT,
+         source_param_files=('music_bach_major_LT.config',),
+         dest_param_dir=os.path.join(PARAMETERS_ROOT, 'music_bach_lambda_epsilon'),
+         parameter_product_spec=parameter_product_spec,
+         gen_param_files_p=gen_param_files_p,
+         verbose=verbose)
+
+
+# ----------------------------------------------------------------------
+# Special case: a/b-hyperparameter spec generation
+# ----------------------------------------------------------------------
+
+
 def generate_parameter_spec_ab_product(source_param_dir,
                                        source_param_files,
                                        dest_param_dir,
@@ -210,6 +383,19 @@ def generate_parameter_spec_ab_product(source_param_dir,
                                        bvals,
                                        gen_param_files_p=False,
                                        verbose=False):
+    """
+    Core script to generate cartesian-product of values, but for the a,b of a particular hyperparam
+    :param source_param_dir:
+    :param source_param_files:
+    :param dest_param_dir:
+    :param module:
+    :param param_var:
+    :param avals:
+    :param bvals:
+    :param gen_param_files_p:
+    :param verbose:
+    :return:
+    """
 
     change_set = [((('{0} a_{1}'.format(module, param_var), '{0}'.format(aval), None),
                     ('{0} b_{1}'.format(module, param_var), '{0}'.format(bval), None)),
@@ -573,6 +759,24 @@ def exp_hyper_regression(test=True, param_var='alpha'):
 
 # print collect_parameter_spec_list_cocktail16_w0_hyper_regression(param_var='alpha')
 # exp_hyper_regression(test=True)
+
+
+# ----------------------------------------------------------------------
+
+def exp_bach_lambda_epsilon(test=True):
+    """
+
+    :param test:
+    :return:
+    """
+    # TODO
+    pass
+
+# GENERATE parameter spec files
+# generate_parameter_spec_lambda_epsilon(gen_param_files_p=True, verbose=True)
+
+# RUN EXPRIMENT
+# exp_bach_lambda_epsilon(test=True)
 
 
 '''
