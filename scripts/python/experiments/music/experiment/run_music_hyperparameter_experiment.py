@@ -233,7 +233,7 @@ def generate_parameter_product(parameter_product_spec):
     for module, param_var, values in parameter_product_spec:
         param_var_val_sets.append(tuple([('{0}'.format(module),
                                           '{0}'.format(param_var),
-                                          '{0}'.format(float2string(val)))
+                                          '{0}'.format(val))
                                          for val in values]))
 
         '''
@@ -297,7 +297,7 @@ def generate_parameter_spec_product(source_param_dir,
             param_names = list()        # list of names of param + val for model_filename_postfix
             parameter_changes = list()  # list of ('<module> <param>', '<val>', None)
             for module, param_var, value in param_change_specs:
-                param_names.append('{0}{1}'.format(param_var, value))
+                param_names.append('{0}{1}'.format(param_var, float2string(value)))
                 parameter_changes.append(('{0} {1}'.format(module, param_var), '{0}'.format(value), None))
 
             # construct new_param_filename
@@ -325,7 +325,7 @@ def generate_parameter_spec_product(source_param_dir,
                                              destination_dir=dest_param_dir,
                                              dest_pspec_name=new_param_filename,
                                              parameter_changes=parameter_changes,
-                                             verbose=verbose)
+                                             verbose=False)  # verbose
 
             parameter_spec_parameters.append((new_param_filename, dest_param_dir, model_filename_postfix))
 
