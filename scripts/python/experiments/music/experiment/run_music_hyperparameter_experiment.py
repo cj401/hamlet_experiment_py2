@@ -369,15 +369,14 @@ def generate_parameter_spec_lambda_epsilon_bach_LT(gen_param_files_p=False, verb
          verbose=verbose)
 
 
-def generate_parameter_spec_lambda_epsilon_bach_sticky(gen_param_files_p=False, verbose=False):
+def generate_parameter_spec_lambda_epsilon_bach_stickyLT(gen_param_files_p=False, verbose=False):
     parameter_product_spec = (('Isotropic_exponential_similarity',
-                               'lambda', (0.01, 0.1, 1.0, 5.0, 10.0)),
+                               'lambda', (0.01, 1.0, 5.0)),  # (0.01, 0.1, 1.0, 5.0, 10.0)
                               ('Continuous_state_model',
-                               'epsilon', (0.0001, 0.0005, 0.001, 0.005)))
+                               'epsilon', (0.0005, )))  # (0.0001, 0.0005, 0.001, 0.005)
     return generate_parameter_spec_product \
         (source_param_dir=PARAMETERS_ROOT,
-         source_param_files=('music_bach_major_Sticky.config',
-                             'music_bach_major_StickyLT.config'),
+         source_param_files=('music_bach_major_StickyLT.config',),
          dest_param_dir=os.path.join(PARAMETERS_ROOT, 'music_bach_lambda_epsilon'),
          parameter_product_spec=parameter_product_spec,
          gen_param_files_p=gen_param_files_p,
@@ -746,9 +745,25 @@ def collect_parameter_spec_list_music_bach_Sticky_StickyLT_lambda_epsilon():
     also includes music_bach_major_noLT.config
     :return:
     """
-    spec_list = generate_parameter_spec_lambda_epsilon_bach_sticky(gen_param_files_p=False, verbose=False)
-    return [experiment_tools.ParameterSpec(parameters_file, parameters_dir, model_filename_postfix)
-            for parameters_file, parameters_dir, model_filename_postfix in spec_list]
+    spec_list = generate_parameter_spec_lambda_epsilon_bach_stickyLT(gen_param_files_p=False, verbose=False)
+    pspec_list = [experiment_tools.ParameterSpec(parameters_file, parameters_dir, model_filename_postfix)
+                  for parameters_file, parameters_dir, model_filename_postfix in spec_list]
+
+    pspec_list += \
+        [experiment_tools.ParameterSpec \
+             (parameters_file='music_bach_major_Sticky.config',
+              parameters_dir='experiment/parameters',
+              model_filename_postfix='')]
+
+    return pspec_list
+
+
+def test_collect_parameter_spec_list_music_bach_Sticky_StickyLT_lambda_epsilon():
+    pspec_list = collect_parameter_spec_list_music_bach_Sticky_StickyLT_lambda_epsilon()
+    for pspec in pspec_list:
+        print pspec
+
+# test_collect_parameter_spec_list_music_bach_Sticky_StickyLT_lambda_epsilon()
 
 
 # ----------------------------------------------------------------------
@@ -987,11 +1002,11 @@ def exp_bach_LT_noLT_lambda_epsilon(test=True):
 def exp_bach_Sticky_StickyLT_lambda_epsilon(test=True):
     """
     Experiment using as base
-        music_bach_major_Sticky.config
         music_bach_major_StickyLT.config
     cartesian project of the following parameters:
         Isotropic_exponential_similarity lambda = {0.01, 0.1, 1.0, 5.0, 10.0}
         Continuous_state_model epsilon = {0.0001, 0.0005, 0.001, 0.005}
+    Also adding music_bach_major_Sticky.config
 
     NOTE: both config files have the following settings:
     J=200
@@ -1015,10 +1030,10 @@ def exp_bach_Sticky_StickyLT_lambda_epsilon(test=True):
          select_subdirs_verbose=False)
 
 # GENERATE parameter spec files
-# generate_parameter_spec_lambda_epsilon_bach_sticky(gen_param_files_p=True, verbose=True)
+# generate_parameter_spec_lambda_epsilon_bach_stickyLT(gen_param_files_p=True, verbose=True)
 
 # RUN EXPRIMENT
-# exp_bach_Sticky_StickyLT_lambda_epsilon(test=True)
+exp_bach_Sticky_StickyLT_lambda_epsilon(test=True)
 
 
 # ----------------------------------------------------------------------
