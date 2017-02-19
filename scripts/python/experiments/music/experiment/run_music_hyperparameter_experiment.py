@@ -38,6 +38,7 @@ def optional_add_relative_path(current, parent, relative_path, verbose=False):
     then add parent path.
     :return:
     """
+    sys.path.insert(1, '/work/clayton/hamlet_bayes/experiment/scripts/python')
     if not find_path_context(parent):
         if find_path_context(current):
             parent_path = os.path.realpath(os.path.join(os.getcwd(), relative_path))
