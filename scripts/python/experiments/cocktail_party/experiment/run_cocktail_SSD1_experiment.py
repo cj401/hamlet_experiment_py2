@@ -37,6 +37,7 @@ def optional_add_relative_path(current, parent, relative_path, verbose=False):
     then add parent path.
     :return:
     """
+    sys.path.insert(1, '/work/clayton/hamlet_v11/experiment/scripts/python')
     if not find_path_context(parent):
         if find_path_context(current):
             parent_path = os.path.realpath(os.path.join(os.getcwd(), relative_path))
@@ -103,7 +104,7 @@ match_dict = {0: ['n0.3_500'],
               1: ['cp{0}'.format(i) for i in range(3)]}
 
 
-def exp_hyper_regression(test=True):
+def exp_SSD1_n0p3_500(test=True):
     """
     First cocktail16_SSD1 'RW' experiment
     Using config cocktail16_inference_{BFact,LT,no_LT,sticky,stickyLT}
@@ -125,4 +126,4 @@ def exp_hyper_regression(test=True):
          test=test,
          select_subdirs_verbose=False)
 
-exp_hyper_regression(test=True)
+exp_SSD1_n0p3_500(test=True)

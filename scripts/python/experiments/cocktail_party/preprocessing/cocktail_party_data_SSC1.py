@@ -5,7 +5,6 @@ import os
 import urllib
 import zipfile
 import audioop
-import wave
 import numpy
 import math
 import random
@@ -831,22 +830,46 @@ def test_mix_latent_state_linear_combination():
 # ----------------------------------------------------------------------
 
 def scale_to_center_unitvar(arr):
-    mu = numpy.mean(arr)
-    sigma = numpy.std(arr)
-    return (arr - mu) / sigma
+    """
+    scale (standardize) by columns:
+        per column, subtract the mean and divide by the stdev each
+        value in the column
+    :param arr:
+    :return:
+    """
+    cs_arr = numpy.zeros(arr.shape)
+
+    for i in range(arr.shape[1]):
+        col_mu = numpy.mean(arr[:, i])
+        col_sigma = numpy.std(arr[:, i])
+        if col_sigma > 0.00001:
+            # handle near-zero standard-deviation
+            cs_arr[:, i] = (arr[:, i] - col_mu) / col_sigma
+        else:
+            cs_arr[:, i] = (arr[:, i] - col_mu)
+
+    return cs_arr
 
 
 def test_scale_to_center_unitvar():
     a = numpy.array([[1, 2, 3],
-                     [4, 5, 6]])
+                     [4, 5, 6],
+                     [5, 6, 12]])
     print 'a\n', a
     print 'mean(a)', numpy.mean(a)
     print 'std(a)', numpy.std(a)
+    for i in range(a.shape[1]):
+        print '  col {0} mean: {1}'.format(i, numpy.mean(a[:, i]))
+        print '  col {0} std: {1}'.format(i, numpy.std(a[:, i]))
 
+    print '----- scale:'
     scaled_a = scale_to_center_unitvar(a)
     print 'scaled_a\n', scaled_a
     print 'mean(scaled_a)', numpy.mean(scaled_a)
     print 'std(scaled_a)', numpy.std(scaled_a)
+    for i in range(scaled_a.shape[1]):
+        print '  col {0} mean: {1}'.format(i, numpy.mean(scaled_a[:, i]))
+        print '  col {0} std: {1}'.format(i, numpy.std(scaled_a[:, i]))
 
 # test_scale_to_center_unitvar()
 
@@ -873,25 +896,31 @@ class CocktailParty(object):
 
         self.sample_step_size = None
 
+        # during generation, keep track of simple stats
+        self.generation_stats_string = None
+
         # latent state; dimension=(seq_length, num_speakers)
         self.train_data_raw = None
         self.train_states = None
         self.test_data_raw = None
         self.test_states = None
 
-        # data linearly mixed by self.W into microphone channels; dimension=(seq_length, num_microphones)
+        # scale the raw date to be centered with unit variance, column-wise
+        self.train_data_scaled = None
+        self.test_data_scaled = None
+
+        # data linearly mixed by self.W into microphone channels;
+        # dimension=(seq_length, num_microphones)
         self.train_data_mixed = None
         self.test_data_mixed = None
 
-        # scale the date to be centered with unit variance
-        self.train_data_mixed_scaled = None
-        self.test_data_mixed_scaled = None
-
-        # emission (obs) noise; dimension=(seq_length, num_microphones)
+        # emission (obs) noise;
+        # dimension=(seq_length, num_microphones)
         self.train_noise = None
         self.test_noise = None
 
-        # obs = sum of raw and noise; dimension=(seq_length, num_microphones)
+        # obs = sum of mixed and noise;
+        # dimension=(seq_length, num_microphones)
         self.train_obs = None
         self.test_obs = None
 
@@ -939,7 +968,10 @@ class CocktailParty(object):
 
         self.sample_step_size = sample_step_size
 
-        def sample_and_combine(conversation_specs):
+        # initialize the generation_stats_string: create empty list
+        self.generation_stats_string = list()
+
+        def sample_and_combine_subconversations(conversation_specs):
             # sample data from each sub_conversation
             sub_conversations = list()
             min_len = sys.maxint
@@ -961,48 +993,67 @@ class CocktailParty(object):
                 col_idx += data.shape[1]
             return all_data, all_states
 
-        # set data and states for train and test
-        self.train_data_raw, self.train_states = sample_and_combine(self.train_conversation_specs)
-        self.test_data_raw, self.test_states = sample_and_combine(self.test_conversation_specs)
+        def make_stats_string(title, train, train_label, test, test_label, verbose):
+            string_list \
+                = ((title,
+                    ('mean({0})'.format(train_label), numpy.mean(train)),
+                    ('std({0})'.format(train_label), numpy.std(train)),
+                    ('mean({0})'.format(test_label), numpy.mean(test)),
+                    ('std({0})'.format(test_label), numpy.std(test))))
+            string_list = map(lambda s: '{0}'.format(s), string_list)
+            string_list = '\n'.join(string_list)
+            self.generation_stats_string.append(string_list)
+            if verbose:
+                print string_list
 
-        # mix data
-        self.train_data_mixed = mix_latent_state_linear_combination(self.train_data_raw, self.W)
-        self.test_data_mixed = mix_latent_state_linear_combination(self.test_data_raw, self.W)
+        # sample and combine data and states for train and test
+        self.train_data_raw, self.train_states \
+            = sample_and_combine_subconversations(self.train_conversation_specs)
+        self.test_data_raw, self.test_states \
+            = sample_and_combine_subconversations(self.test_conversation_specs)
+
+        make_stats_string('----- raw',
+                          self.train_data_raw, 'self.train_data_raw',
+                          self.test_data_raw, 'self.test_data_raw',
+                          verbose=verbose)
 
         # center and scale to unit variance
-        self.train_data_mixed_scaled = scale_to_center_unitvar(self.train_data_mixed)
-        self.test_data_mixed_scaled = scale_to_center_unitvar(self.test_data_mixed)
+        self.train_data_scaled = scale_to_center_unitvar(self.train_data_raw)
+        self.test_data_scaled = scale_to_center_unitvar(self.test_data_raw)
 
-        if verbose:
-            print '-----'
-            print 'mean(self.train_data_mixed_scaled)', numpy.mean(self.train_data_mixed_scaled)
-            print 'std(self.test_data_mixed_scaled)', numpy.std(self.test_data_mixed_scaled)
-            print 'mean(self.train_data_mixed_scaled)', numpy.mean(self.train_data_mixed_scaled)
-            print 'std(self.test_data_mixed_scaled)', numpy.std(self.test_data_mixed_scaled)
+        make_stats_string('----- after scaling',
+                          self.train_data_scaled, 'self.train_data_scaled',
+                          self.test_data_scaled, 'self.test_data_scaled',
+                          verbose=verbose)
+
+        # mix data
+        self.train_data_mixed = mix_latent_state_linear_combination(self.train_data_scaled, self.W)
+        self.test_data_mixed = mix_latent_state_linear_combination(self.test_data_scaled, self.W)
+
+        make_stats_string('----- after mixing',
+                          self.train_data_mixed, 'self.train_data_mixed',
+                          self.test_data_mixed, 'self.test_data_mixed',
+                          verbose=verbose)
 
         # sample emission noise
         self.train_noise = sample_emission_noise_matrix \
-            (self.train_data_mixed_scaled.shape[0], self.cp_spec.num_microphones, self.cp_spec.noise_sd)
+            (self.train_data_mixed.shape[0], self.cp_spec.num_microphones, self.cp_spec.noise_sd)
         self.test_noise = sample_emission_noise_matrix \
-            (self.test_data_mixed_scaled.shape[0], self.cp_spec.num_microphones, self.cp_spec.noise_sd)
+            (self.test_data_mixed.shape[0], self.cp_spec.num_microphones, self.cp_spec.noise_sd)
 
-        if verbose:
-            print '-----'
-            print 'mean(self.train_noise)', numpy.mean(self.train_noise)
-            print 'std(self.train_noise)', numpy.std(self.train_noise)
-            print 'mean(self.test_noise)', numpy.mean(self.test_noise)
-            print 'std(self.test_noise)', numpy.std(self.test_noise)
+        make_stats_string('----- noise',
+                          self.train_noise, 'self.train_noise',
+                          self.test_noise, 'self.test_noise',
+                          verbose=verbose)
 
         # obs
-        self.train_obs = self.train_data_mixed_scaled + self.train_noise
-        self.test_obs = self.test_data_mixed_scaled + self.test_noise
+        self.train_obs = self.train_data_mixed + self.train_noise
+        self.test_obs = self.test_data_mixed + self.test_noise
 
-        if verbose:
-            print '-----'
-            print 'mean(self.train_obs)', numpy.mean(self.train_obs)
-            print 'std(self.train_obs)', numpy.std(self.train_obs)
-            print 'mean(self.test_obs)', numpy.mean(self.test_obs)
-            print 'std(self.test_obs)', numpy.std(self.test_obs)
+        make_stats_string('----- final obs',
+                          self.train_obs, 'self.train_obs',
+                          self.test_obs, 'self.test_obs',
+                          verbose=verbose)
 
     def save(self, dest_root='.'):
         if not os.path.exists(dest_root):
@@ -1010,6 +1061,11 @@ class CocktailParty(object):
         params_dir = os.path.join(dest_root, 'model_params')
         if not os.path.exists(params_dir):
             os.makedirs(params_dir)
+
+        # save model generation statistics
+        with open(os.path.join(params_dir, 'generation_stats.txt'), 'w') as fout:
+            for s in self.generation_stats_string:
+                fout.write('{0}\n'.format(s))
 
         # model params cp specs and convesations
         with open(os.path.join(params_dir, 'model.txt'), 'w') as fout:
@@ -1038,17 +1094,17 @@ class CocktailParty(object):
 
             fout.write('###### CocktailParty end\n')
 
-        numpy.savetxt(os.path.join(params_dir, 'train_obs_raw.txt'), self.train_data_raw, fmt='%f')
-        numpy.savetxt(os.path.join(params_dir, 'test_obs_raw.txt'), self.test_data_raw, fmt='%f')
+        numpy.savetxt(os.path.join(params_dir, '1_train_obs_raw.txt'), self.train_data_raw, fmt='%f')
+        numpy.savetxt(os.path.join(params_dir, '1_test_obs_raw.txt'), self.test_data_raw, fmt='%f')
 
-        numpy.savetxt(os.path.join(params_dir, 'train_data_mixed.txt'), self.train_data_mixed, fmt='%f')
-        numpy.savetxt(os.path.join(params_dir, 'test_data_mixed.txt'), self.test_data_mixed, fmt='%f')
+        numpy.savetxt(os.path.join(params_dir, '2_train_data_scaled.txt'), self.train_data_scaled, fmt='%f')
+        numpy.savetxt(os.path.join(params_dir, '2_test_data_scaled.txt'), self.test_data_scaled, fmt='%f')
 
-        numpy.savetxt(os.path.join(params_dir, 'train_data_mixed_scaled.txt'), self.train_data_mixed_scaled, fmt='%f')
-        numpy.savetxt(os.path.join(params_dir, 'test_data_mixed_scaled.txt'), self.test_data_mixed_scaled, fmt='%f')
+        numpy.savetxt(os.path.join(params_dir, '3_train_data_mixed.txt'), self.train_data_mixed, fmt='%f')
+        numpy.savetxt(os.path.join(params_dir, '3_test_data_mixed.txt'), self.test_data_mixed, fmt='%f')
 
-        numpy.savetxt(os.path.join(params_dir, 'train_noise.txt'), self.train_noise, fmt='%f')
-        numpy.savetxt(os.path.join(params_dir, 'test_noise.txt'), self.test_noise, fmt='%f')
+        numpy.savetxt(os.path.join(params_dir, '4_train_noise.txt'), self.train_noise, fmt='%f')
+        numpy.savetxt(os.path.join(params_dir, '4_test_noise.txt'), self.test_noise, fmt='%f')
 
         numpy.savetxt(os.path.join(dest_root, 'obs.txt'), self.train_obs, fmt='%f')
         numpy.savetxt(os.path.join(dest_root, 'states.txt'), self.train_states, fmt='%d')
