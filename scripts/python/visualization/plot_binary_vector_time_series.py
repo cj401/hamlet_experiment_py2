@@ -78,7 +78,7 @@ def plot_categorical_vector_time_series(data, figw=1000, figh=800, mydpi=96, col
 # plot_cp_data
 # ---------------------------------------------------------------------
 
-def plot_cp_data(path='../figures/cocktail_s16_m12/h2.0_nocs/cp0/states.txt'):
+def plot_cp_data(path='../figures/cocktail_s16_m12/h2.0_nocs/cp0/states.txt', show_p=True):
     """
     Helper fn for plot_binary_vector_time_series for plotting cocktail party latent state figures
     :param path:
@@ -86,7 +86,9 @@ def plot_cp_data(path='../figures/cocktail_s16_m12/h2.0_nocs/cp0/states.txt'):
     """
     fig, level_max, end_max = \
         plot_binary_vector_time_series(numpy.array(read_binary_vector_time_series_as_lol(path)))
-    plt.show()
+
+    if show_p:
+        plt.show()
 
 
 # ---------------------------------------------------------------------

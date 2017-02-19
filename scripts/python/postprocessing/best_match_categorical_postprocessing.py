@@ -10,8 +10,8 @@ Block Matrix:
 
 """
 
-test_matrix_hypothesis = 'test_data/categorical_best_match_matrices/00010.txt'
-test_matrix_gt = 'test_data/categorical_best_match_matrices/train.txt'
+test_matrix_hypothesis = 'test_data_raw/categorical_best_match_matrices/00010.txt'
+test_matrix_gt = 'test_data_raw/categorical_best_match_matrices/train.txt'
 
 
 def datarray_to_3D(data, dim1):

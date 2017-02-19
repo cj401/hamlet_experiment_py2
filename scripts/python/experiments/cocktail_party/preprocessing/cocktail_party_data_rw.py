@@ -447,8 +447,8 @@ for key, val in index.iteritems():
 
 
 '''
-print down_sample_wav_file('CHiME/test_data/swwv9a.wav', 4000)
-verbose_save_wav_data('CHiME/test_data/swwv9a.wav')
+print down_sample_wav_file('CHiME/test_data_raw/swwv9a.wav', 4000)
+verbose_save_wav_data('CHiME/test_data_raw/swwv9a.wav')
 '''
 
 # plot_hist_of_wav_amplitudes(scipy.io.wavfile.read('figures/swwv9a.wav'))
@@ -600,7 +600,7 @@ class ConversationSpec:
          pi0=None,               # initial state distribution
          A=None,                 # transition matrix; if 1x1, then stay within state
          space_length_max=None,  # space length, in seconds, times speaker_data_index.sample_rate
-         start_space_p=None,     # whether conversation starts with space
+         start_space_p=None,     # whether conversation_spec starts with space
          continuous_state_datum_fn=None  # function to convert continuous vector sample to scalar value
          ):
         self.speaker_data_index = speaker_data_index
@@ -1102,7 +1102,7 @@ def test_generate_rw_emissions(num_train=10, speaker_groups=(2,1), num_microphon
                           center_scale_data_p=True,
                           verbose=True)
     print '-------------'
-    print '  h:', h
+    print '  noise_sd:', h
     print 'var:', [ 1/prec for prec in h ]
     generate_rw_emissions(cseqs, W, h=h,
                           noise_fn=cocktail_party_data.normal_noise,
@@ -1171,9 +1171,9 @@ def generate_random_rw_cocktail_parties\
      beta=None,
 
      # Normal emission noise precision
-     # h ~ Gamma(a_h, 1/b_h)
-     a_h=1.0,  # h prior ~ Gamma shape param
-     b_h=1.0,  # h prior ~ Gamma rate param
+     # noise_sd ~ Gamma(a_h, 1/b_h)
+     a_h=1.0,  # noise_sd prior ~ Gamma shape param
+     b_h=1.0,  # noise_sd prior ~ Gamma rate param
 
      noise_fn=cocktail_party_data.normal_noise,
      center_scale_data_p=True,
@@ -1322,12 +1322,12 @@ def generate_rw_script(num_parties=10,
          beta=None,
 
          # Normal emission noise precision
-         # h ~ Gamma(a_h, 1/b_h)
+         # noise_sd ~ Gamma(a_h, 1/b_h)
          # mean = shape/(1/b_h)
          # var = (shape/(1/b_h)^2)
          # make a=3.0, b=2.0, b=6.0 --- 3 of each; 10 inference
-         a_h=a_h,  # h prior ~ Gamma shape param
-         b_h=b_h,  # h prior ~ Gamma rate (1/scale) param
+         a_h=a_h,  # noise_sd prior ~ Gamma shape param
+         b_h=b_h,  # noise_sd prior ~ Gamma rate (1/scale) param
 
          noise_fn=noise_fn,
          center_scale_data_p=True,

@@ -381,7 +381,7 @@ def generate_parameter_spec_ab_product_hyper_gamma(gen_param_files_p=False):
 
 def generate_parameter_spec_ab_product_hyper_h(gen_param_files_p=False):
     return generate_parameter_spec_ab_product_outer\
-        (module='Normal_noise_model', param_var='h',
+        (module='Normal_noise_model', param_var='noise_sd',
          avals=(0.01, 5), bvals=(0.01, 5),
          # avals=(0.01, 0.1, 1, 5), bvals=(0.01, 0.1, 1, 5),
          gen_param_files_p=gen_param_files_p)
@@ -508,7 +508,7 @@ def collect_parameter_spec_list_cocktail16_w0_hyper_h():
 # ----------------------------------------------------------------------
 
 
-match_select_cp16 = {0: ['h{0}_nocs'.format(h) for h in [10.0]],
+match_select_cp16 = {0: ['noise_sd{0}_nocs'.format(h) for h in [10.0]],
                      1: ['cp{0}'.format(i) for i in range(1)]}
 
 # ----------------------------------------------------------------------
@@ -551,7 +551,7 @@ def exp_hyper_regression(test=True, param_var='alpha'):
          replications=1,
          offset=0,
          parameter_spec_list=collect_parameter_spec_list_cocktail16_w0_hyper_regression(param_var=param_var),
-         match_dict={0: ['h{0}_nocs'.format(h) for h in [10.0]],
+         match_dict={0: ['noise_sd{0}_nocs'.format(h) for h in [10.0]],
                      1: ['cp{0}'.format(i) for i in range(1)]},
          multiproc=True,
          processor_pool_size=multiprocessing.cpu_count(),

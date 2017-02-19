@@ -5,6 +5,8 @@ import random
 import xlrd
 import music21
 
+import numpy
+
 
 """
 20170120
@@ -852,7 +854,28 @@ def generate_bach_data(data_postfix='_test'):
                                                  gen_analysis_meta_p=True)
     '''
 
-generate_bach_data(data_postfix='_01')
+# generate_bach_data(data_postfix='_01')
+
+
+# ----------------------------------------------------------------------
+# Debugging: trying to figure out why test_obs/016.txt breaks hamlet
+# ----------------------------------------------------------------------
+
+BACH_MAJOR_ROOT = os.path.join(BACH_CHORALE_NOMINAL_ROOT, 'bach_major_01')
+
+print BACH_MAJOR_ROOT
+print os.listdir(BACH_MAJOR_ROOT)
+
+
+def read_test_obs_016():
+    values = numpy.loadtxt(os.path.join(BACH_MAJOR_ROOT, 'test_obs/016.txt'), dtype=int)
+    print set(values)
+    print 'total chords', values.shape[0]
+    print 'num unique chords', len(set(values))
+    print 'min chord symbol', numpy.max(values)
+    print 'max chord symbol', numpy.min(values)
+
+# read_test_obs_016()
 
 
 # ----------------------------------------------------------------------
