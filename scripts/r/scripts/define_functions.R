@@ -1,4 +1,5 @@
 require(abind)
+require(ggplot2)
 
 get_directories <- function(project_root)
 {
@@ -276,50 +277,82 @@ plot_scalar_by_iteration <-
         )
 {
     print(paste('ploting scalar plot for ', output_type, '...', sep=""))
-    results_list <- get_scalar_or_vector_data(specs, output_type, paths)
-    collected_data <-
-        collect_data_as_scalar(
-            results_list, summary_function = summary_function
-            )
-    summarized_data <- summarize_scalar_data_across_runs(collected_data, smoothing_window_size)
-    t <- summarized_data$iterations
-    index_subset = t > burnin_samples
-    ## calculate a suitable range to plot
-    lowest_val <- Inf
-    highest_val <- -Inf
-    n_iterations = max(t, na.rm = TRUE)
-    for(l in summarized_data$values)
-    {
-        lowest_val = max(min(lowest_val, min(l[[paste(error_var,"_lower", sep = "")]][index_subset], na.rm = TRUE)), yrange[1])
-        highest_val = min(max(highest_val, max(l[[paste(error_var,"_upper", sep = "")]][index_subset], na.rm = TRUE)), yrange[2])
-    }
     output_path <- paste(paths$fig_root, specs$results, "/", specs$comparison, "/", specs$dataset, "/", sep = "")
     if(!file.exists(output_path)) dir.create(output_path, recursive = TRUE)
-    pdf(paste(output_path, "/", output_type, ".pdf", sep = ""))
-    print(paste('Output to', output_path, "/", output_type, ".pdf", sep = ""))
-    plot(
-        NULL, xlim = c(0, n_iterations), ylim = c(lowest_val, highest_val),
-        xlab = "Iteration", ylab = output_type)
-    groups <- specs$models
-    plot_vars <- 1:length(unique(groups))
-    names(plot_vars) <- unique(groups)
-    for(g in unique(groups))
-    {
-        m <- summarized_data$values[[g]]$mean
-        lwr <- summarized_data$values[[g]][[paste(error_var,"_lower",sep = "")]]
-        upr <- summarized_data$values[[g]][[paste(error_var,"_upper",sep = "")]]
-        lines(t[index_subset], m[index_subset], lty = plot_vars[g])
-        lines(t[index_subset], lwr[index_subset], lty = plot_vars[g], lwd = 0.25)
-        lines(t[index_subset], upr[index_subset], lty = plot_vars[g], lwd = 0.25)
+    #if (file.exist(paste(output_path, "/", output_type, ".pdf", sep = "")))
+    #{
+      #print(paste(output_path, "/", output_type, ".pdf exist!", sep = ""))
+    #}
+    #else
+    #{
+      results_list <- get_scalar_or_vector_data(specs, output_type, paths)
+      collected_data <-
+        collect_data_as_scalar(
+          results_list, summary_function = summary_function
+        )
+      summarized_data <- summarize_scalar_data_across_runs(collected_data, smoothing_window_size)
+      t <- summarized_data$iterations
+      index_subset = t > burnin_samples
+      ## calculate a suitable range to plot
+      ## Use ggplot does not require to compute the range for plotting
+      ## Put it into one data frame with factors
+      groups <- specs$models
+      plot_data <- data.frame()
+      for (g in unique(groups))
+      {
+        iter <- t[index_subset]
+        m <- summarized_data$values[[g]]$mean[index_subset]
+        lwr <- summarized_data$values[[g]][[paste(error_var,"_lower",sep = "")]][index_subset]
+        upr <- summarized_data$values[[g]][[paste(error_var,"_upper",sep = "")]][index_subset]
+        plot_data_each_group <- data.frame(iter, m, lwr, upr)
+        plot_data_each_group$model <- g
+        plot_data <- rbind(plot_data, plot_data_each_group)
+      }
+      names(plot_data) <- c("iter", "m", "lwr", "upr","model")
+      print(paste('Output to', output_path, "/", output_type, ".pdf", sep = ""))
+      #pdf(paste(output_path, "/", output_type, ".pdf", sep = ""))
+      ggplot(plot_data) +
+        geom_ribbon(aes(x=iter, ymin=lwr, ymax=upr, group=model, fill=model), alpha=0.4) +
+        geom_line(aes(x=iter, y=m, group=model, color=model)) +
+        labs(x="iterations", y=output_type)
+      ggsave(paste(output_path, "/", output_type, ".pdf", sep = ""))
+      #dev.off()
+      print('done.')
+    #xf}
+      #lowest_val <- Inf
+      #highest_val <- -Inf
+      #n_iterations = max(t, na.rm = TRUE)
+      #for(l in summarized_data$values)
+      #{
+        #lowest_val = max(min(lowest_val, min(l[[paste(error_var,"_lower", sep = "")]][index_subset], na.rm = TRUE)), yrange[1])
+        #highest_val = min(max(highest_val, max(l[[paste(error_var,"_upper", sep = "")]][index_subset], na.rm = TRUE)), yrange[2])
+      #}
+      #pdf(paste(output_path, "/", output_type, ".pdf", sep = ""))
+      #print(paste('Output to', output_path, "/", output_type, ".pdf", sep = ""))
+      #plot(
+        #NULL, xlim = c(0, n_iterations), ylim = c(lowest_val, highest_val),
+        #xlab = "Iteration", ylab = output_type)
+      #groups <- specs$models
+      #plot_vars <- 1:length(unique(groups))
+      #names(plot_vars) <- unique(groups)
+      #for(g in unique(groups))
+      #{
+        #m <- summarized_data$values[[g]]$mean
+        #lwr <- summarized_data$values[[g]][[paste(error_var,"_lower",sep = "")]]
+        #upr <- summarized_data$values[[g]][[paste(error_var,"_upper",sep = "")]]
+        #lines(t[index_subset], m[index_subset], lty = plot_vars[g])
+        #lines(t[index_subset], lwr[index_subset], lty = plot_vars[g], lwd = 0.25)
+        #lines(t[index_subset], upr[index_subset], lty = plot_vars[g], lwd = 0.25)
         ## arrows(x0 = t[index_subset],
         ##        y0 = lwr[index_subset],
         ##        y1 = upr[index_subset],
         ##        angle = 90, code = 3,
         ##        length = 0.1, lty = plot_vars[g])
-    }
-    legend("bottomright", lty = plot_vars, legend = unique(groups))
-    dev.off()
-    print('done.')
+      #}
+      #legend("bottomright", lty = plot_vars, legend = unique(groups))
+      #dev.off()
+    #}
+    #print('done.')
 }
 
 format_data_for_binary_matrix_plot <-
@@ -564,37 +597,44 @@ plot_scalar_density_by_model <-
     )
 {
       print(paste('Plot density plot for ', output_type, sep=""))
-      results_list <- get_scalar_or_vector_data(specs, output_type, paths)
-      collected_data <- collect_data_as_scalar(results_list)
-      density_data <- collect_data_for_density_plot(collected_data, burnin_samples)
-      x_lowest_val <- Inf
-      x_highest_val <- -Inf
-      y_lowest_val <- Inf
-      y_highest_val <- -Inf
-      #print(density_data)
-      for (l in density_data)
-      {
-        x_lowest_val = max(min(x_lowest_val, min(density(l, na.rm=TRUE)$x)), xrange[1])
-        x_highest_val = min(max(x_highest_val, max(density(l, na.rm=TRUE)$x)), xrange[2])
-        y_lowest_val = max(min(y_lowest_val, min(density(l, na.rm=TRUE)$y)), yrange[1])
-        y_highest_val = min(max(y_highest_val, max(density(l, na.rm=TRUE)$y)), yrange[2])
-      }
       output_path <- paste(paths$fig_root, specs$results, "/", specs$comparison, "/", specs$dataset, "/", sep = "")
       if(!file.exists(output_path)) dir.create(output_path, recursive = TRUE)
-      print(paste('Output density plot to', output_path, "/", output_type, "_density.pdf", sep = ""))
-      pdf(paste(output_path, "/", output_type, "_density.pdf", sep = ""))
-      plot(
-        NULL, xlim = c(x_lowest_val, x_highest_val), ylim=c(y_lowest_val, y_highest_val),
-        xlab = output_type, ylab = "density")
-      groups <- specs$models
-      plot_vars <- 1:length(unique(groups))
-      names(plot_vars) <- unique(groups)
-      for (g in unique(groups))
-      {
-        lines(density(density_data[[g]]), lty = plot_vars[g], col = plot_vars[g], lwd = 0.25)
-      }
-      legend("topright", lty = plot_vars, col = plot_vars, legend = unique(groups))
-      dev.off()
+      #if (file.exist(paste(output_path, "/", output_type, "_density.pdf", sep = "")))
+      #{
+        #print(paste(output_path, "/", output_type, "_density.pdf exist!", sep = ""))
+      #}
+      #else
+      #{
+        results_list <- get_scalar_or_vector_data(specs, output_type, paths)
+        collected_data <- collect_data_as_scalar(results_list)
+        density_data <- collect_data_for_density_plot(collected_data, burnin_samples)
+        x_lowest_val <- Inf
+        x_highest_val <- -Inf
+        y_lowest_val <- Inf
+        y_highest_val <- -Inf
+        #print(density_data)
+        for (l in density_data)
+        {
+          x_lowest_val = max(min(x_lowest_val, min(density(l, na.rm=TRUE)$x)), xrange[1])
+          x_highest_val = min(max(x_highest_val, max(density(l, na.rm=TRUE)$x)), xrange[2])
+          y_lowest_val = max(min(y_lowest_val, min(density(l, na.rm=TRUE)$y)), yrange[1])
+          y_highest_val = min(max(y_highest_val, max(density(l, na.rm=TRUE)$y)), yrange[2])
+        }
+        print(paste('Output density plot to', output_path, "/", output_type, "_density.pdf", sep = ""))
+        pdf(paste(output_path, "/", output_type, "_density.pdf", sep = ""))
+        plot(
+          NULL, xlim = c(x_lowest_val, x_highest_val), ylim=c(y_lowest_val, y_highest_val),
+          xlab = output_type, ylab = "density")
+        groups <- specs$models
+        plot_vars <- 1:length(unique(groups))
+        names(plot_vars) <- unique(groups)
+        for (g in unique(groups))
+        {
+          lines(density(density_data[[g]]), lty = plot_vars[g], col = plot_vars[g], lwd = 0.25)
+        }
+        legend("topright", lty = plot_vars, col = plot_vars, legend = unique(groups))
+        dev.off() 
+      #}
       print('done.')
 }
 
@@ -634,7 +674,8 @@ plot_acf_by_model_and_run <-
           if(!file.exists(output_path)) dir.create(output_path, recursive = TRUE)
           print(paste("Output to", output_path, "/", output_type, "_acf.pdf", sep=""))
           pdf(paste(output_path, "/", output_type, "_acf.pdf", sep=""))
-          acf(results_list[[m]][[i]][,-1], main=output_type, na.action=TRUE)
+          vector_data <- results_list[[m]][[i]][,-1]
+          acf(vector_data, main=output_type)
           dev.off()
         }
       }
@@ -656,10 +697,10 @@ plot_A_and_block_A <-
                          specs$results, "/",
                          specs$dataset, "/",
                          m, "/", sep="")
-      print(paths$results)
-      print(specs$results)
-      print(specs$dataset)
-      print(m)
+      #print(paths$results)
+      #print(specs$results)
+      #print(specs$dataset)
+      #print(m)
       setwd(model_dir)
       items <- Sys.glob("*")
       setwd(cur_path)
@@ -712,7 +753,7 @@ plot_A_and_block_A <-
           setwd(cur_path)
           print(paste("Read A from ", model_A_dir, last_iteration_file, sep=""))
           A_ <- as.matrix(read.table(paste(model_A_dir, last_iteration_file, sep="")))
-          if (paste(model_block_A_dir, last_iteration_file, sep=""))
+          if (!file.exists(paste(model_block_A_dir, last_iteration_file, sep="")))
           {
             generate_block_diagonal_matrix(block_code_path, paste(model_dir, "/", i, "/", sep=""), threshold)
           }
@@ -809,7 +850,7 @@ make_key_plots <-
     )
 {
     specs <- get_specs(query_file, results_dir, data_set, comparison_name)
-    no_density_and_acf <- c("F1_score", "precision", "recall", "accuracy", "n_dot")
+    #no_density_and_acf <- c("F1_score", "precision", "recall", "accuracy", "n_dot")
     plot_A = FALSE
     if ("A" %in% plot.vars)
     {
@@ -823,16 +864,16 @@ make_key_plots <-
         specs, v, burnin_samples = burnin_samples, paths = paths,
         summary_function = I,
         smoothing_window_size)
-      if (!(v %in% no_density_and_acf))
-      {
-        plot_scalar_density_by_model(specs = specs,
-                                     output_type = v,
-                                     paths = paths,
-                                     burnin_samples = burnin_samples)
-        plot_acf_by_model_and_run(specs = specs,
-                                  output_type = v,
-                                  paths = paths)
-      }
+      #if (!(v %in% no_density_and_acf))
+      #{
+      plot_scalar_density_by_model(specs = specs,
+                                   output_type = v,
+                                   paths = paths,
+                                   burnin_samples = burnin_samples)
+      plot_acf_by_model_and_run(specs = specs,
+                                output_type = v,
+                                paths = paths)
+      #}
     }
     if (plot_A)
     {
