@@ -305,7 +305,7 @@ plot_scalar_by_iteration <-
         lwr <- summarized_data$values[[g]][[paste(error_var,"_lower",sep = "")]][index_subset]
         upr <- summarized_data$values[[g]][[paste(error_var,"_upper",sep = "")]][index_subset]
         plot_data_each_group <- data.frame(iter, m, lwr, upr)
-        plot_data_each_group$model <- g
+        plot_data_each_group$model <- strsplit(g, "_")[[1]][1]
         plot_data <- rbind(plot_data, plot_data_each_group)
       }
       names(plot_data) <- c("iter", "m", "lwr", "upr","model")
