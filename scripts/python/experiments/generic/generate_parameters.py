@@ -349,7 +349,7 @@ generate_parameters(spec=read_spec('specs/gen_20150527.spec'),
 # EXPERIMENT
 
 #'''
-generate_parameters(spec=read_spec('specs/exp_20150602-h.spec'),
+generate_parameters(spec=read_spec('specs/exp_20150602-noise_sd.spec'),
                     filepath='parameters/exp/',
                     filepath_subdir_rules=[(('noise', 'Normal'), 'normal/'),
                                            (('noise', 'Probit'), 'probit/')],

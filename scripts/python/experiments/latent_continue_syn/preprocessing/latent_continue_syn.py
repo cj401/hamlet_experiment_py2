@@ -129,7 +129,7 @@ class Data(object):
             print(output_file_name, " exist in ", self.save_path)
         self.save_path = os.path.join(self.save_path, output_file_name)
         output_file('matrix', self.trans, os.path.join(self.save_path, 'A.txt'))
-        output_file('matrix', self.precision, os.path.join(self.save_path, 'h.txt'))
+        output_file('matrix', self.precision, os.path.join(self.save_path, 'noise_sd.txt'))
         output_file('matrix', self.mean, os.path.join(self.save_path, 'mean.txt'))
         output_file('array', self.test_state, os.path.join(self.save_path, 'test_z.txt'))
         output_file('array', self.train_state, os.path.join(self.save_path, 'z.txt'))

@@ -270,14 +270,14 @@ def exp4():
 # ----------------------------------------------------------------------
 
 # match_select_latent_continue_syn_block_diag40_10000itr_hmc \
-#     = { 0: ['block_diag40_s{0}'.format(h) for h in [2]] }
+#     = { 0: ['block_diag40_s{0}'.format(noise_sd) for noise_sd in [2]] }
 
 
 def exp5():
     """
     Using block_diag40_s2 dataset (10 blocks of 4 states, for a total of 40 states)
     Using syn_block_diag12_10000itr_hmc, 10,000 iterations, J=100,
-    h=0.1 (precision of prior on latent locations; weaker prior)
+    noise_sd=0.1 (precision of prior on latent locations; weaker prior)
     :return:
     """
     experiment_tools.run_experiment_script \
@@ -300,14 +300,14 @@ def exp5():
 # ----------------------------------------------------------------------
 
 # match_select_latent_continue_syn_block_diag40_10000itr_hmc \
-#     = { 0: ['block_diag40_s{0}'.format(h) for h in [2]] }
+#     = { 0: ['block_diag40_s{0}'.format(noise_sd) for noise_sd in [2]] }
 
 
 def exp6():
     """
     Using block_diag40_s2 dataset (10 blocks of 4 states, for a total of 40 states)
     Using syn_block_diag12_10000itr_hmc, 10,000 iterations, J=100,
-    h=2.0 (precision of prior on latent locations; stronger prior)
+    noise_sd=2.0 (precision of prior on latent locations; stronger prior)
     :return:
     """
     experiment_tools.run_experiment_script \
@@ -339,7 +339,7 @@ def exp7():
     """
     Using block_diag4x10_s2 dataset (4 blocks of 10 states, for a total of 40 states)
     Using syn_block_diag12_10000itr_hmc, 10,000 iterations, J=100,
-    h=1.0 (precision of prior on latent locations)
+    noise_sd=1.0 (precision of prior on latent locations)
     :return:
     """
     experiment_tools.run_experiment_script \
@@ -370,7 +370,7 @@ def exp8():
     """
     Using block_diag4x10_s2 dataset (4 blocks of 10 states, for a total of 40 states)
     Using syn_block_diag12_10000itr_hmc, 10,000 iterations, J=100,
-    h=1.0 (precision of prior on latent locations)
+    noise_sd=1.0 (precision of prior on latent locations)
     :return:
     """
     experiment_tools.run_experiment_script \
@@ -401,7 +401,7 @@ def exp9():
     """
     Using block_diag4x10_s2 dataset (4 blocks of 10 states, for a total of 40 states)
     Using syn_block_diag12_10000itr_hmc, 10,000 iterations, J=100,
-    h=1.0 (precision of prior on latent locations)
+    noise_sd=1.0 (precision of prior on latent locations)
     :return:
     """
     experiment_tools.run_experiment_script \

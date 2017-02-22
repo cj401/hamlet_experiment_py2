@@ -4,7 +4,7 @@ import multiprocessing
 
 
 # ----------------------------------------------------------------------
-# Ensure <hamlet>/experiment/scripts/python/ in sys.path (if possible)
+# Ensure <hamlet>/experiment/scripts/python/ in sys.path  (if possible)
 # ----------------------------------------------------------------------
 
 def seq_equal(s1, s2):
@@ -37,6 +37,7 @@ def optional_add_relative_path(current, parent, relative_path, verbose=False):
     then add parent path.
     :return:
     """
+    sys.path.insert(1, '/work/clayton/hamlet_v11/experiment/scripts/python')
     if not find_path_context(parent):
         if find_path_context(current):
             parent_path = os.path.realpath(os.path.join(os.getcwd(), relative_path))
@@ -68,52 +69,61 @@ RESULTS_ROOT = experiment_tools.RESULTS_ROOT
 
 
 # ----------------------------------------------------------------------
-# Parameter spec list
+# Generate Parameter Specs
 # ----------------------------------------------------------------------
 
-def collect_parameter_spec_list_cocktail16_w0(parameters_path):
-    """
-    cp **NO** weight learning (w0), 1500 iterations, D=16, and J=600 for hmm
-    works with: cocktail_s16_m12
-    :return:
-    """
-    return [ experiment_tools.ParameterSpec('cocktail16_inference_BFact_HMM_W0.config', parameters_path),
-             experiment_tools.ParameterSpec('cocktail16_inference_LT_HMM_W0-J600.config', parameters_path),
-             experiment_tools.ParameterSpec('cocktail16_inference_noLT_HMM_W0-J600.config', parameters_path)
-    ]
+def collect_parameter_spec_list_cocktail16_w0_all_models():
+    return \
+        (experiment_tools.ParameterSpec(
+            parameters_file='cocktail16_inference_BFact_HMM_W0.config',
+            parameters_dir='experiment/parameters',
+            model_filename_postfix=''),
+         experiment_tools.ParameterSpec(
+             parameters_file='cocktail16_inference_LT_HMM_W0-J200.config',
+             parameters_dir='experiment/parameters',
+             model_filename_postfix=''),
+         experiment_tools.ParameterSpec(
+             parameters_file='cocktail16_inference_noLT_HMM_W0-J200.config',
+             parameters_dir='experiment/parameters',
+             model_filename_postfix=''),
+         experiment_tools.ParameterSpec(
+             parameters_file='cocktail16_inference_sticky_HMM_W0-J200.config',
+             parameters_dir='experiment/parameters',
+             model_filename_postfix=''),
+         experiment_tools.ParameterSpec(
+             parameters_file='cocktail16_inference_stickyLT_HMM_W0-J200.config',
+             parameters_dir='experiment/parameters',
+             model_filename_postfix=''))
 
 
 # ----------------------------------------------------------------------
 # Scripts
 # ----------------------------------------------------------------------
 
+match_dict = {0: ['n0.3_500'],
+              1: ['cp{0}'.format(i) for i in range(3)]}
 
-match_select_cp16 = {0: ['noise_sd{0}_nocs'.format(h) for h in [10.0]],
-                     1: ['cp{0}'.format(i) for i in range(1)]}
 
-
-def exp0(test=True):
+def exp_SSD1_n0p3_500(test=True):
     """
-    Basic experiment using config cocktail16_inference_{BFact,LT,no_LT}
-    2000 iterations, J=600,
-    {a,b}_h=0.1 (prior over precision of noise)
+    First cocktail16_SSD1 'RW' experiment
+    Using config cocktail16_inference_{BFact,LT,no_LT,sticky,stickyLT}
+    2000 iterations
+    J=200
     :return:
     """
     experiment_tools.run_experiment_script \
         (main_path=HAMLET_ROOT,
-         data_dir=os.path.join(DATA_ROOT, 'cocktail_s16_m12/'),
-         results_dir=os.path.join(RESULTS_ROOT, 'cocktail_s16_m12'),
-         replications=2,
+         data_dir=os.path.join(DATA_ROOT, 'cocktail_SSC1_s16_m12/'),
+         results_dir=os.path.join(RESULTS_ROOT, 'cocktail_SSC1_s16_m12'),
+         replications=5,
          offset=0,
-         parameter_spec_list=collect_parameter_spec_list_cocktail16_w0(PARAMETERS_ROOT),
-         match_dict=match_select_cp16,
+         parameter_spec_list=collect_parameter_spec_list_cocktail16_w0_all_models(),
+         match_dict=match_dict,
          multiproc=True,
          processor_pool_size=multiprocessing.cpu_count(),
          rerun=False,
          test=test,
          select_subdirs_verbose=False)
 
-
-# Run me!
-# exp0(test=True)
-
+exp_SSD1_n0p3_500(test=True)

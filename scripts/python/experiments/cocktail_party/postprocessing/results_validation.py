@@ -54,7 +54,7 @@ Data to process:
     line 1   : iteration value
     lines >1 : <iteration-0> <list of ints: length= J >
 
-(*) h.txt                                                   (BFact, HDP_HMM, HDP_HSMM)
+(*) noise_sd.txt                                                   (BFact, HDP_HMM, HDP_HSMM)
     line 1   : iteration value
     lines >1 : <iteration-0> <list of floats: length= (output vector size), infer from number of obs.txt columns >
 
@@ -411,7 +411,7 @@ def validate_iter_float(base_dir, filename,
 
 def test_validate_iter_float():
     error_info = validate_iter_float(base_dir='figures',
-                                     filename='test_data/validate_iter_float_test_fail.txt',
+                                     filename='test_data_raw/validate_iter_float_test_fail.txt',
                                      iterations=20,
                                      iter_start=1,
                                      value_type='float')
@@ -422,7 +422,7 @@ def test_validate_iter_float():
                           (None, 'missing iterations 5', ['00007', '00008', '00009', '00010', '00020'])]
 
     error_info = validate_iter_float(base_dir='figures',
-                                     filename='test_data/validate_iter_float_test_fail.txt',
+                                     filename='test_data_raw/validate_iter_float_test_fail.txt',
                                      iterations=20,
                                      iter_start=1,
                                      value_type='float',
@@ -435,7 +435,7 @@ def test_validate_iter_float():
                           (None, 'missing iterations 6', ['00006', '00007', '00008', '<2>', '00020'])]
 
     error_info = validate_iter_float(base_dir='figures',
-                                     filename='test_data/validate_iter_float_test_succeed.txt',
+                                     filename='test_data_raw/validate_iter_float_test_succeed.txt',
                                      iterations=1000,
                                      iter_start=1,
                                      value_type='float')
@@ -835,7 +835,7 @@ def validate_results_directory(base_dir, log_file_summary, log_file_detail, log_
                 log_error_info(filename, error_info)
 
         # h.txt
-        filename = 'h.txt'
+        filename = 'noise_sd.txt'
         error_info = validate_iter_float(base_dir, filename,
                                          experiment_iterations,
                                          iter_start=0,

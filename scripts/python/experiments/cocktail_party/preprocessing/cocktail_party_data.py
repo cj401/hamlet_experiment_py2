@@ -3,14 +3,21 @@ import random
 
 import numpy as np
 import numpy.random
-import prettytable  # This requires that prettytable has been installed!
+import prettytable  # This requires that PrettyTable has been installed!
 
 from utilities import util
 
 __author__ = 'clayton'
 
 
+# --------------------------------------------------------------------
+
 def collect_frequencies(arr):
+    """
+    Construct a Counter that counts the frequencies of elements in an array
+    :param arr:
+    :return:
+    """
     c = util.Counter()
     for v in arr:
         c[v] += 1
@@ -18,18 +25,22 @@ def collect_frequencies(arr):
 
 
 def sample_idx(pvec):
+    """
+    Sample index according to weights assigned to each index
+    :param pvec: vector of weights
+    :return: index (int)
+    """
     r = random.random()
     return next((i for i, v in enumerate(np.cumsum(pvec)) if r <= v))
 
 
-def sample_idx_test(pvec, reps=100000):
+def test_sample_idx(pvec, reps=100000):
     f = collect_frequencies([sample_idx(pvec) for i in range(reps)])
     f.normalize()
     return [abs(f[idx] - pvec[idx]) for idx in range(len(pvec))]
 
 
 # --------------------------------------------------------------------
-
 
 def sample_Dirichlet(dim=3, k=2, beta=None, size=None):
     """
@@ -269,13 +280,13 @@ def latent_state_linear_combination(latent_state, W):
 
 def normal_noise_precision(mu, h):
     """
-    Sample from N(mu, \sqrt(1/h))
+    Sample from N(mu, \sqrt(1/noise_sd))
     :param mu:
     :param h:
     :return:
     """
     # print 'mu.shape', mu.shape
-    # print 'h.shape', h.shape
+    # print 'noise_sd.shape', noise_sd.shape
     return numpy.random.normal(mu, np.sqrt(1/h))
 
 
@@ -321,6 +332,7 @@ def generate_normal_emissions(bseqs, W, h, center_scale_data_p=True):
             #W_centered_scaled
             )
 
+
 def test_generate_normal_emissions():
 
     def print_results(linear_combined_latent_states_original,
@@ -362,7 +374,7 @@ def test_generate_normal_emissions():
 
     print 'bseqs: {0}'.format(bseqs)
     print 'W: {0}'.format(W)
-    print 'h: {0}'.format(h)
+    print 'noise_sd: {0}'.format(h)
 
     W_centered_scaled = None
 
@@ -414,7 +426,7 @@ def test_generate_normal_emissions():
 
 
 '''
-return [ normal_noise(latent_state_linear_combination(bstate, W), h)
+return [ normal_noise(latent_state_linear_combination(bstate, W), noise_sd)
          for bstate in bseqs ]
 '''
 
@@ -509,7 +521,7 @@ class MixedConversations:
         lines.append('test_emissions={0},'.format(list(self.test_emissions)))
 
         lines.append('W={0}'.format(lol(self.W)))
-        lines.append('h={0}'.format(list(self.h)))
+        lines.append('noise_sd={0}'.format(list(self.h)))
 
         lines.append(')')
         return '\n'.join(lines)
@@ -641,7 +653,7 @@ def mixed_convs_to_string(mconvs):
     lines.append('\'test_emissions\'={0},'.format(lol(mconvs['test_emissions'])))
 
     lines.append('\'W\'={0},'.format(lol(mconvs['W'])))
-    lines.append('\'h\'={0}'.format(list(mconvs['h'])))
+    lines.append('\'noise_sd\'={0}'.format(list(mconvs['noise_sd'])))
 
     lines.append(')\n')
     return '\n'.join(lines)
@@ -841,14 +853,14 @@ def generate_random_cocktail_parties\
                  b_omega=1.0,  # rate
 
                  # Normal emission noise precision
-                 # h ~ Gamma(a_h, b_h)
+                 # noise_sd ~ Gamma(a_h, b_h)
                  # mean = shape/scale
                  # var = (shape/scale^2)
                  # make a=3.0, b=2.0, b=6.0 --- 3 of each; 10 inference
-                 a_h=1.0,  # h prior ~ Gamma shape param
-                 b_h=1.0,  # h prior ~ Gamma scale param
+                 a_h=1.0,  # noise_sd prior ~ Gamma shape param
+                 b_h=1.0,  # noise_sd prior ~ Gamma scale param
 
-                 # optionally hard-code h precision (same precision for each microphone)
+                 # optionally hard-code noise_sd precision (same precision for each microphone)
                  h=None,
 
                  center_scale_data_p=True,
@@ -864,13 +876,13 @@ def generate_random_cocktail_parties\
     else:
         if isinstance(h, (list, tuple)):
             if len(h) != num_microphones:
-                print "length of specified h list/tuple is {0} != num_microphones {1}"\
+                print "length of specified noise_sd list/tuple is {0} != num_microphones {1}"\
                     .format(len(h), num_microphones)
         else:
             print h
             h = [ float(h) ] * num_microphones
         h = np.array(h)
-        print "Manually specifying precision vector h={0}".format(h)
+        print "Manually specifying precision vector noise_sd={0}".format(h)
 
     for p in range(part_num_offset, num_parties + part_num_offset):
 
@@ -884,7 +896,7 @@ def generate_random_cocktail_parties\
             # Normal noise precision parameter
             h = sample_precision(num_microphones=num_microphones, a_h=a_h, b_h=b_h)
 
-        # Sample parameters for each conversation
+        # Sample parameters for each conversation_spec
         conversations = [ sample_conversation_params\
                           (state_size=num_speakers, spacing_omega=spacing_omega,
                            k=k, beta=beta, a_omega=a_omega, b_omega=b_omega)
@@ -919,7 +931,7 @@ conv1 = dict(state_size=3,
                          [0.2, 0.3, 0.5]]),
              omegas=np.array([1.0, 4.817171822149042, 5.5601723775863947, 2.5607154594305161]),
              # mu=np.array([ 0.30937712,  1.59461785, -3.88594726]),
-             # h=np.array([ 2.55156268,  1.11594631,  0.43530385])
+             # noise_sd=np.array([ 2.55156268,  1.11594631,  0.43530385])
              )
 
 conv2 = dict(state_size=3,
@@ -940,6 +952,7 @@ conv4 = dict(state_size=2,
              A=np.array([[0.18148085, 0.81851915],
                          [0.45375021, 0.54624979]]),
              omegas=np.array([0.8, 1.58805976, 1.60533681]))
+
 
 def conv_to_string(conv):
     lines = list()
@@ -990,20 +1003,20 @@ sigma2_0 = 2.0
 mu = np.random.normal(loc=0, scale=sigma2_0, size=num_speakers)
 a_h = 1.0
 b_h = 1.0
-h = np.random.gamma(shape=a_h, scale=b_h, size=num_speakers)
+noise_sd = np.random.gamma(shape=a_h, scale=b_h, size=num_speakers)
 '''
 
 # mu = calculate_means(bin_state, W)
 # print mu
 
-# emissions = normal_emission(mu, h)
+# emissions = normal_emission(mu, noise_sd)
 # print emissions
 
 # --------------------------------------------------------------------
 
 # script
 
-# mconvs = sample_mix_conversations([conv1, conv3, conv4], W, h, n=300)
+# mconvs = sample_mix_conversations([conv1, conv3, conv4], W, noise_sd, n=300)
 # save_mixed_convs(mconvs, path='../figures/cocktail_party/')
 
 
@@ -1022,7 +1035,7 @@ def generate_noise(a_h=1.0, b_h=1.0, h=None,
             data_dir = '../figures/cocktail/a{0}b{1}_{2}/'\
                 .format(int(np.floor(a_h)), int(np.floor(b_h)), cs)
         else:
-            data_dir = '../figures/cocktail/h{0}_{1}/'.format(h, cs)
+            data_dir = '../figures/cocktail/noise_sd{0}_{1}/'.format(h, cs)
     generate_random_cocktail_parties \
         (num_parties=num_parties,
          part_num_offset=part_num_offset,
@@ -1045,11 +1058,11 @@ def generate_noise(a_h=1.0, b_h=1.0, h=None,
          b_omega=1.0,  # rate
 
          # Normal emission noise precision
-         # h ~ Gamma(a_h, b_h)
-         a_h=a_h,  # h prior ~ Gamma shape param
-         b_h=b_h,  # h prior ~ Gamma rate param
+         # noise_sd ~ Gamma(a_h, b_h)
+         a_h=a_h,  # noise_sd prior ~ Gamma shape param
+         b_h=b_h,  # noise_sd prior ~ Gamma rate param
 
-         # optionally manually specify value used for all precision in precision vector h
+         # optionally manually specify value used for all precision in precision vector noise_sd
          h=h,
 
          center_scale_data_p=center_scale_data_p,
@@ -1069,39 +1082,39 @@ def generate_noise(a_h=1.0, b_h=1.0, h=None,
 
 
 '''
-for h in [ 0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 5.0, 10.0 ]:
-    generate_noise(h=h, num_parties=3)
+for noise_sd in [ 0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 5.0, 10.0 ]:
+    generate_noise(noise_sd=noise_sd, num_parties=3)
 '''
 
 '''
-for h in [ 0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 5.0, 10.0 ]:
-    generate_noise(h=h, center_scale_data_p=False, num_parties=3, part_num_offset=3)
+for noise_sd in [ 0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 5.0, 10.0 ]:
+    generate_noise(noise_sd=noise_sd, center_scale_data_p=False, num_parties=3, part_num_offset=3)
 '''
 
 '''
 # generating additional noise level datasets, using offset...
-for h in [ 0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 5.0, 10.0 ]:
-    generate_noise(h=h, center_scale_data_p=False, num_parties=4, part_num_offset=6)
+for noise_sd in [ 0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 5.0, 10.0 ]:
+    generate_noise(noise_sd=noise_sd, center_scale_data_p=False, num_parties=4, part_num_offset=6)
 '''
 
 '''
-for h in [ 0.75, 1.0, 1.5, 2.0, 3.0, 5.0, 10.0 ]:  # [ 0.5 ]:
-    generate_noise(h=h,
+for noise_sd in [ 0.75, 1.0, 1.5, 2.0, 3.0, 5.0, 10.0 ]:  # [ 0.5 ]:
+    generate_noise(noise_sd=noise_sd,
                    center_scale_data_p=False,
                    speaker_groups=(4, 4, 4, 4),
                    num_microphones=12,
                    num_parties=10,
-                   data_dir='../figures/cocktail_s16_m12/h{0}_nocs/'.format(h))
+                   data_dir='../figures/cocktail_s16_m12/noise_sd{0}_nocs/'.format(noise_sd))
 '''
 
 '''
-for h in [ 2.0 ]:  # [ 0.5 ]:
-    generate_noise(h=h,
+for noise_sd in [ 2.0 ]:  # [ 0.5 ]:
+    generate_noise(noise_sd=noise_sd,
                    center_scale_data_p=False,
                    speaker_groups=(5, 5, 4),
                    num_microphones=12,
                    num_parties=10,
-                   data_dir='../figures/cocktail_s14_m12/h{0}_nocs/'.format(h))
+                   data_dir='../figures/cocktail_s14_m12/noise_sd{0}_nocs/'.format(noise_sd))
 '''
 
 

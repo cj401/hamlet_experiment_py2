@@ -375,7 +375,7 @@ def read_log(filepath):
 
 
 def test_read_log():
-    command_dict, results_list = read_log('test_data/test.log')
+    command_dict, results_list = read_log('test_data_raw/test.log')
     assert command_dict[7] == './main -p cocktail_inference_no_LT_HMM.config ' \
                               + '--data_subdir=cp_1/ -r cp_1/no_LT ' \
                               + '--results_timestamp=01'
@@ -1598,14 +1598,14 @@ run_experiment_script('figures/cocktail/',
 
 
 '''
-# h experiment
+# noise_sd experiment
 
 # >>>>>>>> NOTE THE RANGE IN cp{0} <<<<<<<<<<<<<
 # //// >>>>>>>> generating 03..06 (4x)  <<<<<<<<<<<<<
 # >>>>>>>> generating 07..09 (3x)  <<<<<<<<<<<<<
 
-match_select_hnocs_cp0to2 = {0: ['h{0}_nocs'.format(h)
-                                 for h in [0.5]],  # [0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 5.0, 10.0]],
+match_select_hnocs_cp0to2 = {0: ['noise_sd{0}_nocs'.format(noise_sd)
+                                 for noise_sd in [0.5]],  # [0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 5.0, 10.0]],
                              1: ['cp{0}'.format(i) for i in range(1)]}  # >>>NOTE range<<<
 
 run_experiment_script('figures/cocktail/',
@@ -1644,8 +1644,8 @@ run_experiment_script('figures/normal/',
 '''
 # Learn weights
 # [0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 5.0, 10.0]],
-match_select_hnocs_cp0to2 = {0: ['h{0}_nocs'.format(h)
-                                 for h in [0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 5.0, 10.0]],
+match_select_hnocs_cp0to2 = {0: ['noise_sd{0}_nocs'.format(noise_sd)
+                                 for noise_sd in [0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 5.0, 10.0]],
                              1: ['cp{0}'.format(i) for i in range(0, 10)]}
 
 run_experiment_script(os.path.join(HAMLET_ROOT, 'cocktail'),
@@ -1664,8 +1664,8 @@ run_experiment_script(os.path.join(HAMLET_ROOT, 'cocktail'),
 '''
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 # Learn weights with Normal_emission_model a_h=b_h=0.1
-match_select_hnocs_cp0to2 = {0: ['h{0}_nocs'.format(h)
-                                 for h in [10.0]],  # [0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 5.0, 10.0]],
+match_select_hnocs_cp0to2 = {0: ['noise_sd{0}_nocs'.format(noise_sd)
+                                 for noise_sd in [10.0]],  # [0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 5.0, 10.0]],
                              1: ['cp{0}'.format(i) for i in range(1)]}  # range(0, 10)
 
 run_experiment_script(os.path.join(HAMLET_ROOT, 'cocktail'),
@@ -1683,8 +1683,8 @@ run_experiment_script(os.path.join(HAMLET_ROOT, 'cocktail'),
 
 # factorial
 '''
-match_select_hnocs = {0: ['h{0}_nocs'.format(h)
-                          for h in [0.5]],  # , 0.75, 1.0, 1.5, 2.0, 3.0, 5.0, 10.0]],
+match_select_hnocs = {0: ['noise_sd{0}_nocs'.format(noise_sd)
+                          for noise_sd in [0.5]],  # , 0.75, 1.0, 1.5, 2.0, 3.0, 5.0, 10.0]],
                       1: ['cp{0}'.format(i) for i in range(10)]}
 
 run_experiment_script(os.path.join(HAMLET_ROOT, 'cocktail'),
@@ -1701,8 +1701,8 @@ run_experiment_script(os.path.join(HAMLET_ROOT, 'cocktail'),
 
 # factorial w1
 '''
-match_select_hnocs = {0: ['h{0}_nocs'.format(h)
-                          for h in [0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 5.0, 10.0]],
+match_select_hnocs = {0: ['noise_sd{0}_nocs'.format(noise_sd)
+                          for noise_sd in [0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 5.0, 10.0]],
                       1: ['cp{0}'.format(i) for i in range(10)]}
 
 run_experiment_script(os.path.join(HAMLET_ROOT, 'cocktail'),
@@ -1718,8 +1718,8 @@ run_experiment_script(os.path.join(HAMLET_ROOT, 'cocktail'),
 '''
 
 '''
-match_select_hnocs = {0: ['h{0}_nocs'.format(h)
-                          for h in [0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 5.0, 10.0]],
+match_select_hnocs = {0: ['noise_sd{0}_nocs'.format(noise_sd)
+                          for noise_sd in [0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 5.0, 10.0]],
                       1: ['cp{0}'.format(i) for i in range(10)]}
 
 run_experiment_script(os.path.join(HAMLET_ROOT, 'cocktail'),
@@ -1740,8 +1740,8 @@ run_experiment_script(os.path.join(HAMLET_ROOT, 'cocktail'),
 
 '''
 # w1 long run: 4000 iterations
-match_select_hnocs = {0: ['h{0}_nocs'.format(h)
-                          for h in [2.0, 3.0, 5.0, 10.0]],
+match_select_hnocs = {0: ['noise_sd{0}_nocs'.format(noise_sd)
+                          for noise_sd in [2.0, 3.0, 5.0, 10.0]],
                       1: ['cp{0}'.format(i) for i in range(3)]}
 
 run_experiment_script(os.path.join(HAMLET_ROOT, 'cocktail'),
@@ -1758,8 +1758,8 @@ run_experiment_script(os.path.join(HAMLET_ROOT, 'cocktail'),
 
 '''
 # 14-speaker 5,5,4 cocktail party, w1 long run: 4000 iterations, h2.0 only
-match_select_hnocs = {0: ['h{0}_nocs'.format(h)
-                          for h in [2.0]],
+match_select_hnocs = {0: ['noise_sd{0}_nocs'.format(noise_sd)
+                          for noise_sd in [2.0]],
                       1: ['cp{0}'.format(i) for i in range(3)]}
 
 run_experiment_script(os.path.join(HAMLET_ROOT, 'cocktail_s14_m12'),
@@ -1777,8 +1777,8 @@ run_experiment_script(os.path.join(HAMLET_ROOT, 'cocktail_s14_m12'),
 
 '''
 # 16-speaker 4x4 cocktail party, w1 long run: 4000 iterations, h2.0 only
-match_select_hnocs = {0: ['h{0}_nocs'.format(h)
-                          for h in [3.0, 10.0]],
+match_select_hnocs = {0: ['noise_sd{0}_nocs'.format(noise_sd)
+                          for noise_sd in [3.0, 10.0]],
                       1: ['cp{0}'.format(i) for i in range(3)]}
 
 # {BFact, LT, noLT} x {h3.0, h10.0} x {cp0..cp3} x {3 reps} = 3 x 2 x 3 x 3 = 54

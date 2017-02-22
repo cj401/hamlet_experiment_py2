@@ -75,7 +75,7 @@ def read_ordered_dict(filepath):
 
 
 def read_results(results_root='../results/cocktail/',
-                 exp_glob_pattern='h*_nocs_*',
+                 exp_glob_pattern='noise_sd*_nocs_*',
                  results_filename='F1_score.txt',
                  iteration_min=800,
                  verbose=False):
@@ -119,7 +119,7 @@ def read_results(results_root='../results/cocktail/',
 
 
 def read_results_fhmm(results_root='../results/cocktail_fhmm/',
-                      exp_glob_pattern='h*_nocs',
+                      exp_glob_pattern='noise_sd*_nocs',
                       results_filename='f1.txt',
                       iteration_min=800,
                       verbose=True):
@@ -491,7 +491,7 @@ def plot_fhmm_results(data_dict, stat_name='F1', ax=None, show_p=False):
 
 '''
 data_dict = read_results_fhmm(results_root='../results/cocktail_fhmm/',
-                              exp_glob_pattern='h*_nocs',
+                              exp_glob_pattern='noise_sd*_nocs',
                               results_filename='f1.txt',
                               iteration_min=800,
                               verbose=False)
@@ -618,7 +618,7 @@ def plot_all_noise_results_across_data_sets_with_fhmm\
 
 
 data_factorial_dict = read_results_fhmm(results_root='../results/cocktail_fhmm/',
-                                        exp_glob_pattern='h*_nocs',
+                                        exp_glob_pattern='noise_sd*_nocs',
                                         results_filename='f1.txt',
                                         iteration_min=800,
                                         verbose=False)
@@ -639,7 +639,7 @@ plot_all_noise_results_across_data_sets_with_fhmm(data_lt_dict, data_factorial_d
 # extract figures from venti results
 '''
 data_dict = read_results(results_root='../results/cocktail/',
-                         exp_glob_pattern='h*_nocs_*',
+                         exp_glob_pattern='noise_sd*_nocs_*',
                          results_filename='F1_score.txt',
                          iteration_min=800,
                          verbose=True)
