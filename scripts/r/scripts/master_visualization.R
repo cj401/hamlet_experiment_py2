@@ -44,6 +44,10 @@ option_list = list(
   make_option(c("-g", "--groundtruth"), type="character",
               default=NULL,
               help="the data directory for groundtruth matrix: data/.../state.txt (...part)", 
+              metavar="character"),
+  make_option(c("--remove"), type="character",
+              default=NULL,
+              help="variables removed from the base variables, seperate by a comma",
               metavar="character")
 );
 
@@ -64,7 +68,15 @@ if (as.numeric(opt$binary))
 plot.vars <- strsplit(opt$vars, ",")[[1]]
 if ("base" %in% plot.vars)
 {
-  base.vars = c("F1_score", "precision", "recall", "accuracy", "A")
+  base.vars <- c("F1_score", "precision", "recall", "accuracy", "A")
+  if (!is.null(opt$remove))
+  {
+    remove.vars <- strsplit(opt$remove, ",")[[1]]
+    for (v in remove.vars)
+    {
+      base.vars <- base.vars[base.vars!=v]
+    }
+  }
   plot.vars <- plot.vars[plot.vars!="base"]
   plot.vars <- append(base.vars, plot.vars)
 }
