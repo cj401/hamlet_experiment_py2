@@ -126,4 +126,37 @@ def exp_SSD1_n0p3_500(test=True):
          test=test,
          select_subdirs_verbose=False)
 
-exp_SSD1_n0p3_500(test=True)
+# exp_SSD1_n0p3_500(test=True)
+
+
+# ----------------------------------------------------------------------
+
+match_dict = {0: ['abs_2000_n0.3'],
+              1: ['cp{0}'.format(i) for i in range(3)]}
+
+
+def exp_SSD1_abs_2000_n0p3(test=True):
+    """
+    cocktail16_SSD1 'RW' experiment
+        noise=0.3
+        sample_step=2000
+    Using config cocktail16_inference_{BFact,LT,no_LT,sticky,stickyLT}
+    2000 iterations
+    J=200
+    :return:
+    """
+    experiment_tools.run_experiment_script \
+        (main_path=HAMLET_ROOT,
+         data_dir=os.path.join(DATA_ROOT, 'cocktail_SSC1_s16_m12/'),
+         results_dir=os.path.join(RESULTS_ROOT, 'cocktail_SSC1_s16_m12'),
+         replications=5,
+         offset=0,
+         parameter_spec_list=collect_parameter_spec_list_cocktail16_w0_all_models(),
+         match_dict=match_dict,
+         multiproc=True,
+         processor_pool_size=multiprocessing.cpu_count(),
+         rerun=False,
+         test=test,
+         select_subdirs_verbose=False)
+
+exp_SSD1_abs_2000_n0p3(test=True)
