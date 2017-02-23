@@ -37,6 +37,7 @@ def optional_add_relative_path(current, parent, relative_path, verbose=False):
     then add parent path.
     :return:
     """
+    sys.path.insert(1, '/work/clayton/hamlet_v11/experiment/scripts/python')
     if not find_path_context(parent):
         if find_path_context(current):
             parent_path = os.path.realpath(os.path.join(os.getcwd(), relative_path))
@@ -139,6 +140,20 @@ def collect_parameter_spec_list_latent_continue_syn_block_diag12_10000itr_hmc_h2
     """
     return [ experiment_tools.ParameterSpec('block_diag12_LT_10000itr_hmc_h2.0.config', parameters_path),
              experiment_tools.ParameterSpec('block_diag12_noLT_10000itr_hmc_h2.0.config', parameters_path) ]
+
+
+def collect_parameter_spec_list_latent_continue_syn_block_diag40_4models(parameters_path):
+    """
+    Latent continuous state synthetic experiment parameters
+    Using cauchy kernel
+    J=100, to accommodate the 40-state block-diagonal data
+    10,000 iterations, hmc
+    :return:
+    """
+    return [ experiment_tools.ParameterSpec('block_diag40_LT_lambda1.config', parameters_path),
+             experiment_tools.ParameterSpec('block_diag40_noLT_lambda1.config', parameters_path),
+             experiment_tools.ParameterSpec('block_diag40_Sticky_lambda1.config', parameters_path),
+             experiment_tools.ParameterSpec('block_diag40_StickyLT_lambda1.config', parameters_path)]
 
 
 # ----------------------------------------------------------------------
@@ -518,3 +533,33 @@ def exp_11_cauchy(test=True):
 # exp_11_cauchy(test=True)
 
 
+# ----------------------------------------------------------------------
+
+def exp_4models(test=True):
+    """
+    Using block_diag40_s2 dataset (10 states of 4 blocks ???? , for a total of 40 states)
+        with s=2 (variance of observed state mean locations)
+    Using parameter files block_diag40_{LT,noLT,Sticky,StickyLT}_lambda1_cauchy.config
+        i.e., collect_parameter_spec_list_latent_continue_syn_block_diag40_lambda1
+    10,000 iterations, J=100, {HMC: L=100, epsilon=0.0001}
+    :return:
+    """
+    experiment_tools.run_experiment_script \
+        (main_path=HAMLET_ROOT,
+         data_dir=os.path.join(DATA_ROOT, 'continuous_latent_syn/'),
+         results_dir=os.path.join(RESULTS_ROOT, 'continuous_latent_syn_diag40_4models'),
+         replications=5,
+         offset=0,
+         parameter_spec_list=collect_parameter_spec_list_latent_continue_syn_block_diag40_4models(PARAMETERS_ROOT),
+         match_dict=match_select_latent_continue_syn_block_diag40_s2,
+         multiproc=True,
+         processor_pool_size=multiprocessing.cpu_count(),
+         rerun=False,
+         test=test,
+         select_subdirs_verbose=False)
+
+# run me!
+exp_4models(test=True)
+
+
+# ----------------------------------------------------------------------
