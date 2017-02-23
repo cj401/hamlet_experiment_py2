@@ -315,7 +315,13 @@ plot_scalar_by_iteration <-
         geom_ribbon(aes(x=iter, ymin=lwr, ymax=upr, group=model, fill=model), alpha=0.4) +
         geom_line(aes(x=iter, y=m, group=model, color=model)) +
         geom_point(aes(x=iter, y=m, color=model, shape=model)) +
-        labs(x="iterations", y=output_type)
+        labs(x="Iterations", y=output_type) + 
+        theme(
+          axis.text=element_text(size=15),
+          axis.title=element_text(size=20),
+          legend.text=element_text(size=20),
+          legend.title=element_text(size=24)
+        )
       ggsave(paste(output_path, "/", output_type, ".pdf", sep = ""))
       #dev.off()
       print('done.')
@@ -620,7 +626,14 @@ plot_scalar_density_by_model <-
         names(density_plot_data) <- c("value", "model")
         print(paste('Output density plot to', output_path, "/", output_type, "_density.pdf", sep = ""))
         ggplot(density_plot_data, aes(value, fill=model)) +
-          geom_histogram(alpha=0.5, aes(y=..density..), position='identity')
+          geom_histogram(alpha=0.5, aes(y=..density..), position='identity') +
+          labs(x=output_type, y="density") + 
+          theme(
+            axis.text=element_text(size=15),
+            axis.title=element_text(size=20),
+            legend.text=element_text(size=20),
+            legend.title=element_text(size=24)
+          )
         ggsave(paste(output_path, "/", output_type, "_density.pdf", sep = ""))
         
         
