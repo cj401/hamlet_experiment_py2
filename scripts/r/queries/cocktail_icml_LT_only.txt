@@ -1,0 +1,3 @@
+comparison model
+aalpha0p01_balpha0p01 LT_hdp_hmm_w0_aalpha0p01_balpha0p01
+aalpha0p01_balpha0p01 StickyLT_hdp_hmm_w0_aalpha0p01_balpha0p01
