@@ -630,9 +630,15 @@ plot_scalar_density_by_model <-
         names(plot_vars) <- unique(groups)
         for (g in unique(groups))
         {
-          lines(density(density_data[[g]]), lty = plot_vars[g], col = plot_vars[g], lwd = 0.25)
+          lines(density(density_data[[g]]), lty = plot_vars[g], col = plot_vars[g], lwd = 2)
         }
-        legend("topright", lty = plot_vars, col = plot_vars, legend = unique(groups))
+        labels <- NULL
+        split_group_name <- strsplit(unique(groups), "_")
+        for (i in 1:length(split_group_name))
+        {
+          labels[i] <- split_group_name[[i]][1]
+        }
+        legend("topright", lty = plot_vars, col = plot_vars, legend = labels)
         dev.off() 
       #}
       print('done.')
