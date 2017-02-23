@@ -320,9 +320,10 @@ plot_scalar_by_iteration <-
           axis.text=element_text(size=15),
           axis.title=element_text(size=20),
           legend.text=element_text(size=20),
-          legend.title=element_text(size=24)
+          legend.title=element_text(size=24),
+          aspect.ratio = 0.5
         )
-      ggsave(paste(output_path, "/", output_type, ".pdf", sep = ""))
+      ggsave(paste(output_path, "/", output_type, ".pdf", sep = ""), width = 8, height = 4)
       #dev.off()
       print('done.')
     #xf}
@@ -632,9 +633,10 @@ plot_scalar_density_by_model <-
             axis.text=element_text(size=15),
             axis.title=element_text(size=20),
             legend.text=element_text(size=20),
-            legend.title=element_text(size=24)
+            legend.title=element_text(size=24),
+            aspect.ratio = 0.5
           )
-        ggsave(paste(output_path, "/", output_type, "_density.pdf", sep = ""))
+        ggsave(paste(output_path, "/", output_type, "_density.pdf", sep = ""), width = 8, height = 4)
         
         
         #x_lowest_val <- Inf
