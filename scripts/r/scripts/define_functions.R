@@ -314,6 +314,7 @@ plot_scalar_by_iteration <-
       ggplot(plot_data) +
         geom_ribbon(aes(x=iter, ymin=lwr, ymax=upr, group=model, fill=model), alpha=0.4) +
         geom_line(aes(x=iter, y=m, group=model, color=model)) +
+        geom_point(aes(x=iter, y=m, color=model, shape=model)) +
         labs(x="iterations", y=output_type)
       ggsave(paste(output_path, "/", output_type, ".pdf", sep = ""))
       #dev.off()
@@ -608,32 +609,53 @@ plot_scalar_density_by_model <-
         results_list <- get_scalar_or_vector_data(specs, output_type, paths)
         collected_data <- collect_data_as_scalar(results_list)
         density_data <- collect_data_for_density_plot(collected_data, burnin_samples)
-        x_lowest_val <- Inf
-        x_highest_val <- -Inf
-        y_lowest_val <- Inf
-        y_highest_val <- -Inf
-        #print(density_data)
-        for (l in density_data)
-        {
-          x_lowest_val = max(min(x_lowest_val, min(density(l, na.rm=TRUE)$x)), xrange[1])
-          x_highest_val = min(max(x_highest_val, max(density(l, na.rm=TRUE)$x)), xrange[2])
-          y_lowest_val = max(min(y_lowest_val, min(density(l, na.rm=TRUE)$y)), yrange[1])
-          y_highest_val = min(max(y_highest_val, max(density(l, na.rm=TRUE)$y)), yrange[2])
-        }
-        print(paste('Output density plot to', output_path, "/", output_type, "_density.pdf", sep = ""))
-        pdf(paste(output_path, "/", output_type, "_density.pdf", sep = ""))
-        plot(
-          NULL, xlim = c(x_lowest_val, x_highest_val), ylim=c(y_lowest_val, y_highest_val),
-          xlab = output_type, ylab = "density")
         groups <- specs$models
-        plot_vars <- 1:length(unique(groups))
-        names(plot_vars) <- unique(groups)
+        density_plot_data <- data.frame()
         for (g in unique(groups))
         {
-          lines(density(density_data[[g]]), lty = plot_vars[g], col = plot_vars[g], lwd = 0.25)
+          plot_data <- data.frame(value = density_data[[g]])
+          plot_data$model <- strsplit(g, "_")[[1]][1]
+          density_plot_data <- rbind(density_plot_data, plot_data)
         }
-        legend("topright", lty = plot_vars, col = plot_vars, legend = unique(groups))
-        dev.off() 
+        names(density_plot_data) <- c("value", "model")
+        print(paste('Output density plot to', output_path, "/", output_type, "_density.pdf", sep = ""))
+        ggplot(density_plot_data, aes(value, fill=model)) +
+          geom_histogram(alpha=0.5, aes(y=..density..), position='identity')
+        ggsave(paste(output_path, "/", output_type, "_density.pdf", sep = ""))
+        
+        
+        #x_lowest_val <- Inf
+        #x_highest_val <- -Inf
+        #y_lowest_val <- Inf
+        #y_highest_val <- -Inf
+        #print(density_data)
+        #for (l in density_data)
+        #{
+         # x_lowest_val = max(min(x_lowest_val, min(density(l, na.rm=TRUE)$x)), xrange[1])
+         # x_highest_val = min(max(x_highest_val, max(density(l, na.rm=TRUE)$x)), xrange[2])
+         # y_lowest_val = max(min(y_lowest_val, min(density(l, na.rm=TRUE)$y)), yrange[1])
+         # y_highest_val = min(max(y_highest_val, max(density(l, na.rm=TRUE)$y)), yrange[2])
+        #}
+        #print(paste('Output density plot to', output_path, "/", output_type, "_density.pdf", sep = ""))
+        #pdf(paste(output_path, "/", output_type, "_density.pdf", sep = ""))
+        #plot(
+         # NULL, xlim = c(x_lowest_val, x_highest_val), ylim=c(y_lowest_val, y_highest_val),
+         # xlab = output_type, ylab = "density")
+        #groups <- specs$models
+        #plot_vars <- 1:length(unique(groups))
+        #names(plot_vars) <- unique(groups)
+        #for (g in unique(groups))
+        #{
+         # lines(density(density_data[[g]]), lty = plot_vars[g], col = plot_vars[g], lwd = 2)
+        #}
+        #labels <- NULL
+        #split_group_name <- strsplit(unique(groups), "_")
+        #for (i in 1:length(split_group_name))
+        #{
+         # labels[i] <- split_group_name[[i]][1]
+        #}
+        #legend("topright", lty = plot_vars, col = plot_vars, legend = labels)
+        #dev.off() 
       #}
       print('done.')
 }
