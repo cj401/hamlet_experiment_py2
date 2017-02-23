@@ -393,6 +393,8 @@ def test_sample_emission_noise_matrix():
 # test_sample_emission_noise_matrix()
 
 
+# ----------------------------------------------------------------------
+
 class CocktailPartySpec(object):
     def __init__(self,
 
@@ -474,6 +476,8 @@ class CocktailPartySpec(object):
         print '    noise_sd', self.noise_sd
 
 
+# ----------------------------------------------------------------------
+
 def sample_speakers_for_conversations(cp_spec):
     speakers = sample_dir(cp_spec.speaker_dir_root, sum(cp_spec.speaker_groups),
                           glob_pattern='*', replace=False)
@@ -497,6 +501,8 @@ def test_sample_speakers_for_conversations():
 
 # test_sample_speakers_for_conversations()
 
+
+# ----------------------------------------------------------------------
 
 def sample_duration(mu, sigma, sample_rate, offset=0):
     """
@@ -652,10 +658,10 @@ class ConversationSpec(object):
 
         return conversation_spec
 
-    def sample_data(self, sample_step_size=2000, include_summary_states_p=False):  # 1000, 500
+    def sample_conversation_data(self, sample_step_size=2000, include_summary_states_p=False):  # 1000, 500
 
         if self.conversation_spec is None:
-            print '[ERROR] ConversationSpec.sample_data(): self.conversation_spec is None.'
+            print '[ERROR] ConversationSpec.sample_conversation_data(): self.conversation_spec is None.'
             print '        Need to call ConversationSpec.sample_spec() first.'
             sys.exit()
 
@@ -774,7 +780,7 @@ def test_conversation_spec():
     print 'cum_seg_indices:', cum_seg_indices
 
     print '----- Sample data and states'
-    data, states = conv_spec.sample_data(sample_step_size=2000)
+    data, states = conv_spec.sample_conversation_data(sample_step_size=2000)
     print 'data.shape', data.shape
     print 'states.shape', states.shape
 
@@ -829,32 +835,134 @@ def test_mix_latent_state_linear_combination():
 
 # ----------------------------------------------------------------------
 
-def scale_to_center_unitvar(arr):
+def apply_fn_to_mask(fn, a, mask):
+    return fn(a[numpy.where(mask == 1)])
+
+
+def test_apply_fn_to_mask():
+    print '\ntest_apply_fn_to_filter() START'
+    a = numpy.array([1, 900, 2, 900, 3, 900])
+    mask = numpy.array([1, 0, 1, 0, 1, 0], dtype=int)
+    print 'a:', a
+    print 'numpy.mean(a)', numpy.mean(a)
+    print 'manual: numpy.mean(numpy.array([1, 2, 3]))', numpy.mean(numpy.array([1, 2, 3]))
+    print 'mask:', mask
+    print 'apply_fn_to_filter(numpy.mean, a, mask)', apply_fn_to_mask(numpy.mean, a, mask)
+    print 'test_apply_fn_to_filter() DONE'
+
+# test_apply_fn_to_mask()
+
+
+# ----------------------------------------------------------------------
+
+def get_masked_array(source, mask):
     """
-    scale (standardize) by columns:
-        per column, subtract the mean and divide by the stdev each
-        value in the column
+    helper to extract just the values for which the filter has 1's
+    values_at_mask_indices: the array of just the values that matched the filter
+    mask_indices: array of indices for which the filter has 1's
+    :param source: the source array
+    :param mask: array of 0's and 1's
+    :return: array containing only values at mask_indices,
+             and the array of mask_indices themselves
+    """
+    mask_indices = numpy.where(mask == 1)[0]
+    return source[mask_indices], mask_indices
+
+
+'''
+def put_values_at_mask(target, mask, source):
+    numpy.put(target, mask, source)
+'''
+
+
+def test_get_masked_array():
+    print '\ntest_get_masked_array() START'
+    s = numpy.array(range(2, 12))
+    m = numpy.array([1, 1, 1, 0, 0, 0, 1, 1, 1, 0], dtype=int)
+    print '----- original'
+    print 's:', s
+    print 'm:', m
+    print '-- get_values_at_ones(s, m)'
+    vsource, mask_indices = get_masked_array(s, m)
+    print 'vsource:', vsource
+    print 'mask_indices:', mask_indices
+    print '----- new s'
+    ns = numpy.zeros(10)
+    print '            ns:', ns
+    n1 = numpy.array([1, 1, 1, 2, 2, 2])
+    print '            n1:', n1
+    numpy.put(ns, mask_indices, n1)
+    print 'put n1 into ns:', ns
+    print 'test_get_masked_array() DONE'
+
+# test_get_masked_array()
+
+
+# ----------------------------------------------------------------------
+
+def transform_loc_scale(arr, loc=0.0, scale=1.0, mask=None):
+    """
+    transform the data BY COLUMN
+        Standardize (mean 0, stdev 1.0)
+        Then center at location loc and scale to scale
     :param arr:
+    :param loc:
+    :param scale:
+    :param mask: a matrix of 0,1 of same dimensions as arr, but only values in arr
+        that match corresponding 1's in the same index are used to compute standard
     :return:
     """
+
     cs_arr = numpy.zeros(arr.shape)
 
     for i in range(arr.shape[1]):
-        col_mu = numpy.mean(arr[:, i])
-        col_sigma = numpy.std(arr[:, i])
-        if col_sigma > 0.00001:
-            # handle near-zero standard-deviation
-            cs_arr[:, i] = (arr[:, i] - col_mu) / col_sigma
+
+        orig_col = arr[:, i]
+
+        # only perform transformation if there are any values
+        if orig_col.any():
+
+            stop = False
+
+            # if mask used, make orig_col just the values corresponding to mask 1's
+            if mask is not None:
+                orig_col, mask_indices = get_masked_array(orig_col, mask[:, i])
+                if not orig_col.any():
+                    print '[WARNING] transform_loc_scale(): MASKED column {0} is all zeros'.format(i)
+                    stop = True
+
+            if not stop:
+                # col_mu = numpy.mean(orig_col[:, i])
+                col_mu = numpy.mean(orig_col)
+                # col_sigma = numpy.std(orig_col[:, i])
+                col_sigma = numpy.std(orig_col)
+                if col_sigma > 0.00001:
+                    # handle near-zero standard-deviation to avoid div-by-zero and numerical instability
+                    # cs_arr[:, i] = ((arr[:, i] - col_mu) / (col_sigma)) * scale + loc
+                    new_col = ((orig_col - col_mu) / col_sigma) * scale + loc
+                else:
+                    # cs_arr[:, i] = ((arr[:, i] - col_mu) / scale) + loc
+                    new_col = ((orig_col - col_mu) / scale) + loc
+
+                if mask is not None:
+                    # put the values of new_col into cs_arr according to the mask indices
+                    numpy.put(cs_arr[:, i], mask_indices, new_col)
+                else:
+                    cs_arr[:, i] = new_col
+
         else:
-            cs_arr[:, i] = (arr[:, i] - col_mu)
+            print '[WARNING] transform_loc_scale(): column {0} is all zeros'.format(i)
 
     return cs_arr
 
 
-def test_scale_to_center_unitvar():
+def test_transform_loc_scale():
+    print '\ntest_transform_loc_scale() START'
     a = numpy.array([[1, 2, 3],
                      [4, 5, 6],
-                     [5, 6, 12]])
+                     [5, 6, 12],
+                     [6, 7, 40],
+                     [8, 8, 15]])
     print 'a\n', a
     print 'mean(a)', numpy.mean(a)
     print 'std(a)', numpy.std(a)
@@ -862,16 +970,63 @@ def test_scale_to_center_unitvar():
         print '  col {0} mean: {1}'.format(i, numpy.mean(a[:, i]))
         print '  col {0} std: {1}'.format(i, numpy.std(a[:, i]))
 
-    print '----- scale:'
-    scaled_a = scale_to_center_unitvar(a)
-    print 'scaled_a\n', scaled_a
-    print 'mean(scaled_a)', numpy.mean(scaled_a)
-    print 'std(scaled_a)', numpy.std(scaled_a)
-    for i in range(scaled_a.shape[1]):
-        print '  col {0} mean: {1}'.format(i, numpy.mean(scaled_a[:, i]))
-        print '  col {0} std: {1}'.format(i, numpy.std(scaled_a[:, i]))
+    print '\n----- trans(0, 1):'
+    trans_a = transform_loc_scale(a)
+    print 'trans_a\n', trans_a
+    print 'mean(trans_a)', numpy.mean(trans_a)
+    print 'std(trans_a)', numpy.std(trans_a)
+    for i in range(trans_a.shape[1]):
+        print '  col {0} mean: {1}'.format(i, numpy.mean(trans_a[:, i]))
+        print '  col {0} std: {1}'.format(i, numpy.std(trans_a[:, i]))
 
-# test_scale_to_center_unitvar()
+    print '\n----- trans(1, 0.5):'
+    trans_b = transform_loc_scale(a, 1.0, 0.5)
+    print 'trans_b\n', trans_b
+    print 'mean(trans_b)', numpy.mean(trans_b)
+    print 'std(trans_b)', numpy.std(trans_b)
+    for i in range(trans_b.shape[1]):
+        print '  col {0} mean: {1}'.format(i, numpy.mean(trans_b[:, i]))
+        print '  col {0} std: {1}'.format(i, numpy.std(trans_b[:, i]))
+
+    print '\n----- trans(1, 0.5, mask):'
+    mask = numpy.array([[1, 1, 0],
+                        [1, 1, 1],
+                        [1, 1, 1],
+                        [0, 0, 0],
+                        [1, 1, 1]])
+    print 'mask:\n', mask
+    trans_c = transform_loc_scale(a, 1.0, 0.5, mask)
+    print 'trans_c\n', trans_c
+    print 'mean(trans_c)', numpy.mean(trans_c)
+    print 'std(trans_c)', numpy.std(trans_c)
+    print 'NOTE: the masked mean,std should be 1.0, 0.5 respectively'
+    for i in range(trans_c.shape[1]):
+        print '  col {0} mean: {1}, masked mean: {2}'\
+            .format(i, numpy.mean(trans_c[:, i]), apply_fn_to_mask(numpy.mean, trans_c[:, i], mask[:, i]))
+        print '  col {0} std: {1}, masked std: {2}'\
+            .format(i, numpy.std(trans_c[:, i]), apply_fn_to_mask(numpy.std, trans_c[:, i], mask[:, i]))
+    print 'test_transform_loc_scale() DONE'
+
+# test_transform_loc_scale()
+
+
+def debug_transform_loc_scale():
+    path = os.path.join(os.path.join(HAMLET_ROOT, DATA_ROOT), 'cocktail_SSC1_s16_m12')
+    path = os.path.join(path, 'test_01/abs_2000_n0.3/cp0')
+
+    states_path = os.path.join(path, 'states.txt')
+    raw_path = os.path.join(path, 'model_params/1_test_obs_raw.txt')
+
+    states = numpy.loadtxt(states_path, dtype=int)
+    raw = numpy.loadtxt(raw_path)
+
+    print 'states.shape', states.shape
+    print 'raw.shape', raw.shape
+
+    for i in range(raw.shape[1]):
+        apply_fn_to_mask(numpy.mean, raw[:, i], states[:, i])
+
+# debug_apply_fn_to_mask()
 
 
 # ----------------------------------------------------------------------
@@ -899,11 +1054,19 @@ class CocktailParty(object):
         # during generation, keep track of simple stats
         self.generation_stats_string = None
 
+        # type of sample method
+        self.method_sample_absolute = False
+        self.method_sample_direct = False
+
         # latent state; dimension=(seq_length, num_speakers)
         self.train_data_raw = None
         self.train_states = None
         self.test_data_raw = None
         self.test_states = None
+
+        # absolute only: filter the data to be absolute value
+        self.train_data_absolute = None
+        self.test_data_absolute = None
 
         # scale the raw date to be centered with unit variance, column-wise
         self.train_data_scaled = None
@@ -950,7 +1113,7 @@ class CocktailParty(object):
                for speaker_group, conv_spec
                in zip(self.speaker_groups, self.conversation_params)]
 
-    def sample_data(self, sample_step_size=2000, verbose=False):
+    def ready_to_sample_p(self):
         if self.W is None or self.speaker_groups is None or self.conversation_params is None \
                 or self.train_conversation_specs is None or self.test_conversation_specs is None:
             print '[ERROR] CocktailParty.sample_data(): Need to run CocktailParty.sample_spec() first'
@@ -964,96 +1127,277 @@ class CocktailParty(object):
                 print '        Missing self.train_conversation_specs'
             if self.test_conversation_specs is None:
                 print '        Missing self.test_conversation_specs'
+            return False
+        return True
+
+    def sample_and_combine_subconversations(self, conversation_specs):
+        # sample data from each sub_conversation
+        sub_conversations = list()
+        min_len = sys.maxint
+        num_speakers = 0
+        for conv_spec in conversation_specs:
+            conv_data, conv_states \
+                = conv_spec.sample_conversation_data(sample_step_size=self.sample_step_size,
+                                                     include_summary_states_p=False)
+            sub_conversations.append((conv_data, conv_states))
+            if conv_data.shape[0] < min_len:
+                min_len = conv_data.shape[0]
+            num_speakers += conv_data.shape[1]
+        # combine sub_conversations
+        all_data = numpy.zeros((min_len, num_speakers))
+        all_states = numpy.zeros((min_len, num_speakers), dtype=int)
+        col_idx = 0
+        for conv_data, conv_states in sub_conversations:
+            all_data[:, col_idx:col_idx + conv_data.shape[1]] = conv_data[0:min_len, :]
+            all_states[:, col_idx:col_idx + conv_states.shape[1]] = conv_states[0:min_len, :]
+            col_idx += conv_data.shape[1]
+        return all_data, all_states
+
+    def make_stats_string(self, title, train, train_label, test, test_label, mask_p=False, verbose=False):
+
+        def stat_by_col_mask(fn, a, mask):
+            stat_arr = numpy.zeros(mask.shape[1])
+            for i in range(mask.shape[1]):
+                stat_arr[i] = apply_fn_to_mask(fn, a[:, i], mask[:, i])
+            return tuple(stat_arr)
+
+        string_list = list()
+        string_list.append(title)
+
+        string_list.append(('mean({0})'.format(train_label), numpy.mean(train)))
+        string_list.append(('by cols: mean({0}, axis=0)'.format(train_label),
+                            tuple(numpy.mean(train, axis=0))))
+        if mask_p:
+            string_list.append(('by cols, masked: mean({0}, axis=0)'.format(train_label),
+                                stat_by_col_mask(numpy.mean, train, self.train_states)))
+
+        string_list.append(('std({0})'.format(train_label), numpy.std(train)))
+        string_list.append(('by cols: std({0}, axis=0)'.format(train_label),
+                            tuple(numpy.std(train, axis=0))))
+        if mask_p:
+            string_list.append(('by cols, masked: std({0}, axis=0)'.format(train_label),
+                                stat_by_col_mask(numpy.std, train, self.train_states)))
+
+        string_list.append(('mean({0})'.format(test_label), numpy.mean(test)))
+        string_list.append(('by cols: mean({0}, axis=0)'.format(test_label),
+                            tuple(numpy.mean(test, axis=0))))
+        if mask_p:
+            string_list.append(('by cols, masked: mean({0}, axis=0)'.format(test_label),
+                                stat_by_col_mask(numpy.mean, test, self.test_states)))
+
+        string_list.append(('std({0})'.format(test_label), numpy.std(test)))
+        string_list.append(('by cols: std({0}, axis=0)'.format(test_label),
+                            tuple(numpy.std(test, axis=0))))
+        if mask_p:
+            string_list.append(('by cols, masked: std({0}, axis=0)'.format(test_label),
+                                stat_by_col_mask(numpy.std, test, self.test_states)))
+
+        string_list = map(lambda s: '{0}'.format(s), string_list)
+        string_list = '\n'.join(string_list)
+        self.generation_stats_string.append(string_list)
+        if verbose:
+            print string_list
+
+    def sample_data_absolute(self, sample_step_size=2000, verbose=False):
+        """
+        Sample audio absolute value
+        (1) sample raw
+        (2) scale_absolute: absolute value of raw
+        (3) scale: standardize by column, masked -- to mean 1, standard deviation 0.5
+        (4) mix: scale+bias * U(0, 1)
+        (5) noise: N(0, 1)
+        (6) obs = mix + noise
+        :param sample_step_size:
+        :param verbose:
+        :return:
+        """
+
+        '''
+        take the "on" parts and take the absolute value,
+        and then standardize them so that they have mean 1 and standard deviation around 0.5
+        and add N(0, 0.3sd) noise to this signal - some values could go below 0
+        '''
+
+        if not self.ready_to_sample_p():
             sys.exit()
+
+        # set flags specifying what intermediate generation data can be saved
+        self.method_sample_absolute = True
+        self.method_sample_direct = False
 
         self.sample_step_size = sample_step_size
 
         # initialize the generation_stats_string: create empty list
         self.generation_stats_string = list()
 
-        def sample_and_combine_subconversations(conversation_specs):
-            # sample data from each sub_conversation
-            sub_conversations = list()
-            min_len = sys.maxint
-            num_speakers = 0
-            for conv_spec in conversation_specs:
-                data, states = conv_spec.sample_data(sample_step_size=sample_step_size,
-                                                     include_summary_states_p=False)
-                sub_conversations.append((data, states))
-                if data.shape[0] < min_len:
-                    min_len = data.shape[0]
-                num_speakers += data.shape[1]
-            # combine sub_conversations
-            all_data = numpy.zeros((min_len, num_speakers))
-            all_states = numpy.zeros((min_len, num_speakers), dtype=int)
-            col_idx = 0
-            for data, states in sub_conversations:
-                all_data[:, col_idx:col_idx+data.shape[1]] = data[0:min_len, :]
-                all_states[:, col_idx:col_idx + states.shape[1]] = states[0:min_len, :]
-                col_idx += data.shape[1]
-            return all_data, all_states
-
-        def make_stats_string(title, train, train_label, test, test_label, verbose):
-            string_list \
-                = ((title,
-                    ('mean({0})'.format(train_label), numpy.mean(train)),
-                    ('std({0})'.format(train_label), numpy.std(train)),
-                    ('mean({0})'.format(test_label), numpy.mean(test)),
-                    ('std({0})'.format(test_label), numpy.std(test))))
-            string_list = map(lambda s: '{0}'.format(s), string_list)
-            string_list = '\n'.join(string_list)
-            self.generation_stats_string.append(string_list)
-            if verbose:
-                print string_list
-
-        # sample and combine data and states for train and test
+        # (1) sample raw: sample and combine data and states for train and test
         self.train_data_raw, self.train_states \
-            = sample_and_combine_subconversations(self.train_conversation_specs)
+            = self.sample_and_combine_subconversations(self.train_conversation_specs)
         self.test_data_raw, self.test_states \
-            = sample_and_combine_subconversations(self.test_conversation_specs)
+            = self.sample_and_combine_subconversations(self.test_conversation_specs)
 
-        make_stats_string('----- raw',
-                          self.train_data_raw, 'self.train_data_raw',
-                          self.test_data_raw, 'self.test_data_raw',
-                          verbose=verbose)
+        self.make_stats_string('----- raw',
+                               self.train_data_raw, 'train_data_raw',
+                               self.test_data_raw, 'test_data_raw',
+                               mask_p=True,
+                               verbose=verbose)
 
-        # center and scale to unit variance
-        self.train_data_scaled = scale_to_center_unitvar(self.train_data_raw)
-        self.test_data_scaled = scale_to_center_unitvar(self.test_data_raw)
+        # (2) scale_absolute: absolute value of raw
+        self.train_data_absolute = numpy.abs(self.train_data_raw)
+        self.test_data_absolute = numpy.abs(self.test_data_raw)
 
-        make_stats_string('----- after scaling',
-                          self.train_data_scaled, 'self.train_data_scaled',
-                          self.test_data_scaled, 'self.test_data_scaled',
-                          verbose=verbose)
+        self.make_stats_string('----- raw absolute',
+                               self.train_data_absolute, 'train_data_absolute',
+                               self.test_data_absolute, 'test_data_absolute',
+                               mask_p=True,
+                               verbose=verbose)
 
-        # mix data
+        # (3) scale: standardize by column, maked -- to mean 1, standard deviation 0.5
+        self.train_data_scaled \
+            = transform_loc_scale(self.train_data_raw, loc=1.0, scale=0.5, mask=self.train_states)
+        self.test_data_scaled \
+            = transform_loc_scale(self.test_data_raw, loc=1.0, scale=0.5, mask=self.test_states)
+
+        self.make_stats_string('----- scaled: loc=1.0, scale=0.5, masked',
+                               self.train_data_scaled, 'train_data_scaled',
+                               self.test_data_scaled, 'test_data_scaled',
+                               mask_p=True,
+                               verbose=verbose)
+
+        # (4) mix: scale+bias * U(0, 1)
         self.train_data_mixed = mix_latent_state_linear_combination(self.train_data_scaled, self.W)
         self.test_data_mixed = mix_latent_state_linear_combination(self.test_data_scaled, self.W)
 
-        make_stats_string('----- after mixing',
-                          self.train_data_mixed, 'self.train_data_mixed',
-                          self.test_data_mixed, 'self.test_data_mixed',
-                          verbose=verbose)
+        self.make_stats_string('----- after mixing',
+                               self.train_data_mixed, 'train_data_mixed',
+                               self.test_data_mixed, 'test_data_mixed',
+                               mask_p=False,
+                               verbose=verbose)
 
-        # sample emission noise
+        # (5) sample emission noise: N(0, 1)
         self.train_noise = sample_emission_noise_matrix \
             (self.train_data_mixed.shape[0], self.cp_spec.num_microphones, self.cp_spec.noise_sd)
         self.test_noise = sample_emission_noise_matrix \
             (self.test_data_mixed.shape[0], self.cp_spec.num_microphones, self.cp_spec.noise_sd)
 
-        make_stats_string('----- noise',
-                          self.train_noise, 'self.train_noise',
-                          self.test_noise, 'self.test_noise',
-                          verbose=verbose)
+        self.make_stats_string('----- noise',
+                               self.train_noise, 'train_noise',
+                               self.test_noise, 'test_noise',
+                               mask_p=False,
+                               verbose=verbose)
 
-        # obs
+        # (6) obs = mix + noise
         self.train_obs = self.train_data_mixed + self.train_noise
         self.test_obs = self.test_data_mixed + self.test_noise
 
-        make_stats_string('----- final obs',
-                          self.train_obs, 'self.train_obs',
-                          self.test_obs, 'self.test_obs',
-                          verbose=verbose)
+        self.make_stats_string('----- final obs',
+                               self.train_obs, 'self.train_obs',
+                               self.test_obs, 'self.test_obs',
+                               mask_p=False,
+                               verbose=verbose)
+
+    def sample_data_direct(self, sample_step_size=2000, verbose=False):
+        """
+        Sample audio data directly:
+        (1) sample raw
+        (2) scale: standardize to mean 0 (center), standard deviation 1.0
+        (3) mix: scale+bias * U(0, 1)
+        (4) noise: N(0, 1)
+        (5) obs = mix + noise
+        :param sample_step_size:
+        :param verbose:
+        :return:
+        """
+        if not self.ready_to_sample_p():
+            sys.exit()
+
+        # set flags specifying what intermediate generation data can be saved
+        self.method_sample_direct = True
+        self.method_sample_absolute = False
+
+        self.sample_step_size = sample_step_size
+
+        # initialize the generation_stats_string: create empty list
+        self.generation_stats_string = list()
+
+        # (1) sample raw: sample and combine data and states for train and test
+        self.train_data_raw, self.train_states \
+            = self.sample_and_combine_subconversations(self.train_conversation_specs)
+        self.test_data_raw, self.test_states \
+            = self.sample_and_combine_subconversations(self.test_conversation_specs)
+
+        self.make_stats_string('----- raw',
+                               self.train_data_raw, 'self.train_data_raw',
+                               self.test_data_raw, 'self.test_data_raw',
+                               verbose=verbose)
+
+        # (2) scale: standardize to mean 0 (center), standard deviation 1.0
+        self.train_data_scaled = transform_loc_scale(self.train_data_raw, loc=0.0, scale=1.0)
+        self.test_data_scaled = transform_loc_scale(self.test_data_raw, loc=0.0, scale=1.0)
+
+        self.make_stats_string('----- after scaling',
+                               self.train_data_scaled, 'self.train_data_scaled',
+                               self.test_data_scaled, 'self.test_data_scaled',
+                               verbose=verbose)
+
+        # (3) mix: scale+bias * U(0, 1)
+        self.train_data_mixed = mix_latent_state_linear_combination(self.train_data_scaled, self.W)
+        self.test_data_mixed = mix_latent_state_linear_combination(self.test_data_scaled, self.W)
+
+        self.make_stats_string('----- after mixing',
+                               self.train_data_mixed, 'self.train_data_mixed',
+                               self.test_data_mixed, 'self.test_data_mixed',
+                               verbose=verbose)
+
+        # (4) sample emission noise: N(0, 1)
+        self.train_noise = sample_emission_noise_matrix \
+            (self.train_data_mixed.shape[0], self.cp_spec.num_microphones, self.cp_spec.noise_sd)
+        self.test_noise = sample_emission_noise_matrix \
+            (self.test_data_mixed.shape[0], self.cp_spec.num_microphones, self.cp_spec.noise_sd)
+
+        self.make_stats_string('----- noise',
+                               self.train_noise, 'self.train_noise',
+                               self.test_noise, 'self.test_noise',
+                               verbose=verbose)
+
+        # (5) obs = mix + noise
+        self.train_obs = self.train_data_mixed + self.train_noise
+        self.test_obs = self.test_data_mixed + self.test_noise
+
+        self.make_stats_string('----- final obs',
+                               self.train_obs, 'self.train_obs',
+                               self.test_obs, 'self.test_obs',
+                               verbose=verbose)
+
+    def report_shapes(self):
+        shape_strings = list()
+        shape_strings.append('data shapes:')
+
+        shape_strings.append('1 train_data_raw {0}'.format(self.train_data_raw.shape))
+        shape_strings.append('1 test_data_raw {0}'.format(self.test_data_raw.shape))
+
+        if self.method_sample_absolute:
+            shape_strings.append('2 train_data_absolute {0}'.format(self.train_data_absolute.shape))
+            shape_strings.append('2 test_data_absolute {0}'.format(self.test_data_absolute.shape))
+
+        shape_strings.append('2 train_data_scaled {0}'.format(self.train_data_scaled.shape))
+        shape_strings.append('2 test_data_scaled {0}'.format(self.test_data_scaled.shape))
+
+        shape_strings.append('3 train_data_mixed {0}'.format(self.train_data_mixed.shape))
+        shape_strings.append('3 test_data_mixed {0}'.format(self.test_data_mixed.shape))
+
+        shape_strings.append('4 train_noise {0}'.format(self.train_noise.shape))
+        shape_strings.append('4 test_noise {0}'.format(self.test_noise.shape))
+
+        shape_strings.append('train_obs {0}'.format(self.train_obs.shape))
+        shape_strings.append('train_states {0}'.format(self.train_states.shape))
+
+        shape_strings.append('test_obs {0}'.format(self.test_obs.shape))
+        shape_strings.append('test_states {0}'.format(self.test_states.shape))
+
+        shape_strings.append('weights {0}'.format(self.W.shape))
+
+        return '\n'.join(shape_strings)
 
     def save(self, dest_root='.'):
         if not os.path.exists(dest_root):
@@ -1066,6 +1410,9 @@ class CocktailParty(object):
         with open(os.path.join(params_dir, 'generation_stats.txt'), 'w') as fout:
             for s in self.generation_stats_string:
                 fout.write('{0}\n'.format(s))
+
+            fout.write('\n')
+            fout.write('{0}\n'.format(self.report_shapes()))
 
         # model params cp specs and convesations
         with open(os.path.join(params_dir, 'model.txt'), 'w') as fout:
@@ -1096,6 +1443,10 @@ class CocktailParty(object):
 
         numpy.savetxt(os.path.join(params_dir, '1_train_obs_raw.txt'), self.train_data_raw, fmt='%f')
         numpy.savetxt(os.path.join(params_dir, '1_test_obs_raw.txt'), self.test_data_raw, fmt='%f')
+
+        if self.method_sample_absolute:
+            numpy.savetxt(os.path.join(params_dir, '2_train_data_absolute.txt'), self.train_data_absolute, fmt='%f')
+            numpy.savetxt(os.path.join(params_dir, '2_test_data_absolute.txt'), self.test_data_absolute, fmt='%f')
 
         numpy.savetxt(os.path.join(params_dir, '2_train_data_scaled.txt'), self.train_data_scaled, fmt='%f')
         numpy.savetxt(os.path.join(params_dir, '2_test_data_scaled.txt'), self.test_data_scaled, fmt='%f')
@@ -1131,7 +1482,7 @@ def test_cocktail_party_generation():
                        test_duration=40,
                        sample_spec_p=True)
     print '----- Sampling cp data'
-    cp.sample_data(sample_step_size=2000, verbose=True)
+    cp.sample_data_direct(sample_step_size=2000, verbose=True)
 
     print '----- Saving data'
     cp.save('cp0')
@@ -1145,18 +1496,39 @@ def test_cocktail_party_generation():
 # ----------------------------------------------------------------------
 
 def generate_random_cocktail_parties(cp_spec,
+                                     sample_step_size,
+                                     sample_method,
                                      num_parties=10,
                                      party_num_offset=0,
                                      train_duration=40,  # in seconds
                                      test_duration=40,
-                                     dest_root='.'):
+                                     dest_root='.',
+                                     verbose=True):
 
-    dest_dir = os.path.join(dest_root, 'n{0}'.format(cp_spec.noise_sd))
-    if not os.path.exists(dest_dir):
+    # construct data sample type dir name
+    data_type_dir_name = list()
+    # sample method
+    if sample_method == 'direct':
+        data_type_dir_name.append('dir')
+    elif sample_method == 'absolute':
+        data_type_dir_name.append('abs')
+    # sample step size
+    data_type_dir_name.append('{0}'.format(sample_step_size))
+    # noise level
+    data_type_dir_name.append('n{0}'.format(cp_spec.noise_sd))
+
+    # add data type directory to dest_dir path
+    dest_dir = os.path.join(dest_root, '_'.join(data_type_dir_name))
+
+    if os.path.exists(dest_dir):
+        print '[ERROR] This data root already exists, aborting'
+        print '        \'{0}\''.format(dest_dir)
+        sys.exit()
+    else:
         os.makedirs(dest_dir)
 
     for party in range(party_num_offset, num_parties + party_num_offset):
-        print 'Generating party {0} of {1}'.format(party, num_parties)
+        print 'Generating party {0} of {1}'.format(party + 1, num_parties)
 
         party_dir = os.path.join(dest_dir, 'cp{0}'.format(party))
         if not os.path.exists(party_dir):
@@ -1167,8 +1539,13 @@ def generate_random_cocktail_parties(cp_spec,
                            test_duration=test_duration,
                            sample_spec_p=True)
 
-        cp.sample_data(sample_step_size=2000)
+        # execute sample method
+        if sample_method == 'direct':
+            cp.sample_data_direct(sample_step_size=2000, verbose=verbose)
+        elif sample_method == 'absolute':
+            cp.sample_data_absolute(sample_step_size=2000, verbose=verbose)
 
+        # save the data
         cp.save(party_dir)
 
     print 'DONE.'
@@ -1185,6 +1562,8 @@ def test_generate_random_cocktail_parties():
                                 beta=None,
                                 noise_sd=0.3)
     generate_random_cocktail_parties(cp_spec=cp_spec,
+                                     sample_step_size=2000,
+                                     sample_method='direct',
                                      num_parties=2,
                                      party_num_offset=0,
                                      train_duration=40,
@@ -1200,10 +1579,10 @@ def test_generate_random_cocktail_parties():
 
 CP_SSC1_ROOT = os.path.join(os.path.join(HAMLET_ROOT, DATA_ROOT), 'cocktail_SSC1_s16_m12')
 
-print os.listdir(os.path.join(HAMLET_ROOT, DATA_ROOT))
+# print os.listdir(os.path.join(HAMLET_ROOT, DATA_ROOT))
 
 
-def generate_noise_0p3(num_parties=10):
+def generate_direct_s2000_noise_0p3(num_parties=10, dest_root=CP_SSC1_ROOT, verbose=False):
     cp_spec = CocktailPartySpec(speaker_dir_root=SSC1_DATA_ROOT,
                                 sample_rate=25000,
                                 speaker_groups=(4, 4, 4, 4),
@@ -1214,10 +1593,38 @@ def generate_noise_0p3(num_parties=10):
                                 beta=None,
                                 noise_sd=0.3)
     generate_random_cocktail_parties(cp_spec=cp_spec,
+                                     sample_step_size=2000,
+                                     sample_method='direct',
                                      num_parties=num_parties,
                                      party_num_offset=0,
                                      train_duration=40,
                                      test_duration=40,
-                                     dest_root=CP_SSC1_ROOT)
+                                     dest_root=dest_root,
+                                     verbose=verbose)
 
-generate_noise_0p3(num_parties=10)
+# generate_direct_s2000_noise_0p3(num_parties=10)
+
+
+def generate_absolute_s2000_noise_0p3(num_parties=10, dest_root=CP_SSC1_ROOT, verbose=False):
+    cp_spec = CocktailPartySpec(speaker_dir_root=SSC1_DATA_ROOT,
+                                sample_rate=25000,
+                                speaker_groups=(4, 4, 4, 4),
+                                num_microphones=12,
+                                spacing_mu=0.2,  # mean
+                                spacing_sigma=0.25,
+                                k=2,
+                                beta=None,
+                                noise_sd=0.3)
+    generate_random_cocktail_parties(cp_spec=cp_spec,
+                                     sample_step_size=2000,
+                                     sample_method='absolute',
+                                     num_parties=num_parties,
+                                     party_num_offset=0,
+                                     train_duration=40,
+                                     test_duration=40,
+                                     dest_root=dest_root,
+                                     verbose=verbose)
+
+# TEST_PATH = os.path.join(CP_SSC1_ROOT, 'test')
+
+generate_absolute_s2000_noise_0p3(num_parties=10, dest_root=CP_SSC1_ROOT, verbose=True)

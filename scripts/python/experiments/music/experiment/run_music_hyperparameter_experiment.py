@@ -374,7 +374,7 @@ def generate_parameter_spec_lambda_epsilon_bach_stickyLT(gen_param_files_p=False
     parameter_product_spec = (('Isotropic_exponential_similarity',
                                'lambda', (0.01, 1.0, 5.0)),  # (0.01, 0.1, 1.0, 5.0, 10.0)
                               ('Continuous_state_model',
-                               'epsilon', (0.0005, )))  # (0.0001, 0.0005, 0.001, 0.005)
+                               'epsilon', (0.0005, 0.001)))  # (0.0001, 0.0005, 0.001, 0.005)
     return generate_parameter_spec_product \
         (source_param_dir=PARAMETERS_ROOT,
          source_param_files=('music_bach_major_StickyLT.config',),
