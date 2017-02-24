@@ -3,9 +3,9 @@
 ## Run on venti from <hamlet_root>/experiment
 
 export DATASET=$1
-export BURNIN=1000
+export BURNIN=2000
 export LOW_BURNIN=300
-export SMOOTH=1
+export SMOOTH=200
 export COCKTAIL_RESULTS_PATH="cocktail_SSC1_s16_m12/abs_2000_n0.3_$DATASET"
 export COCKTAIL_DATA_PATH="data/cocktail_SSC1_s16_m12/abs_2000_n0.3/$DATASET"
 export RSCRIPT_ROOT="scripts/r/scripts" #assume this will be run from <hamlet_root>/experiment
