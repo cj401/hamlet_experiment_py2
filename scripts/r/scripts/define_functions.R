@@ -701,12 +701,14 @@ plot_scalar_density_by_model <-
 collect_data_for_density_plot <- function(collapsed_data, burnin_samples)
 {
     print(paste("Burnin samples is ", burnin_samples))
+    print('collapsed data')
+    print(collapsed_data)
     result <- list()
     t <- collapsed_data$iterations
     index_subset = t > burnin_samples
     for (d in collapsed_data$values)
     {
-      print(c(data.matrix(d[index_subset,])))
+      #print(c(data.matrix(d[index_subset,])))
       result <- append(result, list(c(data.matrix(d[index_subset,]))))
     }
     names(result) <- names(collapsed_data$values)
