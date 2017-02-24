@@ -730,7 +730,7 @@ plot_acf_by_model_and_run <-
         num_runs <- length(results_list[[m]])
         for (i in 1:num_runs)
         {
-          output_subdir <- paste(m,"/",formatC(i, width=2, flag="0"),"/",sep="")
+          output_subdir <- paste(m,"/",formatC(i, width=2, flag="0", format="d"),"/",sep="")
           output_path <- paste(output_dir, output_subdir, sep="")
           if(!file.exists(output_path)) dir.create(output_path, recursive = TRUE)
           print(paste("Output to", output_path, "/", output_type, "_acf.pdf", sep=""))
@@ -810,7 +810,7 @@ plot_A_and_block_A <-
           setwd(model_A_dir)
           iterations <- as.numeric(substr(Sys.glob("*.txt"),1,5))
           last_iteration <- max(iterations)
-          last_iteration_file <- paste(formatC(last_iteration, width=5, flag="0"), "txt", sep=".")
+          last_iteration_file <- paste(formatC(last_iteration, width=5, flag="0", format="d"), "txt", sep=".")
           setwd(cur_path)
           print(paste("Read A from ", model_A_dir, last_iteration_file, sep=""))
           A_ <- as.matrix(read.table(paste(model_A_dir, last_iteration_file, sep="")))
