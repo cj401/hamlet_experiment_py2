@@ -635,7 +635,7 @@ plot_scalar_density_by_model <-
         density_plot_data <- data.frame()
         for (g in unique(groups))
         {
-          print(density_data[[g]])
+          #print(density_data[[g]])
           plot_data <- data.frame(value = density_data[[g]])
           plot_data$model <- strsplit(g, "_")[[1]][1]
           density_plot_data <- rbind(density_plot_data, plot_data)
@@ -754,7 +754,7 @@ plot_A_and_block_A <-
     output_dir <- paste(paths$fig_root, specs$results, "/", specs$comparison, "/", specs$dataset, "/", sep = "")
     if(!file.exists(output_dir)) dir.create(output_dir, recursive = TRUE)
     models <- specs$models
-    print(models)
+    #print(models)
     for (m in models)
     {
       cur_path <- getwd()
