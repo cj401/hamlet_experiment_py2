@@ -635,6 +635,7 @@ plot_scalar_density_by_model <-
         density_plot_data <- data.frame()
         for (g in unique(groups))
         {
+          print(density_data[[g]])
           plot_data <- data.frame(value = density_data[[g]])
           plot_data$model <- strsplit(g, "_")[[1]][1]
           density_plot_data <- rbind(density_plot_data, plot_data)
@@ -701,8 +702,8 @@ plot_scalar_density_by_model <-
 collect_data_for_density_plot <- function(collapsed_data, burnin_samples)
 {
     print(paste("Burnin samples is ", burnin_samples))
-    print('collapsed data')
-    print(collapsed_data)
+    #print('collapsed data')
+    #print(collapsed_data)
     result <- list()
     t <- collapsed_data$iterations
     index_subset = t > burnin_samples
