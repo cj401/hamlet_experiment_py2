@@ -8,7 +8,7 @@ export SMOOTH=1
 export COCKTAIL_RESULTS_PATH="cocktail_SSC1_s16_m12/abs_2000_n0.3_cp0"
 export COCKTAIL_DATA_PATH="cocktail_SSC1_s16_m12/abs_2000_n0.3/cp0"
 export RSCRIPT_ROOT="scripts/r/scripts" #assume this will be run from <hamlet_root>/experiment
-export PROJECT_ROOT="../../../../data"  #relative to RSCRIPT_ROOT
+export PROJECT_ROOT="../../../../"  #relative to RSCRIPT_ROOT
 export THIS_DIR=$(pwd)
 
 cd $THIS_DIR/$RSCRIPT_ROOT
