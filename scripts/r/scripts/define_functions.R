@@ -205,7 +205,7 @@ summarize_scalar_data_across_runs <- function(collapsed_data, smoothing_window_s
                     quantile_lower =
                         apply(dd, 1, function(x) {quantile(x, 0.1, na.rm=TRUE)}),
                     median =
-                        apply(dd, 1, median))))
+                        apply(dd, 1, median, na.rm=TRUE))))
 
     }
     names(result) <- names(collapsed_data$values)
