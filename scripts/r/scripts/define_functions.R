@@ -29,7 +29,7 @@ get_specs <- function(query_file, results_dir, data_set, comparison_name)
 ## create a list of data frames collected from the directories
 ## listed in specs$specs_var_name with filenames `output_type`
 
-get_scalar_or_vector_data <- function(specs, output_type, paths)
+get_scalar_or_vector_data <- function(specs, output_type, paths, max_iteration)
 {
     models <- specs$models
     data_list <- rep(list(list()), length(models))
@@ -54,7 +54,7 @@ get_scalar_or_vector_data <- function(specs, output_type, paths)
                         output_type, ".txt",
                         sep = ""))
             next_data <-
-                read.table(
+                subset(read.table(
                     paste(
                         model_dir, "/",
                         i, "/",
@@ -62,7 +62,7 @@ get_scalar_or_vector_data <- function(specs, output_type, paths)
                         sep = ""),
                     header = FALSE,
                     skip = 1
-                )
+                ), V1 <= max_iteration)
             data_list[[m]] <-
                 append(data_list[[m]], list(next_data))
         }
@@ -273,7 +273,8 @@ plot_scalar_by_iteration <-
         summary_function = I,
         error_var = "cint",
         yrange = c(-Inf, Inf),
-        burnin_samples = 10
+        burnin_samples = 10,
+        max_iteration
         )
 {
     print(paste('ploting scalar plot for ', output_type, '...', sep=""))
@@ -285,7 +286,7 @@ plot_scalar_by_iteration <-
     #}
     #else
     #{
-      results_list <- get_scalar_or_vector_data(specs, output_type, paths)
+      results_list <- get_scalar_or_vector_data(specs, output_type, paths, max_iteration)
       collected_data <-
         collect_data_as_scalar(
           results_list, summary_function = summary_function
@@ -614,7 +615,8 @@ plot_scalar_density_by_model <-
       #xrange = c(-Inf, Inf),
       #yrange = c(-Inf, Inf),
       summary_function = I,
-      burnin_samples = 10
+      burnin_samples = 10,
+      max_iteration
     )
 {
       print(paste('Plot density plot for ', output_type, sep=""))
@@ -626,7 +628,7 @@ plot_scalar_density_by_model <-
       #}
       #else
       #{
-        results_list <- get_scalar_or_vector_data(specs, output_type, paths)
+        results_list <- get_scalar_or_vector_data(specs, output_type, paths, max_iteration)
         collected_data <- collect_data_as_scalar(results_list, summary_function = summary_function)
         density_data <- collect_data_for_density_plot(collected_data, burnin_samples)
         groups <- specs$models
@@ -714,11 +716,12 @@ plot_acf_by_model_and_run <-
     function(
         specs,
         output_type,
-        paths
+        paths,
+        max_iteration
         )
 {
       print(paste("Plot acf for ", output_type, sep=""))
-      results_list <- get_scalar_or_vector_data(specs, output_type, paths)
+      results_list <- get_scalar_or_vector_data(specs, output_type, paths, max_iteration)
       output_dir <- paste(paths$fig_root, specs$results, "/", specs$comparison, "/", specs$dataset, "/", sep = "")
       if(!file.exists(output_dir)) dir.create(output_dir, recursive = TRUE)
       models <- names(results_list)
@@ -856,7 +859,8 @@ make_plots <-
     threshold,
     block_code_path,
     binary,
-    groundtruth
+    groundtruth,
+    max_iteration
     )
 {
     specs <- read.table(paste("../queries/", query_file, sep=""), header = TRUE)
@@ -885,7 +889,8 @@ make_plots <-
                        threshold = threshold,
                        block_code_path = block_code_path,
                        binary = binary,
-                       groundtruth = groundtruth)
+                       groundtruth = groundtruth,
+                       max_iteration = max_iteration)
         print("...........done.")
       }
     }
@@ -904,7 +909,8 @@ make_key_plots <-
     threshold,
     block_code_path,
     binary,
-    groundtruth
+    groundtruth,
+    max_iteration
     )
 {
     specs <- get_specs(query_file, results_dir, data_set, comparison_name)
@@ -924,26 +930,31 @@ make_key_plots <-
                     specs, "n_dot", burnin_samples = burnin_samples,
                     summary_function = count_nonzero_entries_per_row,
                     paths = paths,
-                    smoothing_window_size)
+                    smoothing_window_size,
+                    max_iteration = max_iteration)
         plot_scalar_density_by_model(specs = specs,
                                      output_type = "n_dot",
                                      paths = paths,
                                      burnin_samples = burnin_samples,
-                                     summary_function = count_nonzero_entries_per_row)
+                                     summary_function = count_nonzero_entries_per_row,
+                                     max_iteration = max_iteration)
       }
       else
       {
           plot_scalar_by_iteration(
                     specs, v, burnin_samples = burnin_samples, paths = paths,
                     summary_function = I,
-                    smoothing_window_size)
+                    smoothing_window_size,
+                    max_iteration = max_iteration)
           plot_scalar_density_by_model(specs = specs,
                     output_type = v,
                     paths = paths,
-                    burnin_samples = burnin_samples)
+                    burnin_samples = burnin_samples,
+                    max_iteration = max_iteration)
           plot_acf_by_model_and_run(specs = specs,
                     output_type = v,
-                    paths = paths)
+                    paths = paths,
+                    max_iteration)
       }
     }
     #if("n_dot" %in% plot.vars)
