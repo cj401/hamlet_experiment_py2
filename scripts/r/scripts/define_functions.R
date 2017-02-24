@@ -928,7 +928,7 @@ make_key_plots <-
     for (v in plot.vars)
     {
       print(paste('Plotting for ', v, '...', sep=""))
-      if (v == "n_dots")
+      if (v == "n_dot")
       {
           plot_scalar_by_iteration(
                     specs, "n_dot", burnin_samples = burnin_samples,
