@@ -778,7 +778,7 @@ plot_A_and_block_A <-
           iterations <- as.numeric(substr(Sys.glob("*.txt"),1,5))
           last_iteration <- max(iterations)
           print(paste('last_iteration is ', last_iteration))
-          last_iteration_file <- paste(formatC(last_iteration, width=5, flag="0"), "txt", sep=".")
+          last_iteration_file <- paste(formatC(last_iteration, width=5, flag="0", format="d"), "txt", sep=".")
           setwd(cur_path)
           output_path <- paste(output_dir, "/", m, "/", i, "/", sep="")
           if(!file.exists(output_path)) dir.create(output_path, recursive = TRUE)
