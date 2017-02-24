@@ -706,6 +706,7 @@ collect_data_for_density_plot <- function(collapsed_data, burnin_samples)
     index_subset = t > burnin_samples
     for (d in collapsed_data$values)
     {
+      print(c(data.matrix(d[index_subset,])))
       result <- append(result, list(c(data.matrix(d[index_subset,]))))
     }
     names(result) <- names(collapsed_data$values)
