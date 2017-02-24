@@ -309,7 +309,7 @@ plot_scalar_by_iteration <-
         plot_data <- rbind(plot_data, plot_data_each_group)
       }
       names(plot_data) <- c("iter", "m", "lwr", "upr","model")
-      plot_data <- plot_data[order(plot_data$model),]
+      plot_data <- plot_data[order(plot_data$model, plot_data$iter),]
       print(paste('Output to', output_path, "/", output_type, ".pdf", sep = ""))
       #pdf(paste(output_path, "/", output_type, ".pdf", sep = ""))
       ggplot(plot_data) +
@@ -627,6 +627,7 @@ plot_scalar_density_by_model <-
           density_plot_data <- rbind(density_plot_data, plot_data)
         }
         names(density_plot_data) <- c("value", "model")
+        plot_data <- plot_data[order(plot_data$model),]
         print(paste('Output density plot to', output_path, "/", output_type, "_density.pdf", sep = ""))
         ggplot(density_plot_data, aes(value, fill=model)) +
           geom_histogram(alpha=0.5, aes(y=..density..), position='identity') +
