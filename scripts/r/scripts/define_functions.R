@@ -309,6 +309,9 @@ plot_scalar_by_iteration <-
         plot_data <- rbind(plot_data, plot_data_each_group)
       }
       names(plot_data) <- c("iter", "m", "lwr", "upr","model")
+      BFact_subset <- subset(plot_data, model=="BFact")
+      plot_data <- subset(plot_data, model!="BFact")
+      plot_data <- rbind(plot_data, BFact_subset)
       #plot_data <- plot_data[order(plot_data$model, plot_data$iter),]
       print(paste('Output to', output_path, "/", output_type, ".pdf", sep = ""))
       #pdf(paste(output_path, "/", output_type, ".pdf", sep = ""))
@@ -428,12 +431,12 @@ plot_binary_matrices <- function(specs, data, paths)
   T <- nrow(data$gt)
   D <- ncol(data$gt)
   print(paste('Output binary matrix to', output_dir, "/groundtruth.pdf", sep=""))
-  pdf(paste(output_dir, "/groundtruth.pdf", sep=""), width=8, height=8/3)
+  pdf(paste(output_dir, "/groundtruth.pdf", sep=""), width=8, height=1.2)
   old_par <- par()
-  par(mar = c(1,6,1,1))
+  par(mar = c(1,4,1,1))
   image(data$gt, x = seq(0.5, T + 0.5), y = seq(0.5, D + 0.5), 
         col = gray.colors(100), xlab="", ylab="Groundtruth", 
-        xaxt="n", yaxt="n", cex.lab=2.5)
+        xaxt="n", yaxt="n", cex.lab=1)
   par(old_par)
   dev.off()
   models <- names(data$results)
@@ -441,15 +444,15 @@ plot_binary_matrices <- function(specs, data, paths)
   {
     output_path <- paste(output_dir, "/", ms, "/", sep="")
     if (!file.exists(output_path)) dir.create(output_path, recursive = TRUE)
-    pdf(paste(output_path, "binary_state.pdf", sep=""), width=8, height=8/3)
+    pdf(paste(output_path, "binary_state.pdf", sep=""), width=8, height=1.2)
     m <- data$results[[ms]]
     T <- nrow(m)
     D <- ncol(m)
     old_par <- par()
-    par(mar = c(1,6,1,1))
+    par(mar = c(1,4,1,1))
     image(m, x = seq(0.5, T + 0.5), y = seq(0.5, D + 0.5), 
           col = gray.colors(100), xlab="", ylab=strsplit(ms, "_")[[1]][1], 
-          xaxt="n", yaxt="n", cex.lab=2.5)
+          xaxt="n", yaxt="n", cex.lab=1)
     par(old_par)
     dev.off()
   }
@@ -633,6 +636,9 @@ plot_scalar_density_by_model <-
           density_plot_data <- rbind(density_plot_data, plot_data)
         }
         names(density_plot_data) <- c("value", "model")
+        BFact_subset <- subset(density_plot_data, model=="BFact")
+        density_plot_data <- subset(density_plot_data, model!="BFact")
+        density_plot_data <- rbind(density_plot_data, BFact_subset)
         #plot_data <- plot_data[order(plot_data$model),]
         print(paste('Output density plot to', output_path, "/", output_type, "_density.pdf", sep = ""))
         ggplot(density_plot_data, aes(value, fill=model)) +
