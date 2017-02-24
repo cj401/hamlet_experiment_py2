@@ -201,9 +201,9 @@ summarize_scalar_data_across_runs <- function(collapsed_data, smoothing_window_s
                         apply(dd, 1, function(x)
                             {mean(x, na.rm = TRUE) - sqrt(var(x, na.rm = TRUE) / length(x)) * 2 * qt(0.995, length(x) - 1)}),
                     quantile_upper =
-                        apply(dd, 1, function(x) {quantile(x, 0.9)}),
+                        apply(dd, 1, function(x) {quantile(x, 0.9, na.rm=TRUE)}),
                     quantile_lower =
-                        apply(dd, 1, function(x) {quantile(x, 0.1)}),
+                        apply(dd, 1, function(x) {quantile(x, 0.1, na.rm=TRUE)}),
                     median =
                         apply(dd, 1, median))))
 
