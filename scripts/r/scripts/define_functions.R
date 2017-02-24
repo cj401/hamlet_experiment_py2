@@ -309,7 +309,8 @@ plot_scalar_by_iteration <-
         plot_data <- rbind(plot_data, plot_data_each_group)
       }
       names(plot_data) <- c("iter", "m", "lwr", "upr","model")
-      plot_data$model <- factor(plot_data$model, levels=c('noLT','LT','BFact','Sticky','StickyLT'))
+      group.colors <- c("noLT" = "#FA8072", "LT" ="#00CED1", "BFact" = "#3CB371", "Sticky" = "#FFA500", "StickyLT" = "#9400D3")
+      #plot_data$model <- factor(plot_data$model, levels=c('noLT','LT','BFact','Sticky','StickyLT'))
       #BFact_subset <- subset(plot_data, model=="BFact")
       #plot_data <- subset(plot_data, model!="BFact")
       #plot_data <- rbind(plot_data, BFact_subset)
@@ -320,7 +321,9 @@ plot_scalar_by_iteration <-
         geom_ribbon(aes(x=iter, ymin=lwr, ymax=upr, group=model, fill=model), alpha=0.4) +
         geom_line(aes(x=iter, y=m, group=model, color=model)) +
         geom_point(aes(x=iter, y=m, color=model, shape=model)) +
-        labs(x="Iterations", y=output_type) + 
+        labs(x="Iterations", y=output_type) +
+        scale_fill_manual(values=group.colors) +
+        scale_color_manual(values=group.colors) +
         theme(
           axis.text=element_text(size=15),
           axis.title=element_text(size=20),
@@ -635,15 +638,18 @@ plot_scalar_density_by_model <-
           density_plot_data <- rbind(density_plot_data, plot_data)
         }
         names(density_plot_data) <- c("value", "model")
+        group.colors <- c("noLT" = "#FA8072", "LT" ="#00CED1", "BFact" = "#3CB371", "Sticky" = "#FFA500", "StickyLT" = "#9400D3")
         #BFact_subset <- subset(density_plot_data, model=="BFact")
         #density_plot_data <- subset(density_plot_data, model!="BFact")
         #density_plot_data <- rbind(density_plot_data, BFact_subset)
-        plot_data$model <- factor(plot_data$model, levels=c('noLT','LT','BFact','Sticky','StickyLT'))
+        #plot_data$model <- factor(plot_data$model, levels=c('noLT','LT','BFact','Sticky','StickyLT'))
         #plot_data <- plot_data[order(plot_data$model),]
         print(paste('Output density plot to', output_path, "/", output_type, "_density.pdf", sep = ""))
         ggplot(density_plot_data, aes(value, fill=model)) +
           geom_histogram(alpha=0.5, aes(y=..density..), position='identity') +
-          labs(x=output_type, y="density") + 
+          labs(x=output_type, y="density") +
+          scale_fill_manual(values=group.colors) +
+          scale_color_manual(values=group.colors) +
           theme(
             axis.text=element_text(size=15),
             axis.title=element_text(size=20),
