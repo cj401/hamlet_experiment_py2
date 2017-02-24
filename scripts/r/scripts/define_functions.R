@@ -309,7 +309,7 @@ plot_scalar_by_iteration <-
         plot_data <- rbind(plot_data, plot_data_each_group)
       }
       names(plot_data) <- c("iter", "m", "lwr", "upr","model")
-      plot_data <- plot_data[order(plot_data$model, plot_data$iter),]
+      #plot_data <- plot_data[order(plot_data$model, plot_data$iter),]
       print(paste('Output to', output_path, "/", output_type, ".pdf", sep = ""))
       #pdf(paste(output_path, "/", output_type, ".pdf", sep = ""))
       ggplot(plot_data) +
@@ -428,12 +428,12 @@ plot_binary_matrices <- function(specs, data, paths)
   T <- nrow(data$gt)
   D <- ncol(data$gt)
   print(paste('Output binary matrix to', output_dir, "/groundtruth.pdf", sep=""))
-  pdf(paste(output_dir, "/groundtruth.pdf", sep=""))
+  pdf(paste(output_dir, "/groundtruth.pdf", sep=""), width=8, height=8/3)
   old_par <- par()
   par(mar = c(1,6,1,1))
   image(data$gt, x = seq(0.5, T + 0.5), y = seq(0.5, D + 0.5), 
         col = gray.colors(100), xlab="", ylab="Groundtruth", 
-        xaxt="n", yaxt="n", cex.lab=3)
+        xaxt="n", yaxt="n", cex.lab=2.5)
   par(old_par)
   dev.off()
   models <- names(data$results)
@@ -441,7 +441,7 @@ plot_binary_matrices <- function(specs, data, paths)
   {
     output_path <- paste(output_dir, "/", ms, "/", sep="")
     if (!file.exists(output_path)) dir.create(output_path, recursive = TRUE)
-    pdf(paste(output_path, "binary_state.pdf", sep=""))
+    pdf(paste(output_path, "binary_state.pdf", sep=""), width=8, height=8/3)
     m <- data$results[[ms]]
     T <- nrow(m)
     D <- ncol(m)
@@ -449,7 +449,7 @@ plot_binary_matrices <- function(specs, data, paths)
     par(mar = c(1,6,1,1))
     image(m, x = seq(0.5, T + 0.5), y = seq(0.5, D + 0.5), 
           col = gray.colors(100), xlab="", ylab=strsplit(ms, "_")[[1]][1], 
-          xaxt="n", yaxt="n", cex.lab=3)
+          xaxt="n", yaxt="n", cex.lab=2.5)
     par(old_par)
     dev.off()
   }
@@ -633,7 +633,7 @@ plot_scalar_density_by_model <-
           density_plot_data <- rbind(density_plot_data, plot_data)
         }
         names(density_plot_data) <- c("value", "model")
-        plot_data <- plot_data[order(plot_data$model),]
+        #plot_data <- plot_data[order(plot_data$model),]
         print(paste('Output density plot to', output_path, "/", output_type, "_density.pdf", sep = ""))
         ggplot(density_plot_data, aes(value, fill=model)) +
           geom_histogram(alpha=0.5, aes(y=..density..), position='identity') +
