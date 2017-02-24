@@ -3,8 +3,8 @@
 ## Run on venti from <hamlet_root>/experiment
 
 export BURNIN=1000
-export LOW_BURNIN=100
-export SMOOTH=100
+export LOW_BURNIN=250
+export SMOOTH=1
 export COCKTAIL_RESULTS_PATH="cocktail_s16_m12/hyper_alpha/h10.0_nocs_cp0"
 export COCKTAIL_DATA_PATH="cocktail_s16_m12/h10.0_nocs/cp0"
 export RSCRIPT_ROOT="scripts/r/scripts" #assume this will be run from <hamlet_root>/experiment
