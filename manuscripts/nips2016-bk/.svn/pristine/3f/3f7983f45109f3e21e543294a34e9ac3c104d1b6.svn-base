@@ -1,0 +1,75 @@
+\section{Background}
+
+\section{Transition Dynamics in the HDP-HMM}
+\label{sec:transition-dynamics}
+
+The conventional Hierarchical Dirichlet Process Hidden Markov Model
+(HDP-HMM) \cite{teh2006hierarchical} 
+is a prior distribution on the transition matrix of a Hidden Markov
+Model with countably infinite state space where the rows of the
+infinite matrix are coupled by being drawn from a Dirichlet Process
+(DP) whose base measure is itself drawn from a Dirichlet Process.
+The hierarchical structure ensures that, despite the infinite state
+space, a common set of destination states will be reachable with high probability
+from each source state.  The generative process for the HDP-HMM is the following:
+
+Each of a countably infinite set of states, indexed by $j$, receives a
+location $\theta_j$ in emission parameter space, $\Omega$, according to 
+base measure $H$.  A top-level
+weight distribution, $\bbeta$, is drawn from a stick-breaking
+process with parameter $\gamma > 0$, so that state $j$ has overall
+weight $\beta_j$, and emission distribution parameterized by $\theta_j$.
+\begin{equation}
+\theta_j \stackrel{i.i.d.}{\sim} H \qquad
+\bbeta \sim GEM(\gamma)
+\end{equation}
+
+The actual transition distribution from state $j$, denoted by $\bpi_j$
+is then drawn from a DP with concentration $\alpha$ and base measure $\bbeta$:
+\begin{equation}
+  \label{eq:1}
+  \bpi_j \stackrel{i.i.d}{\sim} DP(\alpha \bbeta) \qquad j = 1, 2, \dots
+\end{equation}
+
+The hidden state sequence is then generated according to the $\pi_j$.
+Let $z_t$ be the index of the chain's state at time $t$.  Then we have
+\begin{equation}
+  \label{eq:4}
+  z_t \given z_{t-1}, \bpi_{z_{t-1}} \sim \bpi_{z_{t-1}} \qquad t = 1, 2, \dots, T
+\end{equation}
+where $T$ is the length of the data sequence.
+
+Finally, the emission distribution for state $j$ is a function of
+$\theta_j$, so that we have
+\begin{equation}
+  \label{eq:5}
+  y_t \given z_{t}, \theta_{z_t} \sim F(\theta_{z_t})
+\end{equation}
+
+A shortcoming of this model is that the generative process does not
+take into account the fact that the set of source states is the same
+as the set of destination states: that is, the distribution $\bpi_j$
+has an element which corresponds to state $j$.  Put another way, there
+is no special treatment of the diagonal of the transition matrix, so
+that self-transitions are no more likely {\it a priori} than
+transitions to any other state.  The Sticky HDP-HMM of Fox, et
+al. (2008) addresses this issue by adding an extra mass of $\kappa$ at location $j$ to the base
+measure of the DP that generates $\bpi_j$.  That is, they replace
+\eqref{eq:1} with
+\begin{equation}
+  \label{eq:6}
+  \bpi_j \sim DP(\alpha\bbeta + \kappa \delta_j).
+\end{equation}
+An alternative model is presented by Johnson et al. (2013), wherein 
+state duration distributions are modeled
+separately, and ordinary self-transitions are ruled out.  In both of
+these models, auxiliary latent variables are introduced to simplify
+conditional posterior distributions and facilitate Gibbs sampling.
+However, while both of these models have the useful property that
+self-transitions are treated as ``special'', they contain no notion of
+similarity for pairs of states that are not identical: 
+in both cases, when the transition matrix
+is integrated out, the prior probability of
+transitioning to state $j'$ depends only on the top-level stick
+weight associated with state $j'$, and not on the identity or
+parameters of the previous state $j$.

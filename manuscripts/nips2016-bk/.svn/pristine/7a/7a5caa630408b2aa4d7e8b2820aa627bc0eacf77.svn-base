@@ -1,0 +1,30 @@
+\begin{thebibliography}{1}
+
+\bibitem{fox2008hdp}
+Emily~B Fox, Erik~B Sudderth, Michael~I Jordan, and Alan~S Willsky.
+\newblock An {HDP}-{HMM} for systems with state persistence.
+\newblock In {\em Proceedings of the 25th international conference on Machine
+  learning}, pages 312--319. ACM, 2008.
+
+\bibitem{gilks1992adaptive}
+Walter~R Gilks and Pascal Wild.
+\newblock Adaptive rejection sampling for gibbs sampling.
+\newblock {\em Applied Statistics}, pages 337--348, 1992.
+
+\bibitem{johnson2013bayesian}
+Matthew~J Johnson and Alan~S Willsky.
+\newblock Bayesian nonparametric hidden semi-markov models.
+\newblock {\em The Journal of Machine Learning Research}, 14(1):673--701, 2013.
+
+\bibitem{paisley2012discrete}
+John Paisley, Chong Wang, and David~M Blei.
+\newblock The discrete infinite logistic normal distribution.
+\newblock {\em Bayesian Analysis}, 7(4):997--1034, 2012.
+
+\bibitem{teh2006hierarchical}
+Yee~Whye Teh, Michael~I Jordan, Matthew~J Beal, and David~M Blei.
+\newblock Hierarchical {D}irichlet processes.
+\newblock {\em Journal of the American Statistical Association}, 101(476),
+  2006.
+
+\end{thebibliography}

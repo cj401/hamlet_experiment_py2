@@ -1,0 +1,21 @@
+\section{Discussion}
+\label{sec:discussion}
+
+We have defined a new generative model, the Hierarchical Dirichlet Process Hidden Markov Model
+with Local Transitions (HDP-HMM-LT), which generalizes the HDP-HMM by
+allowing prior information about state space geometry to be encoded
+via a similarity kernel, making transitions between ``nearby''
+pairs of states more likely {\em a priori}.  We have derived a Gibbs sampling algorithm for this
+model by introducing an augmented data representation in the form of a
+Markov Jump Process with Failed Transitions, which also simplifies
+inference for the ordinary HDP-HMM.  In problems with
+multiple dependent latent chains, the HDP-HMM-LT model
+combines the HDP-HMM's capacity to discover a small set of states from
+the large combinatorial space with the Factorial
+HMM's ability to encode the property that most transitions involve
+changes to a small number of chains at a time, outperforming both on
+a speaker diarization task in which speakers perform conversational
+groups.  At the same time, despite the addition of the similarity
+kernel, the HDP-HMM-LT is able to learn to suppress its local
+transition prior when the data does not support it, performing on par
+with the HDP-HMM on data generated directly from the latter.

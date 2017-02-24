@@ -1,0 +1,121 @@
+;; RefTeX parse info file
+;; File: /Users/cdawson/manuscripts/hamlet/icml2017/model.tex
+;; User: cdawson (Colin Dawson)
+
+(set reftex-docstruct-symbol '(
+
+
+(xr nil "\\\\\\\\\\\\")
+
+(index-tags)
+
+(is-multi nil)
+
+(bibview-cache)
+
+(master-dir . "/Users/cdawson/manuscripts/hamlet/icml2017/")
+
+(label-numbers)
+
+(bof "/Users/cdawson/manuscripts/hamlet/icml2017/model.tex")
+
+(toc "toc" "    1 An HDP-HMM With Local Transitions" "/Users/cdawson/manuscripts/hamlet/icml2017/model.tex" nil 2 "1" "\\section{An HDP-HMM With Local Transitions}" 1)
+
+("sec:model" "s" "We wish to add to the transition model the concept of a transition to a ``nearby'' state, where tran" "/Users/cdawson/manuscripts/hamlet/icml2017/model.tex" nil)
+
+(toc "toc" "      1.1 A Normalized Gamma Process representation of the HDP-HMM" "/Users/cdawson/manuscripts/hamlet/icml2017/model.tex" nil 3 "1.1" "\\subsection{A Normalized Gamma Process representation of the HDP-HMM}" 495)
+
+("sec:normalized-gamma" "s" "We can define a random measure, $\\mu = \\sum_{j=1}^{\\infty} \\pi_j \\delta_{\\theta_j}$, where \\begin{al" "/Users/cdawson/manuscripts/hamlet/icml2017/model.tex" nil)
+
+("eq:20" "e" "\\pi_j \\stackrel{ind}{\\sim} \\Gamm{w_j}{1} \\qquad T = \\sum_{j=1}^{\\infty} \\pi_j \\qquad \\tilde{\\pi}_j =" "/Users/cdawson/manuscripts/hamlet/icml2017/model.tex" nil)
+
+("eq:50" "e" "p(z_t \\given z_{t-1}, \\bpi) = \\tilde{\\pi}_{z_{t-1}z_t} " "/Users/cdawson/manuscripts/hamlet/icml2017/model.tex" nil)
+
+(toc "toc" "      1.2 Promoting ``Local'' Transitions" "/Users/cdawson/manuscripts/hamlet/icml2017/model.tex" nil 3 "1.2" "\\subsection{Promoting ``Local'' Transitions}" 1982)
+
+("sec:prom-local-trans" "s" "In the preceding formulation, the rows of $\\bpi$ are independent conditioned on the top-level measur" "/Users/cdawson/manuscripts/hamlet/icml2017/model.tex" nil)
+
+(toc "toc" "      1.3 The HDP-HMM-LT as the Marginalization of a Markov Jump Process with ``Failed'' Jumps" "/Users/cdawson/manuscripts/hamlet/icml2017/model.tex" nil 3 "1.3" "\\subsection{The HDP-HMM-LT as the Marginalization of
+a Markov Jump Process with ``Failed'' Jumps}" 4293)
+
+("sec:dist-based-filt" "s" "We can gain stronger intuition, as well as simplify posterior inference, by representing the HDP-HMM" "/Users/cdawson/manuscripts/hamlet/icml2017/model.tex" nil)
+
+("eq:joint-likelihood" "e" "p(\\bz, \\bu, \\bQ &\\given \\bpi, \\bphi) = \\left(\\prod_{t=1}^T p(z_{t} \\given z_{t-1}, \\bpi, \\bphi)\\righ" "/Users/cdawson/manuscripts/hamlet/icml2017/model.tex" nil)
+
+(toc "toc" "      1.4 An HDP-HSMM-LT modification" "/Users/cdawson/manuscripts/hamlet/icml2017/model.tex" nil 3 "1.4" "\\subsection{An HDP-HSMM-LT modification}" 7457)
+
+("sec:an-hsmm-modification" "s" "We note that it is trivial to modify the HDP-HMM-LT to allow for non-Geometric duration distribution" "/Users/cdawson/manuscripts/hamlet/icml2017/model.tex" nil)
+
+("sec:model-summary" "s" "% We have defined the following augmented generative model for the % HDP-H(S)MM-LT: % \\begin{align} " "/Users/cdawson/manuscripts/hamlet/icml2017/model.tex" 7050)
+
+("eq:96" "e" "%  % \\bbeta &\\sim \\mathrm{GEM}(\\gamma) " "/Users/cdawson/manuscripts/hamlet/icml2017/model.tex" 7181)
+
+("eq:likelihood" "e" "%  \\by_t \\given \\bz, \\btheta &\\sim F(\\theta_{z_t}) % " "/Users/cdawson/manuscripts/hamlet/icml2017/model.tex" 7744)
+
+("eq:97" "e" "%  % \\omega_j &\\stackrel{i.i.d}{\\sim} G " "/Users/cdawson/manuscripts/hamlet/icml2017/model.tex" 7941)
+
+("eq:98" "e" "%  % z^*_s = z_{\\max\\{T \\given s \\leq \\sum_{t=1}^T D_t\\}} % " "/Users/cdawson/manuscripts/hamlet/icml2017/model.tex" 8098)
+
+("eq:likelihood-hsmm" "e" "%  \\by_s \\given \\bz, \\btheta \\sim F(\\theta_{z^*_s}) % " "/Users/cdawson/manuscripts/hamlet/icml2017/model.tex" 8250)
+
+("sec:normalized-gamma" "s" "% Define a random measure, $\\mu = \\sum_{j=1}^{\\infty} \\pi_j \\delta_{\\theta_j}$, where % \\begin{align" "/Users/cdawson/manuscripts/hamlet/icml2017/model.tex" 8876)
+
+("eq:17" "e" "% \\pi_j &\\stackrel{ind}{\\sim} \\Gamm{w_j}{1} " "/Users/cdawson/manuscripts/hamlet/icml2017/model.tex" 9013)
+
+("eq:18" "e" "% T &= \\sum_{j=1}^{\\infty} \\pi_j " "/Users/cdawson/manuscripts/hamlet/icml2017/model.tex" 9075)
+
+("eq:16" "e" "% \\tilde{\\pi}_j &= \\frac{\\pi_j}{T} " "/Users/cdawson/manuscripts/hamlet/icml2017/model.tex" 9126)
+
+("eq:19" "e" "% \\theta_j &\\stackrel{i.i.d}{\\sim} H  % " "/Users/cdawson/manuscripts/hamlet/icml2017/model.tex" 9181)
+
+("eq:20" "e" "% \\bbeta &\\sim \\mathsf{GEM}(\\gamma)  " "/Users/cdawson/manuscripts/hamlet/icml2017/model.tex" 9953)
+
+("eq:21" "e" "% \\theta_j &\\stackrel{i.i.d.}{\\sim} H " "/Users/cdawson/manuscripts/hamlet/icml2017/model.tex" 10010)
+
+("eq:22" "e" "% \\pi_{jj'} &\\stackrel{ind}{\\sim} \\Gamm{\\alpha \\beta_{j'}}{1} " "/Users/cdawson/manuscripts/hamlet/icml2017/model.tex" 10066)
+
+("eq:23" "e" "% \\tilde{\\pi}_{jj'} &= \\frac{\\pi_{jj'}}{T_j} , % " "/Users/cdawson/manuscripts/hamlet/icml2017/model.tex" 10191)
+
+("eq:50" "e" "%  % p(z_t \\given z_{t-1}, \\bpi) = \\tilde{\\pi}_{z_{t-1}z_t} % " "/Users/cdawson/manuscripts/hamlet/icml2017/model.tex" 10384)
+
+("eq:24" "e" "%  % y_t \\given z_t \\stackrel{ind}{\\sim} F(\\theta_{z_t}) % " "/Users/cdawson/manuscripts/hamlet/icml2017/model.tex" 10555)
+
+("sec:prom-local-trans" "s" "% In the preceding formulation, the $\\theta_j$ and the $\\pi_{jj'}$ are independent % conditioned on " "/Users/cdawson/manuscripts/hamlet/icml2017/model.tex" 10769)
+
+("sec:dist-based-filt" "s" "% We can gain stronger intuition, as well as simplify posterior % inference, by re-casting the HDP-H" "/Users/cdawson/manuscripts/hamlet/icml2017/model.tex" 12926)
+
+("eq:beta" "e" "%  \\bbeta &\\sim \\mathrm{GEM}(\\gamma) " "/Users/cdawson/manuscripts/hamlet/icml2017/model.tex" 13512)
+
+("eq:51" "e" "%  % n_{jj'} \\given N_{jj'} \\sim \\Binom{N_{jj'}}{\\phi_{jj'}} % " "/Users/cdawson/manuscripts/hamlet/icml2017/model.tex" 15244)
+
+("eq:52" "e" "%  % \\tau_t \\given z_{t-1} \\sim \\Exp{T_{z_{t-1}}} % " "/Users/cdawson/manuscripts/hamlet/icml2017/model.tex" 16397)
+
+("eq:53" "e" "%  % \\tilde{q}_{j't} \\given z_{t-1} \\sim \\Pois{\\tau_t \\pi_{z_{t-1}j'}(1-\\phi_{z_{t-1}j'})} % " "/Users/cdawson/manuscripts/hamlet/icml2017/model.tex" 16652)
+
+("eq:56" "e" "%  % \\mathcal{T}_j &= \\{t \\given z_{t-1} = j\\} " "/Users/cdawson/manuscripts/hamlet/icml2017/model.tex" 16838)
+
+("eq:60" "e" "%  % q_{jj'} \\stackrel{ind}{\\sim} \\Pois{u_j\\pi_{jj'}(1-\\phi_{jj'})}. % " "/Users/cdawson/manuscripts/hamlet/icml2017/model.tex" 17846)
+
+("eq:54" "e" "%  % p(\\bz, \\bu, \\bQ \\given \\bpi, \\btheta) &= \\left(\\prod_{t=1}^T p(z_{t} \\given % z_{t-1})\\right) \\" "/Users/cdawson/manuscripts/hamlet/icml2017/model.tex" 18209)
+
+("eq:joint-likelihood" "e" "% & = \\prod_{j} \\Gamma(n_{j\\cdot})^{-1} u_j^{n_{j\\cdot} + q_{j\\cdot}-1} \\prod_{j'} % \\pi_{jj'}^{n_{j" "/Users/cdawson/manuscripts/hamlet/icml2017/model.tex" 19045)
+
+("sec:an-hsmm-modification" "s" "% Note that it is trivial to modify the HDP-HMM-LT to allow the % number of observations generated e" "/Users/cdawson/manuscripts/hamlet/icml2017/model.tex" 19331)
+
+("eq:95" "e" "%  % D_t \\given \\bz \\stackrel{ind}{\\sim} g(\\omega_{z_t}) \\qquad \\omega_j % \\stackrel{i.i.d}{\\sim} G " "/Users/cdawson/manuscripts/hamlet/icml2017/model.tex" 19722)
+
+("sec:model-summary" "s" "% I have defined the following augmented generative model for the % HDP-H(S)MM-LT: % \\begin{align} %" "/Users/cdawson/manuscripts/hamlet/icml2017/model.tex" 20832)
+
+("eq:96" "e" "%  % \\bbeta &\\sim \\mathrm{GEM}(\\gamma) " "/Users/cdawson/manuscripts/hamlet/icml2017/model.tex" 20962)
+
+("eq:likelihood" "e" "%  \\by_t \\given \\bz, \\btheta &\\sim F(\\theta_{z_t}) % " "/Users/cdawson/manuscripts/hamlet/icml2017/model.tex" 21525)
+
+("eq:97" "e" "%  % \\omega_j &\\stackrel{i.i.d}{\\sim} G " "/Users/cdawson/manuscripts/hamlet/icml2017/model.tex" 21722)
+
+("eq:98" "e" "%  % z^*_s = z_{\\max\\{T \\given s \\leq \\sum_{t=1}^T D_t\\}} % " "/Users/cdawson/manuscripts/hamlet/icml2017/model.tex" 21903)
+
+("eq:likelihood-hsmm" "e" "%  \\by_s \\given \\bz, \\btheta \\sim F(\\theta_{z^*_s}) % " "/Users/cdawson/manuscripts/hamlet/icml2017/model.tex" 22055)
+
+(eof "/Users/cdawson/manuscripts/hamlet/icml2017/model.tex")
+))
+

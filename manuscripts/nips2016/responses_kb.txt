@@ -1,0 +1,81 @@
+We thank the reviewers for their insightful comments, and valuable
+suggestions. An explanation to address some of the critical comments
+is that unfortunately, due to a LaTeX typo, Figure 4 in the paper is a
+duplicate of Figure 2, and so the key contrast between the first and
+second experiment was unfortunately lost. We apologize for this
+oversight. In addition, there appears to be a misunderstanding about
+the properties of the prior on the transition matrix. We address these
+two issues below. Finally, the reviewers offer excellent suggestions
+for ways to extend and further generalize our model, some of which we
+are already working on. However, the existing model is useful for an 
+important class of time series inference problems.
+
+As mentioned, Figure 4 erroneously duplicates Figure 2, and hence it
+appeared that our model uses more states than an ordinary HDP-HMM,
+even on HDP-HMM data. Reviewer 1 worries,
+very reasonably given the incorrect figure, whether the results
+indicate whether local transitions are present, and Reviewer 2 notes
+that "the LT model achieves a similar log likelihood to the non LT
+model but uses many more states." What the correct figure shows is
+that our model discovers the same number of states as the simpler
+model (about 5, which is the actual number in the generated data). The
+relevant curves fall right on top of each other. The LT model has a
+high degree of posterior uncertainty regarding the value of lambda,
+with substantial mass near 0, in sharp contrast to the analogous figure in
+the diarization experiment, where the posterior is tightly peaked
+above 1.5.  Since our model reduces to an 
+HDP-HMM when lambda is 0, we argue that it can be used in settings
+where local transition behavior is suspected, but not certain to be 
+present. Again, we apologize for our mistake. 
+Although we do not yet have results for other
+kinds of latent state spaces, we have since submission run experiments on
+several additional diarization and synthetic datasets, 
+and find that the reported behavior is robust across numbers 
+of states, levels of noise, etc.  We will include more thorough results
+in the next version.  
+
+Transition matrix prior: Reviewer 3 comments that 'While the current model
+assumes that a transition from \theta_i to \theta_j is equally
+probable to a transition from \theta_j to \theta_i ..., some state
+might be a "ground" state that can be reached from many states
+easily.' However, our model does not assume that the transition matrix
+itself is symmetric; only that the similarity matrix used to rescale
+the HDP-generated transition matrix is symmetric. (We will make this
+more clear in the next version of our paper.) If there are
+ground states easily reached from many other states, our model can
+model this by assigning a high weight to such states in the
+top level (\beta) of the HDP. The possibility of such behavior is
+reason to use a kernel (such as the exponential we use)
+that does not decay too aggressively for large distances, so that the
+HDP can still override the LT component as needed. Perhaps an even
+better choice would be a hinge function that reaches a 
+constant minimum past a certain distance.
+
+Finally, the reviewers point out some excellent extensions and additional
+comparisons. Reviewer 3 notes that the infinite Factorial HMM would be 
+a good model to compare against, perhaps instead of the finite 
+Factorial HMM. However, it is unclear how illuminating comparing
+against an iFHMM in this paper would be, as the (finite) FHMM we did
+compare against was given the correct dimension up front, which should 
+give it a leg up compared to an iFHMM.  We note that where the HDP-HMM
+is missing the concept of "local transitions" possessed by our model
+and the Factorial models, the vanilla (i)FHMM, due to prior
+independence among chains, is missing the capacity, possessed by
+the HDP-HMM and our model, to discover a sparse subspace of the 
+full combinatorial state space. It would be conceptually 
+straightforward to incorporate an IBP into the state prior 
+in our model to accommodate an unbounded number of latent
+dimensions. We will add a discussion of these properties.
+
+Reviewer 3 also makes the excellent suggestion of putting a GP prior
+on the rescaling factors, allowing the model to learn
+the topology of the latent state space. We agree that this
+would be an exciting generalization, and indeed it is on
+our (long) list of future "features". Still, we stress that there
+are applications (such as speaker diarization) where
+it is clear what constitutes a "local" transition --- namely,
+the latent features overlap. This is a key difference between the
+non-sequential DILN model and our model: in the HMM setting, instead
+of "distances" being between entities of two different kinds (e.g.,
+topics and documents), they are between like entities (latent
+states), and it is clearer what those distances should look like.

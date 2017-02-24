@@ -1,0 +1,25 @@
+We are grateful to the reviewers for their many helpful and constructive comments and suggestions.  We first reply to some of the concerns raised by multiple reviewers, and then turn to points raised by individual reviewers.
+ 
+* R2, R4 and R7 raised the question of computational complexity. The additional auxiliary variables in the "failed jumps" formulation require computation on the order of J^2 Poisson samples (J=the number of latent states considered), but the bottleneck remains the state sequence, which we sample jointly, with complexity TJ^2, the same as the vanilla HDP-HMM. In Exp. 1 with T=400 and J=600, our C++ implementation took 1-2 s/iteration, with room for optimization. We have also implemented a beam-sampler to sample the z_{t}, which controls the complexity in J, at the cost of greater autocorrelation between iterations. We will add this information.
+
+* R1 and R3 raised the question of whether the series in (8) converges. Briefly, finiteness is guaranteed by the fact that the sum of the un-rescaled transition rates has a Gamma(\alpha, 1) distribution, and since phi is bounded above, the sum of the scaled rates is at most a constant multiple of this Gamma variate. We will add a more detailed proof of this and add details to various other derivations.
+
+* In general, we agree with the reviewers who suggest that it would be useful to include additional details about the derivations in a supplement.
+
+* R2, R3 and R4 ask about the nature of the similarity matrix, phi. We assume phi <= 1, and although our derivation assumes symmetry, this only enters into the posterior for the {theta_j}, which could easily be recomputed if symmetry is not desired. We also assume that self-similarity is 1, guaranteeing normalizability, but one could achieve that another way. We will be more precise about these constraints. In our experiments, phi is a deterministic function of theta, but phi could be based on known covariates, or learned entirely from state transitions. We have a version of the model which is not discussed in the paper, where states have latent "locations" governing similarity that are not connected to theta at all. We sample these locations jointly using Hamiltonian Monte Carlo.
+
+* R2, R3 and R4 request source code. We are in the process of improving documentation and better encapsulating dependencies, and will make the code available. We regret that it was not in a useful form by submission time.
+
+* Several reviewers indicate that they would like to see results on real-world data. We agree this would strengthen the paper. The motivation for this model was an NLP application in which we wanted to model the flow of topics across sentences, where a sentence can be associated with an arbitrary set of topics, and where we expect transitions between binary topic vectors to be "local". Unfortunately, generative feature-engineering lagged model-development, and we were unable to include results on this real data in the paper. We are also working applications involving unsupervised learning of "musical grammar" and energy use signal disaggregation. We hope to publish these applications separately, as we expect each application to require quite a bit of description of its own, but we will better motivate the model, at least, in a revision. We would also greatly appreciate suggestions for existing datasets that might suit the model, experiments on which could perhaps be added without too much background required.
+
+* R2 and R4 point out that Eq. 10 is confusing. This is indeed meant to be a likelihood rather than a posterior; we apologize for the inconsistent notation, and will correct this. R4 is correct that the (1-phi_{jj'}) in the exponent cancels out with another term: specifically, with the exponential term in the Gamma distribution of u_j. We will flesh out this derivation.
+
+* R1 points out connections to correlated random measures and dependent random measures.  We agree that this work is relevant.  We are not aware of previous such work with sequential data in particular, but we will certainly incorporate appropriate references.
+
+* R4 asks what was involved in fixing the weight matrix, W. We fixed only the linear map from latent states to means in observation space, which is constant across states (only the binary vectors themselves differ). The number of latent states was not fixed.
+
+* R4 asks why lambda in Exp. 2 does not go to zero. There is quite a bit of mass closer to zero than the 0.1 or 0.2 mean value, but since larger values of lambda are visited occasionally, the mean is not zero. Perhaps posterior quantiles would be more informative than frequentist confidence intervals here.
+
+* We like R7's suggestions for additional visualizations, as well as for an examination of the effect of different initializations.
+
+Again, we are grateful to the reviewers for their effort, catching our typos and notational inconsistencies, and for their suggestions to improve the clarity of the presentation.

@@ -1,0 +1,28 @@
+We are grateful to the reviewers for their many helpful comments and suggestions.  We first reply to some of the concerns raised by multiple reviewers, and then turn to some of the more specific points raised by individual reviewers.
+
+--- R1 and R3 raised the question of whether the prior is well-defined, in particular, whether the series in (8) converges. Briefly, finiteness is guaranteed by the fact that the sum of the un-rescaled transition rates has a Gamma(\alpha, 1) distribution, and since phi is bounded above, the sum of the scaled rates is at most a constant multiple of this Gamma variate.
+We will include a more detailed proof in a revision.
+
+--- R2, R4 and R7 raised the question of computational complexity. We agree that this would be useful to include.  The computation time required for the auxiliary variables is dwarfed by the time required to sample the state sequence {z_t} (which we do using forward-backward, with complexity TJ^2, where T is the number of observations and J is the number of states considered).  The failed transition counts requires J^2 Poisson samples, and the {m_{jj'}}, require T Bernoulli samples.  As a result, the complexity of inference in our model is no greater than the vanilla HDP-HMM when the {z_t} are sampled jointly.  On the cocktail party data, with T = 400 and J = 600, the our C++ implementation takes about 1-2 seconds per iteration, with room for optimization.  Although we did not describe it in the paper, we have also implemented a beam-sampler to sample the z_{t} (essentially unmodified from Van Gael (ICML-2008)), which controls the complexity in J, at the cost of greater autocorrelation between iterations.
+
+--- R2 and R3 raise concerns regarding constraints on the similarity matrix, Phi. We assume that phi is bounded above by 1, and although we derive the sampler assuming that it is symmetric, this assumption can be relaxed without affecting anything about inference apart from the posterior for the theta_j variables.  We also assume that the similarity between a state and itself is 1, which guarantees that normalization is possible, though if this is not the natural thing to do in a particular application, one could achieve that in another way.  We will be more precise about these requirements.
+
+--- R2 and R3 request source code.  We are in the process of improving documentation and better encapsulating dependencies, and hope to make the code available with publication if accepted.  We regret that we did not have the code available in a useful form by submission time.
+
+--- Several reviewers mention that they would like to see results on real datasets.  We certainly agree with this as well.  The motivation for this model was an NLP application in which we wanted to model the flow of topics across sentences, where a sentence can be associated with an arbitrary number of pre-defined topics so that the topic content of a sentence is a binary vector, and where we expect topics to enter and leave the discourse gradually (so that transitions between binary vectors are "local").  Unfortunately the required feature-engineering lagged the development of the model, and so we were unable to include results on this real data in the paper.  We are also working on an application involving unsupervised learning of musical "grammar".  We hope to publish these applications separately (we expect each application to require quite a bit of description of its own), but we will better motivate the model in a revision.  We would also greatly appreciate any suggestions for existing datasets that might exhibit an LT property.
+
+--- R2 and R4 point out that equation 10 is confusing.  This is meant to be the *likelihood* of pi and phi, rather than the posterior (as R2 correctly surmises); we should have used consistent notation.  R4 is correct that the (1-phi_{jj'}) in the exponent cancels out, in particular with the exponential term in the Gamma distribution of u_j.  We will add detail to this derivation.
+
+--- Several reviewers requested more detailed derivations in supplementary material.  We agree that this would be helpful and can certainly include this.
+
+INDIVIDUAL COMMENTS:
+
+--- R1 points out connections to correlated random measures and dependent random measures.  We agree that there are close connections.  We are not aware of previous such work with sequential data, but we will certainly include some additional references.
+
+--- R4 asks what we mean by phi being a function of the emission distributions.  In these experiments, yes, phi is a deterministic function of theta.  However that is not an essential feature of the model, as phi could be based on other variables, or learned entirely based on the state transitions (we have an implementation of the model not described in the paper with latent continuous state "locations" which are not connected to theta at all, which we jointly sample using HMC).
+
+--- R4 also asks about how the weight matrix was fixed in the cocktail party experiment.  The weight matrix linearly maps binary state vectors to means in observation space.  We provided this linear map, which is constant across states (only the binary vectors themselves differ).  However, the number of latent states was not fixed.
+
+--- R4 asks why lambda doesn't go to zero in Exp. 2.  The plotted results show confidence intervals for the posterior mean of lambda.  There is quite a bit of mass closer to zero than the 0.1 or 0.2 mean value, and the posterior sampling does visit some larger values of lambda occasionally.  Perhaps posterior quantiles would be more informative than frequentist confidence intervals.
+
+--- We like R7's suggestions for additional visualizations.

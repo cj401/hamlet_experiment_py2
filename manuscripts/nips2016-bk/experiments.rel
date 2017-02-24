@@ -1,0 +1,53 @@
+;; RefTeX parse info file
+;; File: /Users/cdawson/research/manuscripts/hdp-hmm-lt/nips2015/experiments.tex
+;; User: cdawson (Colin Dawson)
+
+(set reftex-docstruct-symbol '(
+
+
+(xr nil "\\\\\\\\\\\\")
+
+(index-tags)
+
+(is-multi nil)
+
+(bibview-cache)
+
+(master-dir . "/Users/cdawson/research/manuscripts/hdp-hmm-lt/nips2015/")
+
+(label-numbers)
+
+(bof "/Users/cdawson/research/manuscripts/hdp-hmm-lt/nips2015/experiments.tex")
+
+(toc "toc" "    1 Experiments" "/Users/cdawson/research/manuscripts/hdp-hmm-lt/nips2015/experiments.tex" nil 2 "1" "\\section{Experiments}" 1)
+
+("sec:experiments" "s" "The parameter space for the hidden states, the associated prior $H$ on $\\btheta$, and the similarity" "/Users/cdawson/research/manuscripts/hdp-hmm-lt/nips2015/experiments.tex" nil)
+
+(toc "toc" "      1.1 Additional Inference Steps" "/Users/cdawson/research/manuscripts/hdp-hmm-lt/nips2015/experiments.tex" nil 3 "1.1" "\\subsection{Additional Inference Steps}" 1397)
+
+("sec:sampling-eta" "s" "\\paragraph{Sampling $\\eta$} We put independent Beta-Bernoulli priors on the dimensions of $\\eta$. We" "/Users/cdawson/research/manuscripts/hdp-hmm-lt/nips2015/experiments.tex" nil)
+
+(toc "toc" "          1.1.0.1 Sampling $\\eta$" "/Users/cdawson/research/manuscripts/hdp-hmm-lt/nips2015/experiments.tex" nil 5 "1.1.0.1" "\\paragraph{Sampling $\\eta$}" 1463)
+
+(toc "toc" "          1.1.0.2 Sampling \\texorpdfstring{$\\lambda$}{kernel decay rate}" "/Users/cdawson/research/manuscripts/hdp-hmm-lt/nips2015/experiments.tex" nil 5 "1.1.0.2" "\\paragraph{Sampling \\texorpdfstring{$\\lambda$}{kernel decay rate}}" 1739)
+
+("sec:sampling-lambda" "s" "The Laplacian kernel $\\Phi$ is defined as $\\Phi(\\eta_j, \\eta_{j'}) = e^{-\\lambda \\norm{\\eta_j - \\eta" "/Users/cdawson/research/manuscripts/hdp-hmm-lt/nips2015/experiments.tex" nil)
+
+("eq:88" "e" "p(\\bz, \\bQ \\given \\lambda, \\btheta) \\propto \\prod_{j}\\prod_{j'} e^{-\\lambda \\Delta_{jj'} n_{jj'}}(1-" "/Users/cdawson/research/manuscripts/hdp-hmm-lt/nips2015/experiments.tex" nil)
+
+("eq:88" "e" "p(\\lambda \\given \\bz, \\bQ, \\btheta) \\propto e^{-(b_{\\lambda} + \\sum_{j}\\sum_{j'} \\Delta_{jj'} n_{jj'" "/Users/cdawson/research/manuscripts/hdp-hmm-lt/nips2015/experiments.tex" nil)
+
+(toc "toc" "          1.1.0.3 Sampling \\texorpdfstring{$\\bW$}{weights} and \\texorpdfstring{$\\Sigma$}{emission covariance}" "/Users/cdawson/research/manuscripts/hdp-hmm-lt/nips2015/experiments.tex" nil 5 "1.1.0.3" "\\paragraph{Sampling \\texorpdfstring{$\\bW$}{weights} and
+  \\texorpdfstring{$\\Sigma$}{emission covariance}}" 2797)
+
+(toc "toc" "      1.2 ``Cocktail Party'' Data" "/Users/cdawson/research/manuscripts/hdp-hmm-lt/nips2015/experiments.tex" nil 3 "1.2" "\\subsection{``Cocktail Party'' Data}" 3403)
+
+("fig:cocktail-results" "f" "Performance of the Factorial HMM, HDP-HMM, and HDP-HSMM on the Cocktail Party Data" "/Users/cdawson/research/manuscripts/hdp-hmm-lt/nips2015/experiments.tex" nil)
+
+(toc "toc" "      1.3 Synthetic Data Without Local Transitions" "/Users/cdawson/research/manuscripts/hdp-hmm-lt/nips2015/experiments.tex" nil 3 "1.3" "\\subsection{Synthetic Data Without Local Transitions}" 7222)
+
+("sec:synth-data-without" "s" nil "/Users/cdawson/research/manuscripts/hdp-hmm-lt/nips2015/experiments.tex" nil "")
+
+(eof "/Users/cdawson/research/manuscripts/hdp-hmm-lt/nips2015/experiments.tex")
+))
+

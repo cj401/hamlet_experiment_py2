@@ -1,0 +1,120 @@
+\documentclass[twoside]{article} % For LaTeX2e
+\usepackage{aistats2017}
+\usepackage{amsmath,amssymb,bm,bbm,upgreek,mathrsfs}
+\usepackage{algorithmic,algorithm}
+\usepackage[pdftex]{graphicx}
+\usepackage{caption,sidecap,subcaption}
+\usepackage{hyperref}
+\usepackage{url}
+%\documentstyle[nips14submit_09,times,art10]{article} % For LaTeX 2.09
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Useful math macros %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% argmax and argmin
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+%% Distributions
+\newcommand{\Norm}[2]{\mathcal{N}(#1,#2)}
+\newcommand{\Unif}{\mathcal{U}}
+\newcommand{\Pois}[1]{\mathcal{P}\mathrm{ois}(#1)}
+\newcommand{\Exp}[1]{\mathsf{Exp}(#1)}
+\newcommand{\Gamm}[2]{\mathsf{Gamma}(#1,#2)}
+\newcommand{\Bern}[1]{\mathcal{B}\mathrm{ern}\left(#1\right)}
+\newcommand{\Binom}[2]{\mathcal{B}\mathrm{inom}(#1,#2)}
+\newcommand{\Geom}[1]{\mathcal{G}\mathrm{eom}(#1)}
+\newcommand{\Cat}{\mathcal{C}\mathrm{at}}
+\newcommand{\Beta}[2]{\mathcal{B}\mathrm{eta}(#1,#2)}
+\newcommand{\Lapl}{\mathcal{L}\mathrm{aplace}}
+\newcommand{\GP}{\mathcal{GP}}
+\newcommand{\DP}{\mathcal{DP}}
+\newcommand{\CRP}{\mathsf{CRP}}
+
+%% Probability
+\newcommand{\E}[1]{\mathbb{E}[#1]}
+\newcommand{\Cov}[2]{\mathbb{C}\mathrm{ov}(#1,#2)}
+\newcommand{\given}{\, \vert \,}
+
+%% General
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\abs}[1]{\left\vert #1 \right\vert}
+\newcommand{\norm}[1]{\left\vert \left \vert #1 \right\vert \right\vert}
+
+%% Vectors
+\newcommand{\bx}{\mathbf{x}}
+\newcommand{\bX}{\mathbf{X}}
+\newcommand{\by}{\mathbf{y}}
+\newcommand{\bY}{\mathbf{Y}}
+\newcommand{\ba}{\mathbf{a}}
+\newcommand{\bA}{\mathbf{A}}
+\newcommand{\bb}{\mathbf{b}}
+\newcommand{\bB}{\mathbf{B}}
+\newcommand{\bc}{\mathbf{c}}
+\newcommand{\bM}{\mathbf{M}}
+\newcommand{\bC}{\mathbf{C}}
+\newcommand{\bQ}{\mathbf{Q}}
+\newcommand{\bl}{\mathbf{l}}
+\newcommand{\bem}{\mathbf{m}}
+\newcommand{\bq}{\mathbf{q}}
+\newcommand{\bz}{\mathbf{z}}
+\newcommand{\bZ}{\mathbf{Z}}
+\newcommand{\bu}{\mathbf{u}}
+\newcommand{\br}{\mathbf{r}}
+\newcommand{\bs}{\mathbf{s}}
+\newcommand{\bw}{\mathbf{w}}
+\newcommand{\bW}{\mathbf{W}}
+\newcommand{\bT}{\mathbf{T}}
+\newcommand{\bth}{\bm\uptheta}
+\newcommand{\bTh}{\bm\Theta}
+\newcommand{\bbeta}{\boldsymbol{\beta}}
+\newcommand{\btheta}{\boldsymbol{\theta}}
+\newcommand{\bpi}{\boldsymbol{\pi}}
+\newcommand{\bphi}{\boldsymbol{\phi}}
+\newcommand{\btau}{\boldsymbol{\tau}}
+\newcommand{\bmu}{\boldsymbol{\mu}}
+\newcommand{\blambda}{\boldsymbol{\lambda}}
+
+%% Sets
+\newcommand{\cA}{\mathcal{A}}
+\newcommand{\cB}{\mathcal{B}}
+\newcommand{\cZ}{\mathcal{Z}}
+\newcommand{\cM}{\mathcal{M}}
+
+
+\newcommand{\fix}{\marginpar{FIX}}
+\newcommand{\new}{\marginpar{NEW}}
+
+\begin{document}
+\twocolumn[
+
+\aistatstitle{A Similarity-Biased Transition Prior for Infinite HMMs}
+
+\aistatsauthor{ Anonymous Author 1 \And Anonymous Author 2 \And Anonymous Author 3 }
+
+\aistatsaddress{ Unknown Institution 1 \And Unknown Institution 2 \And
+  Unknown Institution 3 }
+% \aistatsauthor{ Colin Reimer Dawson \And Chaofan Huang \And Clayton
+%   T. Morrison }
+
+% \aistatsaddress{ Oberlin College \And Oberlin College \And The
+%   University of Arizona }
+]
+\title{An Infinite Hidden Markov Model With Local Transitions}
+
+\begin{abstract}
+\input{abstract.tex}
+\end{abstract}
+
+% \input{introduction.tex}
+\input{background.tex}
+\input{model.tex}
+\input{inference.tex}
+\input{experiments.tex}
+\input{discussion.tex}
+% \input{acknowledgments.tex}
+
+\bibliographystyle{plain}
+\bibliography{hdp_hmm_lt}
+
+\end{document}

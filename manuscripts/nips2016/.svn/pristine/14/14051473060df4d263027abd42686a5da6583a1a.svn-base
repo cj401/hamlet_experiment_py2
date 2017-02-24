@@ -1,0 +1,467 @@
+\section{An HDP-HMM With Local Transitions}
+\label{sec:model}
+We wish to add to the transition model the concept of a transition to
+a ``nearby'' state, where nearness of $j$ and $j'$ is a function of
+$\theta_j$ and $\theta_{j'}$.  In order to accomplish this, we first
+consider an alternative construction of the transition distributions,
+based on the Normalized Gamma Process.
+
+\subsection{A Normalized Gamma Process representation of the HDP-HMM}
+\label{sec:normalized-gamma}
+
+We can define a random measure, $\mu = \sum_{j=1}^{\infty} \pi_j \delta_{\theta_j}$, where 
+\begin{align}
+  \pi_j \stackrel{ind}{\sim} \Gamm{w_j}{1} \qquad T =
+  \sum_{j=1}^{\infty} \pi_j \qquad
+  \tilde{\pi}_j = \frac{\pi_j}{T} \label{eq:20}
+\end{align}
+and subject to the constraint that $\sum_{j\geq 1} w_j < \infty$.  It
+follows \cite{paisley2012discrete, favaro2013mcmc} that $\mu$ is distributed as a Dirichlet
+Process with base measure $\bw = \sum_{j=1}^{\infty} w_j \delta_{\theta_j}$.
+If we draw $\bbeta$ from a stick-breaking process and then draw a
+series $\{\mu_m\}_{m=1}^M$ of
+i.i.d. random measures from the above process, setting $\bw =
+\alpha\bbeta$ for some $\alpha > 0$, then
+this defines a Hierarchical Dirichlet Process.  If, moreover, there is
+one $\mu$ associated with every state $j$, then we obtain the
+transition prior for the HDP-HMM, where
+\begin{align}
+  \label{eq:50}
+  p(z_t \given z_{t-1}, \bpi) = \tilde{\pi}_{z_{t-1}z_t}
+\end{align}
+
+\subsection{Promoting ``Local" Transitions}
+\label{sec:prom-local-trans}
+
+In the preceding formulation, the $\theta_j$ and the $\pi_{jj'}$ are independent
+conditioned on the top-level measure.  Our goal is to relax this
+assumption, in order to incorporate possible prior knowledge
+that certain ``location'' pairs, $(\theta_j, \theta_{j'})$, are more likely than others to
+produce large transition weights (i.e., states adjacent in time should
+tend to be similar).  This can be accomplished by scaling the elements
+$\pi_{jj'}$ by a function of $(\theta_{j}, \theta_{j'})$ prior to
+normalization, or equivalently letting the Gamma distribution have
+a proximity-dependent rate parameter.  
+
+Let $\Phi: \Omega \times \Omega \to [0,\infty)$ represent a
+``similarity function'', and define a collection of random variables
+$\{\phi_{jj'}\}_{j,j' \geq 1}$ according to $\phi_{jj'} = \phi(\theta_j, \theta_j')$.
+We can then generalize \eqref{eq:20} to
+\begin{align}
+  \pi_{jj'} \given \bbeta, \btheta \sim \Gamm{\alpha \beta_{j'}}{\phi_{jj'}^{-1}} \qquad
+  T_j = \sum_{j'=1}^{\infty} \pi_{jj'} \qquad \tilde{\pi}_{jj'} = \frac{\pi_{jj'}}{T_j}
+\end{align}
+so that the prior mean of $\pi_{jj'}$ is
+$\alpha\beta_{j'}\phi_{jj'}$.  Since a similarity between one object
+and another should not exceed the similarity between an object and
+itself, and since a constant rescaling of the similarity will be
+absorbed in normalization, we will assume that $0 \leq \phi_{jj'} \leq 1$ for all $j$
+and $j'$.
+
+\subsection{The HDP-HMM-LT as the Marginalization of
+a Markov Jump Process with ``Failed'' Jumps}
+\label{sec:dist-based-filt}
+
+We can gain stronger intuition, as well as simplify posterior
+inference, by representing the HDP-HMM-LT described in the last section
+as a continuous time Markov jump process where holding times have been
+integrated out.  In particular, suppose that some of the attempts to jump
+from one state to another fail, and the failure probability
+increases as a function of the ``distance'' between the states.
+
+Let $\Phi$ be defined as in the last section, and let 
+$\bbeta$, $\btheta$ and $\bpi$ be defined as in the Normalized Gamma
+Process representation of the ordinary HDP-HMM (so,
+  $\pi_{jj'} \given \bbeta, \btheta \sim \Gamm{\alpha \beta_{j'}}{1}$).
+Now suppose that when the process is in state $j$, jumps to state
+$j'$ are made at rate $\pi_{jj'}$.  This defines a continuous-time
+Markov Process where the off-diagonal elements of the transition rate
+matrix are the off diagonal elements of $\bpi$.  In addition,
+self-jumps are allowed, and occur with rate $\pi_{jj}$.   If we only
+observe the jumps and not the durations between jumps, this is an
+ordinary Markov chain.  If we do not observe the jumps themselves, but
+instead an observation is generated once per jump from a distribution that depends
+on the state being jumped to, then we have an ordinary HMM.
+
+We modify this process as follows.  
+Suppose that each jump attempt from state $j$ to state $j'$ has a
+chance of failing, which is an increasing function of the ``distance''
+between the states.  In particular, let the success probability be
+$\phi_{jj'}$ (recall that we assumed above that $0 \leq \phi_{jj'}
+\leq 1$ for all $j,j'$).  Then, the rate of successful jumps from $j$
+to $j'$ is $\pi_{jj'}\phi_{jj'}$, and the corresponding rate of unsuccessful jump
+attempts is $\pi_{jj'}(1-\phi_{jj'})$.  We denote the overall rate of successful jumps
+while in state $j$ overall by $T_j := \sum_{j'} \pi_{jj'} \phi_{jj'}$.
+Given that the process is in state $j$ at discretized time $t$ (that is,
+$z_{t} = j$), the probability that the first successful jump is to
+state $j'$ (that is, $z_{t+1} = j'$) 
+is proportional to the rate of successful jump attempts to $j'$, which
+is $\pi_{jj'}\phi_{jj'}$.  The holding time, $\tau_{t-1}$, is
+independent of $z_{t+1}$ and is distributed $\mathsf{Exp}(T_j)$.  The
+total time spent in state $j$ given that it is visited $n_{j}$ times,
+is then
+\begin{equation}
+u_j \given \bz, \bpi, \btheta \stackrel{ind}{\sim} \Gamm{n_{j\cdot}}{T_j}
+\end{equation}
+During this period there will be $q_{jj'}$
+unsuccessful attempts to jump to state $j'$, where $q_{jj'}$ is distributed $\mathsf{Pois}(u_j
+\pi_{jj'}(1 - \phi_{jj'}))$.  Incorporating
+$\bu = \{u_j\}$ as augmented data simplifies the likelihood for the transition
+parameters, yielding
+\begin{align}
+  L(\bpi, \bphi \given \bz, \bu, \bQ) &= \left(\prod_{t=1}^T p(z_{t} \given
+    z_{t-1}, \bpi, \bphi)\right) \prod_{j} p(u_j \given \bz, \bpi, \bphi)
+  \prod_{j'} p(q_{jj'} \given u_j \pi_{jj'}, \phi_{jj'}) \notag \\
+  &\propto \prod_{j} \prod_{j'} \pi_{jj'}^{n_{jj'} + q_{jj'}} \phi_{jj'}^{n_{jj'}}
+  (1-\phi_{jj'})^{q_{jj'}} e^{-\pi_{jj'}u_j} \label{eq:joint-likelihood}
+\end{align}
+
+\subsection{An HDP-HSMM-LT modification}
+\label{sec:an-hsmm-modification}
+
+We note that it is trivial to modify the HDP-HMM-LT to allow for
+non-Geometric duration distributions, by simply fixing the diagonal
+elements of $\bpi$ to be zero, allowing $D_t$ observations to be
+emitted $i.i.d.$ $F(\theta_{z_t})$ at jump $t$, where $D_t$ is drawn
+from a state-specific duration distribution, and sampling the
+latent state sequence using a message passing algorithm suited for
+HSMMs \cite{johnson2013bayesian}.  Inference for the $\bphi$ matrix
+is not affected, since the diagonal elements are assumed to be 1.
+Unlike in the original representation of the HDP-HSMM, there is no need to introduce
+additional auxiliary variables as a result of this modification, due
+to the presence of the (continuous) durations, $\bu$, which were
+already needed to account for the normalization of the $\bpi$.
+
+% \subsection{Summary}
+% \label{sec:model-summary}
+
+% We have defined the following augmented generative model for the
+% HDP-H(S)MM-LT:
+% \begin{align}
+%   \label{eq:96}
+%   \bbeta &\sim \mathrm{GEM}(\gamma) \\
+%   \theta_j &\stackrel{i.i.d}{\sim} H \\
+%   \pi_{jj'} \given \bbeta, \btheta &\sim \Gamm{\alpha \beta_{j'}}{1}
+%   \\
+%   z_{t} \given z_{t-1}, \bpi, \btheta &\sim \sum_{j}
+%   \left(\frac{\pi_{z_{t-1}j}\phi_{z_{t-1}j}}{\sum_{j'}
+%     \pi_{z_{t-1}j'}\phi_{z_{t-1}j'}}\right)\delta_j \\
+%   u_j \given \bz, \bpi, \btheta &\stackrel{ind}{\sim}
+%   \Gamm{n_{j\cdot}}{\sum_{j'} \pi_{jj'}\phi_{jj'}} \\
+%   q_{jj'} \given \bu, \bpi, \btheta &\stackrel{ind}{\sim}
+%   \Pois{u_j(1 - \phi_{jj'})\pi_{jj'}} \\
+%   \label{eq:likelihood} \by_t \given \bz, \btheta &\sim F(\theta_{z_t})
+% \end{align}
+
+% If we are using the HSMM variant, then we simply fix $\pi_{jj}$ to 0
+% for each $j$, draw
+% \begin{align}
+%   \label{eq:97}
+%   \omega_j &\stackrel{i.i.d}{\sim} G \\
+%   D_t \given \bz &\stackrel{ind}{\sim} g(\omega_{z_t}),
+% \end{align}
+% set
+% \begin{equation}
+%   \label{eq:98}
+%   z^*_s = z_{\max\{T \given s \leq \sum_{t=1}^T D_t\}}
+% \end{equation}
+% and replace \eqref{eq:likelihood} with
+% \begin{equation}
+%   \label{eq:likelihood-hsmm} \by_s \given \bz, \btheta \sim F(\theta_{z^*_s})
+% \end{equation}
+
+
+% \section{An HDP-HMM With Local Transitions}
+
+% The goal is to add to the transition model the concept of a transition to
+% a ``nearby'' state, where nearness of $j$ and $j'$ is possibly a function of
+% $\theta_j$ and $\theta_{j'}$.  In order to accomplish this, we first
+% consider an alternative construction of the transition distributions,
+% based on the Normalized Gamma Process representation of the Dirichlet
+% Process \cite{ferguson1973bayesian}.
+
+% \subsection{A Normalized Gamma Process representation of the HDP-HMM}
+% \label{sec:normalized-gamma}
+
+% Define a random measure, $\mu = \sum_{j=1}^{\infty} \pi_j \delta_{\theta_j}$, where 
+% \begin{align}
+%   \pi_j &\stackrel{ind}{\sim} \Gamm{w_j}{1} \label{eq:17}\\
+%   T &= \sum_{j=1}^{\infty} \pi_j \label{eq:18}\\
+%   \tilde{\pi}_j &= \frac{\pi_j}{T}   \label{eq:16}\\
+%   \theta_j &\stackrel{i.i.d}{\sim} H \label{eq:19}
+% \end{align}
+% and subject to the constraint that $\sum_{j\geq 1} w_j < \infty$,
+% which ensures that $T < \infty$ almost surely.  As
+% shown by Paisley et al. (2011), for fixed $\{w_j\}$ and $\{\theta_j\}$, $\mu$ is distributed as a Dirichlet
+% Process with base measure $\bw = \sum_{j=1}^{\infty} w_j \delta_{\theta_j}$.
+% If we draw $\bbeta$ from a stick-breaking process and then draw a
+% series $\{\mu_m\}_{m=1}^M$ of
+% i.i.d. random measures from the above process, setting $\bw =
+% \alpha\bbeta$ for some $\alpha > 0$, then
+% this defines a Hierarchical Dirichlet Process.  If, moreover, there is
+% one $\mu_m$ associated with every state $j$, then we obtain the
+% HDP-HMM.
+
+% We can thus write
+% \begin{align}
+%   \bbeta &\sim \mathsf{GEM}(\gamma)   \label{eq:20} \\
+%   \theta_j &\stackrel{i.i.d.}{\sim} H \label{eq:21}\\
+%   \pi_{jj'} &\stackrel{ind}{\sim} \Gamm{\alpha \beta_{j'}}{1} \label{eq:22}\\
+%   T_j &= \sum_{j'=1}^{\infty} \pi_{jj'} \\
+%   \tilde{\pi}_{jj'} &= \frac{\pi_{jj'}}{T_j} \label{eq:23},
+% \end{align}
+% where $\gamma$ and $\alpha$ are prior concentration hyperparameters
+% for the two DP levels, where
+% \begin{align}
+%   \label{eq:50}
+%   p(z_t \given z_{t-1}, \bpi) = \tilde{\pi}_{z_{t-1}z_t}
+% \end{align}
+% and the observed data
+% $\{y_t\}_{t\geq 1}$ distributed as
+% \begin{equation}
+%   \label{eq:24}
+%   y_t \given z_t \stackrel{ind}{\sim} F(\theta_{z_t})
+% \end{equation}
+% for some family, $F$ of probability measures indexed by values of $\theta$.
+
+% \subsection{Promoting ``Local" Transitions}
+% \label{sec:prom-local-trans}
+
+% In the preceding formulation, the $\theta_j$ and the $\pi_{jj'}$ are independent
+% conditioned on the top-level measure.  Our goal is to relax this
+% assumption, in order to allow for prior knowledge
+% that certain ``locations'', $\theta_j$, are more likely than others to
+% produce large weights.  This can be accomplished by letting the rate
+% parameter in the distribution of the $\pi_{jj'}$
+% be a function of $\theta_j$ and $\theta_{j'}$.  
+% Let $\Phi: \Omega \times \Omega \to [0,\infty)$ represent a
+% ``similarity function'', and define a collection of random variables
+% $\{\phi_{jj'}\}_{j,j' \geq 1}$ according to
+% \begin{equation}
+%   \phi_{jj'} = \phi(\theta_j, \theta_j')
+% \end{equation}
+% We can then generalize \eqref{eq:20}-\eqref{eq:23} to
+% \begin{align}
+%   \bbeta &\sim \mathrm{GEM}(\gamma) \\
+%   \theta_j &\stackrel{i.i.d}{\sim} H \\
+%   \pi_{jj'} \given \bbeta, \btheta &\sim \Gamm{\alpha \beta_{j'}}{\phi_{jj'}^{-1}} \\
+%   T_j &= \sum_{j'=1}^{\infty} \pi_{jj'} \\
+%   \tilde{\pi}_{jj'} &= \frac{\pi_{jj'}}{T_j}
+% \end{align}
+% so that the expected value of $\pi_{jj'}$ is
+% $\alpha\beta_{j'}\phi_{jj'}$.  Since a similarity between one object
+% and another should not exceed the similarity between an object and
+% itself, we will assume that $\phi_{jj'} \leq B < \infty$ for all $j$
+% and $j'$, with equality holding iff $j = j'$.  Moreover, there 
+% is no loss of generality by taking $B = 1$, since a constant rescaling of
+% $\phi_{jj'}$ gets absorbed in the normalization.
+
+% The above model is equivalent to simply drawing the $\pi_{jj'}$ as in
+% \eqref{eq:20} and scaling each one by $\phi_{jj'}$ prior to
+% normalization.
+
+% Unfortunately, this formulation complicates inference significantly,
+% as the introduction of non-constant rate parameters to the prior on
+% $\bpi$ destroys the conjugacy between $\bpi$ and $\bz$, and worse, the
+% conditional likelihood function for $\bpi$ contains an infinite
+% sum of the elements in a row, rendering all entries within a row
+% mutually dependent.
+
+% \subsection{The HDP-HMM-LT as a continuous-time 
+% Markov Jump Process with ``failed'' jumps}
+% \label{sec:dist-based-filt}
+
+% We can gain stronger intuition, as well as simplify posterior
+% inference, by re-casting the HDP-HMM-LT described in the last section
+% as a continuous time Markov Jump Process where some of the attempts to jump
+% from one state to another fail, and where the failure probability
+% increases as a function of the ``distance'' between the states.
+
+% Let $\Phi$ be defined as in the last section, and let 
+% $\bbeta$, $\btheta$ and $\bpi$ be defined as in the Normalized Gamma
+% Process representation of the ordinary HDP-HMM.  That is,
+% \begin{align}
+%   \label{eq:beta} \bbeta &\sim \mathrm{GEM}(\gamma) \\
+%   \theta_j &\stackrel{i.i.d}{\sim} H \\
+%   \pi_{jj'} \given \bbeta, \btheta &\sim \Gamm{\alpha \beta_{j'}}{1}
+% \end{align}
+% Now suppose that when the process is in state $j$, jumps to state
+% $j'$ are made at rate $\pi_{jj'}$.  This defines a continuous-time
+% Markov Process where the off-diagonal elements of the transition rate
+% matrix are the off diagonal elements of $\bpi$.  In addition,
+% self-jumps are allowed, and occur with rate $\pi_{jj}$.   If we only
+% observe the jumps and not the durations between jumps, this is an
+% ordinary Markov chain, whose transition matrix is obtained by
+% appropriately normalizing $\bpi$.  If we do not observe the jumps themselves, but
+% instead an observation is generated once per jump from a distribution that depends
+% on the state being jumped to, then we have an ordinary HMM.
+
+% I modify this process as follows.  
+% Suppose that each jump attempt from state $j$ to state $j'$ has a
+% chance of failing, which is an increasing function of the ``distance''
+% between the states.  In particular, let the success probability be
+% $\phi_{jj'}$ (recall that we assumed above that $0 \leq \phi_{jj'}
+% \leq 1$ for all $j,j'$).  Then, the rate of successful jumps from $j$
+% to $j'$ is $\pi_{jj'}\phi_{jj'}$, and the corresponding rate of unsuccessful jump
+% attempts is $\pi_{jj'}(1-\phi_{jj'})$.  To see this, denote by
+% $N_{jj'}$ the total number of jump attempts to $j'$ in a unit
+% interval of time spent in state $j$.  Since we are assuming the
+% process is Markovian, the total number of attempts is $\Pois{\pi_{jj'}}$
+% distributed.  Conditioned on $N_{jj'}$, $n_{jj'}$ will be successful, where
+% \begin{equation}
+%   \label{eq:51}
+%   n_{jj'} \given N_{jj'} \sim \Binom{N_{jj'}}{\phi_{jj'}}
+% \end{equation}
+% It is easy to show (and well known) that the marginal distribution of
+% $n_{jj'}$ is $\Pois{\pi_{jj'}\phi_{jj'}}$, and the marginal
+% distribution of $\tilde{q}_{jj'} := N_{jj'} - n_{jj'}$ is
+% $\Pois{\pi_{jj'}(1-\phi_{jj'})}$.  The rate of successful jumps
+% from state $j$ overall is then $T_j := \sum_{j'} \pi_{jj'} \phi_{jj'}$.
+
+% Let $t$ index jumps, so that $z_t$ indicates the $t$th state visited
+% by the process (couting self-jumps as a new time step).  Given
+% that the process is in state $j$ at discretized time $t-1$ (that is,
+% $z_{t-1} = j$), it is a standard property of Markov Processes that 
+% the probability that the first successful jump is to state $j'$ (that is, $z_{t} = j'$) 
+% is proportional to the rate of successful attempts to 
+% $j'$, which is $\pi_{jj'}\phi_{jj'}$.  
+
+% Let $\tau_{t}$ indicate the time elapsed between the $t$th and 
+% and $t-1$th successful jump (where we assume that the first
+% observation occurs when the first successful jump from a distinguished initial
+% state is made).  We have
+% \begin{equation}
+%   \label{eq:52}
+%   \tau_t \given z_{t-1} \sim \Exp{T_{z_{t-1}}}
+% \end{equation}
+% where $\tau_t$ is independent of $z_{t}$.
+
+% During this period, there will be $\tilde{q}_{j't}$ unsuccessful attempts to
+% jump to state $j'$, where
+% \begin{equation}
+%   \label{eq:53}
+%   \tilde{q}_{j't} \given z_{t-1} \sim \Pois{\tau_t \pi_{z_{t-1}j'}(1-\phi_{z_{t-1}j'})}
+% \end{equation}
+
+% Define the following additional variables
+% \begin{align}
+%   \label{eq:56}
+%     \mathcal{T}_j &= \{t \given z_{t-1} = j\} \\
+%     q_{jj'} &= \sum_{t \in \mathcal{T}_j}
+%     \tilde{q}_{j't} \\
+%     u_j &= \sum_{t \in \mathcal{T}_j} \tau_t 
+% \end{align}
+% and let $\bQ = (q_{jj'})_{j,j' \geq 1}$ be the matrix of unsuccessful
+% jump attempt counts, and $\bu = (u_j)_{j \geq 1}$ be the vector of
+% the total times spent in each state.
+
+% Since each of the $\tau_t$ with $t \in \mathcal{T}_j$ are
+% i.i.d. $\Exp{T_j}$, we get the marginal distribution
+% \begin{equation}
+% u_j \given \bz, \bpi \btheta \stackrel{ind}{\sim} \Gamm{n_{j\cdot}}{T_j}
+% \end{equation}
+% by the standard property that sums of i.i.d. Exponential distributions
+% has a Gamma distribution with shape equal to the number of variates in
+% the sum, and rate equal to the rate of the individual exponentials.  
+% Moreover, since the $\tilde{q}_{j't}$ with $t \in \mathcal{T}_j$ 
+% are Poisson distributed, the total number of failed
+% attempts in the total duration $u_j$ is
+% \begin{equation}
+%   \label{eq:60}
+%   q_{jj'} \stackrel{ind}{\sim} \Pois{u_j\pi_{jj'}(1-\phi_{jj'})}.
+% \end{equation}
+
+% Thus if we marginalize out the individual $\tau_t$ and
+% $\tilde{q}_{j't}$, we have a joint distribution
+% over $\bz$, $\bu$, and $\bQ$, conditioned on the transition rate
+% matrix $\bpi$ and the success probability matrix $\bphi$, which is
+% \begin{align}
+%   \label{eq:54}
+%   p(\bz, \bu, \bQ \given \bpi, \btheta) &= \left(\prod_{t=1}^T p(z_{t} \given
+%     z_{t-1})\right) \prod_{j} p(u_j \given \bz, \bpi, \btheta)
+%   \prod_{j'} p(q_{jj'} \given u_j \pi_{jj'}, \phi_{jj'}) \\
+%   &= \left(\prod_{t} \frac{\pi_{z_{t-1}z_t}\phi_{z_{t-1}z_t}}{T_{z_{t-1}}}\right) \prod_{j}
+%   \frac{T_j^{n_{j\cdot}}}{\Gamma(n_{j\cdot})} u_j^{n_{j\cdot} - 1}
+%   e^{-T_j u_j} \\ &\qquad\qquad\times
+%   \prod_{j'} e^{-u_j\pi_{jj'}(1-\phi_{jj'})} u_j^{q_{jj'}}
+%   \pi_{jj'}^{q_{jj'}} (1-\phi_{jj'})^{q_{jj'}} (q_{jj'}!)^{-1} \\
+%   &= \prod_{j} \Gamma(n_{j\cdot})^{-1} u_j^{n_{j\cdot} + q_{j\cdot}-1}
+%   \\ &\qquad\qquad \times \prod_{j'}
+%   \pi_{jj'}^{n_{jj'} + q_{jj'}} \phi_{jj'}^{n_{jj'}}
+%   (1-\phi_{jj'})^{q_{jj'}} e^{-\pi_{jj'}\phi_{jj'}u_j}
+%   e^{-\pi_{jj'}(1-\phi_{jj'})u_j} (q_{jj'}!)^{-1} \\
+%   &\label{eq:joint-likelihood} = \prod_{j} \Gamma(n_{j\cdot})^{-1} u_j^{n_{j\cdot} + q_{j\cdot}-1} \prod_{j'}
+%   \pi_{jj'}^{n_{jj'} + q_{jj'}} \phi_{jj'}^{n_{jj'}}
+%   (1-\phi_{jj'})^{q_{jj'}} e^{-\pi_{jj'}u_j} (q_{jj'}!)^{-1}
+% \end{align}
+
+% \subsection{An HDP-HSMM-LT modification}
+% \label{sec:an-hsmm-modification}
+
+% Note that it is trivial to modify the HDP-HMM-LT to allow the
+% number of observations generated each time a state is visited to have
+% a distribution which is not Geometric, by simply fixing the diagonal
+% elements of $\bpi$ to be zero, and allowing $D_t$ observations to be
+% emitted $i.i.d.$ $F(\theta_{z_t})$ at jump $t$, where
+% \begin{equation}
+%   \label{eq:95}
+%   D_t \given \bz \stackrel{ind}{\sim} g(\omega_{z_t}) \qquad \omega_j
+%   \stackrel{i.i.d}{\sim} G
+% \end{equation}
+% The likelihood then includes the additional term for the $D_t$, and
+% the only inference step which is affected is that instead of sampling
+% $\bz$ alone, we sample $\bz$ and the $D_t$ jointly, by defining
+% \begin{equation}
+%   z^*_s = z_{\max\{T \given s \leq \sum_{t=1}^T D_t\}}
+% \end{equation}
+% where $s$ ranges over the number of observations, 
+% and associating a $\by_s$ with each $z^*_s$.
+% Inferences about $\bphi$ are not affected, since the diagonal
+% elements are assumed to be 1 anyway.
+
+% This is the same construction used in the Hierarchical Dirichlet
+% Process Hidden Semi-Markov Model (HDP-HSMM;
+% \cite{johnson2013bayesian}).  
+% Unlike in the standard representation of the HDP-HSMM,
+% however, there is no need to introduce
+% additional auxiliary variables as a result of this modification, due
+% to the presence of the (continuous) durations, $\bu$, which were
+% already needed to account for the normalization of the $\bpi$.
+
+% \subsection{Summary}
+% \label{sec:model-summary}
+
+% I have defined the following augmented generative model for the
+% HDP-H(S)MM-LT:
+% \begin{align}
+%   \label{eq:96}
+%   \bbeta &\sim \mathrm{GEM}(\gamma) \\
+%   \theta_j &\stackrel{i.i.d}{\sim} H \\
+%   \pi_{jj'} \given \bbeta, \btheta &\sim \Gamm{\alpha \beta_{j'}}{1}
+%   \\
+%   z_{t} \given z_{t-1}, \bpi, \btheta &\sim \sum_{j}
+%   \left(\frac{\pi_{z_{t-1}j}\phi_{z_{t-1}j}}{\sum_{j'}
+%     \pi_{z_{t-1}j'}\phi_{z_{t-1}j'}}\right)\delta_j \\
+%   u_j \given \bz, \bpi, \btheta &\stackrel{ind}{\sim}
+%   \Gamm{n_{j\cdot}}{\sum_{j'} \pi_{jj'}\phi_{jj'}} \\
+%   q_{jj'} \given \bu, \bpi, \btheta &\stackrel{ind}{\sim}
+%   \Pois{u_j(1 - \phi_{jj'})\pi_{jj'}} \\
+%   \label{eq:likelihood} \by_t \given \bz, \btheta &\sim F(\theta_{z_t})
+% \end{align}
+
+% If we are using the HSMM variant, then we simply fix $\pi_{jj}$ to 0
+% for each $j$, draw
+% \begin{align}
+%   \label{eq:97}
+%   \omega_j &\stackrel{i.i.d}{\sim} G \\
+%   D_t \given \bz &\stackrel{ind}{\sim} g(\omega_{z_t}),
+% \end{align}
+% for chosen $G$ and $g$, set
+% \begin{equation}
+%   \label{eq:98}
+%   z^*_s = z_{\max\{T \given s \leq \sum_{t=1}^T D_t\}}
+% \end{equation}
+% and replace \eqref{eq:likelihood} with
+% \begin{equation}
+%   \label{eq:likelihood-hsmm} \by_s \given \bz, \btheta \sim F(\theta_{z^*_s})
+% \end{equation}

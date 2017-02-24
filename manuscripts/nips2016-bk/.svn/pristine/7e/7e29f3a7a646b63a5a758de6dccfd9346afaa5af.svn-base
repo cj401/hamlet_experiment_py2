@@ -1,0 +1,592 @@
+%% This BibTeX bibliography file was created using BibDesk.
+%% http://bibdesk.sourceforge.net/
+
+
+%% Created for Clayton Morrison at 2015-03-02 11:58:35 -0700 
+
+
+%% Saved with string encoding Unicode (UTF-8) 
+
+
+
+@inproceedings{virat2011,
+	Date-Added = {2015-03-02 18:58:05 +0000},
+	Date-Modified = {2015-03-02 18:58:35 +0000}}
+
+@article{vishwakarma2013,
+	Author = {S.~Vishwakarma and A.~Agrawal},
+	Date-Added = {2015-03-02 16:18:27 +0000},
+	Date-Modified = {2015-03-02 16:20:57 +0000},
+	Journal = {The Visual Computer},
+	Number = {10},
+	Pages = {983--1009},
+	Title = {A survey on activity recognition and behavior understanding in video surveillance},
+	Volume = {29},
+	Year = {2013}}
+
+@article{aggarwal2011,
+	Author = {J.~K.~Aggarwal and M.~S.~Ryoo},
+	Date-Added = {2015-03-02 16:04:57 +0000},
+	Date-Modified = {2015-03-02 16:06:40 +0000},
+	Journal = {ACM Computing Surveys (CSUR)},
+	Number = {3},
+	Title = {Human activity analysis: A review},
+	Volume = {43},
+	Year = {2011}}
+
+@inproceedings{brau2013,
+	Author = {E.~Brau and J.~Guan and K.~Simek and L.~del~Pero and C.~R.~Dawson and K.~Barnard},
+	Booktitle = {Proceedings of the International Conference on Computer Vision},
+	Date-Added = {2015-03-01 15:56:26 +0000},
+	Date-Modified = {2015-03-01 15:58:19 +0000},
+	Title = {Bayesian 3D tracking from monocular video},
+	Year = {2013}}
+
+@book{gpml2006,
+	Author = {Carl E. Rasmussen and Christopher K. I. Williams},
+	Date-Added = {2015-02-28 22:19:27 +0000},
+	Date-Modified = {2015-02-28 22:20:16 +0000},
+	Publisher = {The MIT Press},
+	Title = {Gaussian Processes for Machine Learning},
+	Year = {2006}}
+
+@inproceedings{morariu2011,
+	Author = {V.~I.~Morariu and L.~S.~Davis},
+	Booktitle = {Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition Conference (CVPR 2011)},
+	Date-Added = {2014-06-02 19:55:18 +0000},
+	Date-Modified = {2014-06-02 19:56:58 +0000},
+	Pages = {3289-96},
+	Title = {Multi-agent event recognition in structured scenarios},
+	Year = {2011}}
+
+@inproceedings{natarajan2008,
+	Author = {S.~Natarajan and H.~H.~Bui and P.~Tadepalli and K.~Kersting and W.~K.~Wong},
+	Booktitle = {Proceedings of the international conference on inductive logic programming (ILP 2006)},
+	Date-Added = {2014-06-02 19:52:46 +0000},
+	Date-Modified = {2014-06-02 19:55:00 +0000},
+	Pages = {192-209},
+	Title = {Logical hierarchical hidden {M}arkov models for modeling user activities},
+	Year = {2006}}
+
+@inproceedings{sadilek2010,
+	Author = {A.~Sadilek and H.~Kautz},
+	Booktitle = {Proceedings of the national conference on artificial intelligence (AAAI 2010)},
+	Date-Added = {2014-06-02 19:50:39 +0000},
+	Date-Modified = {2014-06-02 19:51:54 +0000},
+	Pages = {1134-9},
+	Title = {Recognizing multi-agent activities from {GPS} data},
+	Year = {2010}}
+
+@article{sadilek2012,
+	Author = {A.~Sadilek and H.~Kautz},
+	Date-Added = {2014-06-02 19:45:04 +0000},
+	Date-Modified = {2014-06-02 19:46:56 +0000},
+	Journal = {Journal of Artificial Intelligence Research},
+	Pages = {87-133},
+	Title = {Location-based reasoning about complex multi-agent behavior},
+	Volume = {43},
+	Year = {2012}}
+
+@inproceedings{saria2004,
+	Author = {S.~Saria and S.~Mahadevan},
+	Booktitle = {Proceedings of the international conference on automated planning and scheduling},
+	Date-Added = {2014-06-02 19:43:29 +0000},
+	Date-Modified = {2014-06-02 19:44:52 +0000},
+	Pages = {287-96},
+	Title = {Probabilistic plan recognition in multiagent systems},
+	Year = {2004}}
+
+@inproceedings{masato2011,
+	Author = {D.~Masato and T.~Norman and W.~Vasconcelo and K.~Sycara},
+	Booktitle = {Proceedings of the international joint conference on artificial intelligence (IJCAI 2011)},
+	Date-Added = {2014-06-02 19:41:24 +0000},
+	Date-Modified = {2014-06-02 19:42:53 +0000},
+	Pages = {1402-07},
+	Title = {Agent-oriented incremental team and activity recognition},
+	Year = {2011}}
+
+@inproceedings{sukthankar2006,
+	Author = {G.~Sukthankar and K.~Sycara},
+	Booktitle = {Proceedings of the national conference on artificial intelligence (AAAI 2006)},
+	Date-Added = {2014-06-02 19:38:26 +0000},
+	Date-Modified = {2014-06-02 19:40:22 +0000},
+	Pages = {716-721},
+	Title = {Simultaneous team assignment and behavior recognition from spatio-temporal agent traces},
+	Year = {2006}}
+
+@inproceedings{avrahami2007,
+	Author = {D.~{Avrahami-Zilberbrand} and G.~Kaminka},
+	Booktitle = {Proceedings of the workshop on plan, activity, and intent recogntiion},
+	Date-Added = {2014-06-02 19:35:38 +0000},
+	Date-Modified = {2014-06-02 19:37:22 +0000},
+	Pages = {17-22},
+	Title = {Towards dynamic tracking of multi-agent teams: an initial report},
+	Year = {2007}}
+
+@inproceedings{banerjee2010,
+	Author = {B.~Banerjee and L.~Kraemer and J.~Lyle},
+	Booktitle = {Proceedings of the national conference on artificial intelligence (AAAI 2010)},
+	Date-Added = {2014-06-02 19:24:47 +0000},
+	Date-Modified = {2014-06-02 19:26:16 +0000},
+	Pages = {1059-64},
+	Title = {Mutli-agent plan recognition: formalization and algorithms},
+	Year = {2010}}
+
+@article{sukthankar2011,
+	Author = {G.~Sukthankar and K.~Sycara},
+	Date-Added = {2014-05-31 00:52:07 +0000},
+	Date-Modified = {2014-06-02 19:48:33 +0000},
+	Journal = {ACM Transactions on Intelligent Systems and Technology},
+	Number = {1},
+	Pages = {18:1-18:24},
+	Title = {Activity recognition for dynamic multi-agent teams},
+	Volume = {3},
+	Year = {2011}}
+
+@article{poppe2010,
+	Author = {R.~Poppe},
+	Date-Added = {2014-05-31 00:39:04 +0000},
+	Date-Modified = {2014-05-31 00:40:09 +0000},
+	Journal = {Journal of Image and Vision Computing},
+	Number = {6},
+	Pages = {976-90},
+	Title = {A survey on vision-based human action recongition},
+	Volume = {28},
+	Year = {2010}}
+
+@inproceedings{duong2005,
+	Author = {T.~V.~Duong and H.~H.~Bui and D.~Q.~Phung and S.~Venkatesh},
+	Booktitle = {Proceedings of the IEEE Computer Society Conference on Computer Vision and Pattern Recognition},
+	Date-Added = {2014-05-31 00:23:31 +0000},
+	Date-Modified = {2014-05-31 00:27:54 +0000},
+	Pages = {838-845},
+	Title = {Activity recognition and abnormality detection with the switching hidden semi-{M}arkov model},
+	Year = {2005}}
+
+@article{charniak1993,
+	Author = {E.~Charniak and R.~P.~Goldman},
+	Date-Added = {2014-05-30 23:40:47 +0000},
+	Date-Modified = {2014-05-31 00:27:24 +0000},
+	Journal = {Artificial Intelligence},
+	Number = {1},
+	Pages = {53-79},
+	Title = {A {B}ayesian model of plan recognition},
+	Volume = {64},
+	Year = {1993}}
+
+@book{sukthankar2014,
+	Date-Added = {2014-05-30 23:37:08 +0000},
+	Date-Modified = {2014-05-30 23:38:48 +0000},
+	Editor = {G.~Sukthankar and R.~P.~Goldman and C.~W.~Geib and D.~V.~Pynadath and H.~H.~Bui},
+	Publisher = {Morgan Kaufmann},
+	Title = {Plan, Activity, and Intent Recognition: Theory and Practice},
+	Year = {2014}}
+
+@book{charniak1985,
+	Author = {E.~Charniak and D.~McDermott},
+	Date-Added = {2014-05-30 23:35:08 +0000},
+	Date-Modified = {2014-05-30 23:36:54 +0000},
+	Publisher = {Addison-Wesley},
+	Title = {Introduction to Artificial Intelligence},
+	Year = {1985}}
+
+@inproceedings{lan2012,
+	Author = {T.~Lan and L.~Sigal and G.~Mori},
+	Booktitle = {CVPR},
+	Date-Added = {2014-03-17 22:39:29 +0000},
+	Date-Modified = {2014-03-17 22:40:03 +0000},
+	Title = {Social roles in hierarchical models for human activity recognition},
+	Year = {2012}}
+
+@article{ryoo2009,
+	Author = {M.~S.~Ryoo and J.~K.~Aggarwal},
+	Date-Added = {2014-03-17 22:38:14 +0000},
+	Date-Modified = {2014-03-17 22:41:01 +0000},
+	Journal = {International Journal of Computer Vision},
+	Number = {1},
+	Pages = {1-24},
+	Title = {Semantic representation and recognition of continued and recursive human activities},
+	Volume = {82},
+	Year = {2009}}
+
+@article{ryoo2011,
+	Author = {M.~S.~Ryoo and J.~K.~Aggarwal},
+	Date-Added = {2014-03-17 22:37:09 +0000},
+	Date-Modified = {2014-03-17 22:38:05 +0000},
+	Journal = {International Journal of Computer Vision},
+	Number = {2},
+	Pages = {183-200},
+	Title = {Stochastic representation and recognition of high-level group activities},
+	Volume = {93},
+	Year = {2011}}
+
+@inproceedings{kwak2013,
+	Author = {S.~Kwak and B.~Han and J.~H.~Han},
+	Booktitle = {CVPR},
+	Date-Added = {2014-03-17 22:36:09 +0000},
+	Date-Modified = {2014-03-17 22:37:05 +0000},
+	Title = {Multi-agent event detection: localization and role assignment},
+	Year = {2013}}
+
+@article{geib2009,
+	Author = {C.~W.~Geib and R.~P.~Goldman},
+	Date-Added = {2014-03-17 22:33:14 +0000},
+	Date-Modified = {2014-03-17 22:35:24 +0000},
+	Journal = {Artificial Intelligence},
+	Pages = {1101-1132},
+	Title = {A probabilistic plan recognition algorithm based on plan tree grammars},
+	Volume = {173},
+	Year = {2009}}
+
+@inproceedings{barbu2012,
+	Author = {A.~Barbu and A.~Bridge and Z.~Burchill and D.~Coroian and S.~Dickinson and S.~Fidler and A.~Michaux and S.~Mussman and N.~Siddharth and D.~Salvi and L.~Schmidt and J.~Shangguan and J.~M.~Siskind and J.~Waggoner and S.~Wang and J.~Wei and Y.~Yin and Z.~Zhang},
+	Booktitle = {Proceedings of the 28th Conference on Uncertainty in Artificial Intelligence (UAI)},
+	Date-Added = {2014-03-17 22:07:41 +0000},
+	Date-Modified = {2014-03-17 22:23:47 +0000},
+	Title = {Video in sentences out},
+	Year = {2012}}
+
+@inproceedings{1_choi2012,
+	Author = {W.~Choi and S.~Savarese},
+	Booktitle = {Proceedings of the 12th European Conference on Computer Vision},
+	Pages = {215-230},
+	Title = {A Unified Framework for Multi-Target Tracking and Collective Activity Recognition},
+	Year = {2012}}
+
+@article{2_ryoo2011,
+	Author = {M.~S.~Ryoo and J.~K.~Aggarwal},
+	Journal = {International Journal of Computer Vision},
+	Number = {2},
+	Pages = {183-200},
+	Title = {Stochastic representation and recognition of high-level group activities},
+	Volume = {93},
+	Year = {2011}}
+
+@article{3_lin2010group,
+	Author = {Lin, Weiyao and Sun, Ming-Ting and Poovendran, Radha and Zhang, Zhengyou},
+	Journal = {Circuits and Systems for Video Technology, IEEE Transactions on},
+	Number = {8},
+	Pages = {1057--1067},
+	Publisher = {IEEE},
+	Title = {Group event detection with a varying number of group members for video surveillance},
+	Volume = {20},
+	Year = {2010}}
+
+@inproceedings{4_lan2010beyond,
+	Author = {Lan, Tian and Wang, Yang and Yang, Weilong and Mori, Greg},
+	Booktitle = {Advances in neural information processing systems},
+	Pages = {1216--1224},
+	Title = {Beyond actions: Discriminative models for contextual group activities},
+	Year = {2010}}
+
+@article{5_kaneko2014fully,
+	Author = {Kaneko, Takuhiro and Shimosaka, Masamichi and Odashima, Shigeyuki and Fukui, Rui and Sato, Tomomasa},
+	Journal = {Pattern Recognition Letters},
+	Pages = {109--118},
+	Publisher = {Elsevier},
+	Title = {A fully connected model for consistent collective activity recognition in videos},
+	Volume = {43},
+	Year = {2014}}
+
+@article{6_cheng2014recognizing,
+	Author = {Cheng, Zhongwei and Qin, Lei and Huang, Qingming and Yan, Shuicheng and Tian, Qi},
+	Journal = {Neurocomputing},
+	Pages = {124--135},
+	Publisher = {Elsevier},
+	Title = {Recognizing human group action by layered model with multiple cues},
+	Volume = {136},
+	Year = {2014}}
+
+@inproceedings{7_london2013collective,
+	Author = {London, Ben and Khamis, Sameh and Bach, Stephen H and Huang, Bert and Getoor, Lise and Davis, Larry},
+	Booktitle = {Computer Vision and Pattern Recognition Workshops (CVPRW), 2013 IEEE Conference on},
+	Organization = {IEEE},
+	Pages = {566--571},
+	Title = {Collective Activity Detection using Hinge-loss Markov Random Fields},
+	Year = {2013}}
+
+@inproceedings{8_kwak2011scenario,
+	Author = {Kwak, Suha and Han, Bohyung and Han, Joon Hee},
+	Booktitle = {Computer Vision and Pattern Recognition (CVPR), 2011 IEEE Conference on},
+	Organization = {IEEE},
+	Pages = {3345--3352},
+	Title = {Scenario-based video event recognition by constraint flow},
+	Year = {2011}}
+
+@inproceedings{9_kwak2013,
+	Author = {S.~Kwak and B.~Han and J.~H.~Han},
+	Booktitle = {CVPR},
+	Title = {Multi-agent event detection: localization and role assignment},
+	Year = {2013}}
+
+@inproceedings{10_lan2012,
+	Author = {T.~Lan and L.~Sigal and G.~Mori},
+	Booktitle = {CVPR},
+	Title = {Social roles in hierarchical models for human activity recognition},
+	Year = {2012}}
+
+@incollection{11_khamis2012combining,
+	Author = {Khamis, Sameh and Morariu, Vlad I and Davis, Larry S},
+	Booktitle = {Computer Vision--ECCV 2012},
+	Pages = {116--129},
+	Publisher = {Springer},
+	Title = {Combining per-frame and per-track cues for multi-person action recognition},
+	Year = {2012}}
+
+@incollection{12_amer2012cost,
+	Author = {Amer, Mohamed R and Xie, Dan and Zhao, Mingtian and Todorovic, Sinisa and Zhu, Song-Chun},
+	Booktitle = {Computer Vision--ECCV 2012},
+	Pages = {187--200},
+	Publisher = {Springer},
+	Title = {Cost-sensitive top-down/bottom-up inference for multiscale activity recognition},
+	Year = {2012}}
+
+@inproceedings{13_amer2013monte,
+	Author = {Amer, Mohamed R and Todorovic, Sinisa and Fern, Alan and Zhu, Song-Chun},
+	Booktitle = {Computer Vision (ICCV), 2013 IEEE International Conference on},
+	Organization = {IEEE},
+	Pages = {1353--1360},
+	Title = {Monte carlo tree search for scheduling activity recognition},
+	Year = {2013}}
+
+@inproceedings{14_garate2014group,
+	Author = {Garate, Carolina and Zaidenberg, Sofia and Badie, Julien and Bremond, Fran{\c c}ois},
+	Booktitle = {International Joint Conference on Computer Vision, Imaging and Computer Graphics Theory and Applications},
+	Title = {Group Tracking and Behavior Recognition in Long Video Surveillance Sequences},
+	Year = {2014}}
+
+@inproceedings{15a_tran2013social,
+	Author = {Tran, Khai N and Bedagkar-Gala, Apurva and Kakadiaris, Ioannis A and Shah, Shishir K},
+	Booktitle = {VISAPP (1)},
+	Pages = {539--548},
+	Title = {Social Cues in Group Formation and Local Interactions for Collective Activity Analysis.},
+	Year = {2013}}
+
+@article{15b_tran2014activity,
+	Author = {Tran, KN and Gala, A and Kakadiaris, IA and Shah, SK},
+	Journal = {Pattern Recognition Letters},
+	Pages = {49--57},
+	Publisher = {Elsevier},
+	Title = {Activity analysis in crowded environments using social cues for group discovery and human interaction modeling},
+	Volume = {44},
+	Year = {2014}}
+
+@inproceedings{16_cheng2010group,
+	Author = {Cheng, Zhongwei and Qin, Lei and Huang, Qingming and Jiang, Shuqiang and Tian, Qi},
+	Booktitle = {ICPR},
+	Pages = {3228--3231},
+	Title = {Group Activity Recognition by Gaussian Processes Estimation.},
+	Year = {2010}}
+
+@inproceedings{17_chang2011probabilistic,
+	Author = {Chang, Ming-Ching and Krahnstoever, Nils and Ge, Weina},
+	Booktitle = {Computer Vision (ICCV), 2011 IEEE International Conference on},
+	Organization = {IEEE},
+	Pages = {747--754},
+	Title = {Probabilistic group-level motion analysis and scenario recognition},
+	Year = {2011}}
+
+@inproceedings{18_chang2010group,
+	Author = {Chang, Ming-Ching and Krahnstoever, Nils and Lim, Ser-Nam and Yu, Ting},
+	Booktitle = {AVSS},
+	Pages = {56--63},
+	Title = {Group Level Activity Recognition in Crowded Environments across Multiple Cameras.},
+	Year = {2010}}
+
+@inproceedings{19_amer2011chains,
+	Author = {Amer, Mohamed R and Todorovic, Sinisa},
+	Booktitle = {Computer Vision (ICCV), 2011 IEEE International Conference on},
+	Organization = {IEEE},
+	Pages = {786--793},
+	Title = {A chains model for localizing participants of group activities in videos},
+	Year = {2011}}
+
+@inproceedings{20_zhang2012recognizing,
+	Author = {Zhang, Cong and Yang, Xiaokang and Lin, Weiyao and Zhu, Jun},
+	Booktitle = {Web Intelligence and Intelligent Agent Technology (WI-IAT), 2012 IEEE/WIC/ACM International Conferences on},
+	Organization = {IEEE},
+	Pages = {44--48},
+	Title = {Recognizing Human Group Behaviors with Multi-group Causalities},
+	Volume = {3},
+	Year = {2012}}
+
+@inproceedings{21_choi2011learning,
+	Author = {Choi, Wongun and Shahid, Khuram and Savarese, Silvio},
+	Booktitle = {Computer Vision and Pattern Recognition (CVPR), 2011 IEEE Conference on},
+	Organization = {IEEE},
+	Pages = {3273--3280},
+	Title = {Learning context for collective activity recognition},
+	Year = {2011}}
+
+@inproceedings{22_choi2009they,
+	Author = {Choi, Wongun and Shahid, Khuram and Savarese, Silvio},
+	Booktitle = {Computer Vision Workshops (ICCV Workshops), 2009 IEEE 12th International Conference on},
+	Organization = {IEEE},
+	Pages = {1282--1289},
+	Title = {What are they doing?: Collective activity classification using spatio-temporal relationship among people},
+	Year = {2009}}
+
+@inproceedings{23_zaidenberg2012generic,
+	Author = {Zaidenberg, Sofia and Boulay, Bernard and Bremond, Fran{\c{c}}ois},
+	Booktitle = {Advanced Video and Signal-Based Surveillance (AVSS), 2012 IEEE Ninth International Conference on},
+	Organization = {IEEE},
+	Pages = {136--142},
+	Title = {A generic framework for video understanding applied to group behavior recognition},
+	Year = {2012}}
+
+@inproceedings{24_zhang2012parsing,
+	Author = {Zhang, Cong and Yang, Xiaokang and Zhu, Jun and Lin, Weiyao},
+	Booktitle = {Proceedings of the 20th ACM international conference on Multimedia},
+	Organization = {ACM},
+	Pages = {1085--1088},
+	Title = {Parsing collective behaviors by hierarchical model with varying structure},
+	Year = {2012}}
+
+@inproceedings{25_cheng2011human,
+	Author = {Cheng, Zhongwei and Qin, Lei and Huang, Qingming and Jiang, Shuqiang and Yan, Shuicheng and Tian, Qi},
+	Booktitle = {Proceedings of the 19th ACM international conference on Multimedia},
+	Organization = {ACM},
+	Pages = {1401--1404},
+	Title = {Human group activity analysis with fusion of motion and appearance information},
+	Year = {2011}}
+
+@inproceedings{26_nabi2013temporal,
+	Author = {Nabi, Moin and Del Bue, Alessio and Murino, Vittorio},
+	Booktitle = {Computer Vision Workshops (ICCVW), 2013 IEEE International Conference on},
+	Organization = {IEEE},
+	Pages = {500--507},
+	Title = {Temporal Poselets for Collective Activity Detection and Recognition},
+	Year = {2013}}
+
+@inproceedings{27_zhang2012group,
+	Author = {Zhang, Yimeng and Ge, Weina and Chang, Ming-Ching and Liu, Xiaoming},
+	Booktitle = {Applications of Computer Vision (WACV), 2012 IEEE Workshop on},
+	Organization = {IEEE},
+	Pages = {249--255},
+	Title = {Group context learning for event recognition},
+	Year = {2012}}
+
+@inproceedings{28_zhang2013beyond,
+	Author = {Zhang, Yanhao and Qin, Lei and Yao, Hongxun and Xu, Pengfei and Huang, Qingming},
+	Booktitle = {ICIP},
+	Pages = {3572--3576},
+	Title = {Beyond particle flow: Bag of Trajectory Graphs for dense crowd event recognition.},
+	Year = {2013}}
+
+@inproceedings{29_qin2012interactive,
+	Author = {Qin, Lei and Cheng, Zhongwei and Huang, Qingming and Pang, Junbiao},
+	Booktitle = {Proceedings of the 4th International Conference on Internet Multimedia Computing and Service},
+	Organization = {ACM},
+	Pages = {46--49},
+	Title = {Interactive event detection in crowd scenes},
+	Year = {2012}}
+
+@inproceedings{30_yin2012small,
+	Author = {Yin, Yafeng and Yang, Guang and Xu, Jin and Man, Hong},
+	Booktitle = {Image Processing (ICIP), 2012 19th IEEE International Conference on},
+	Organization = {IEEE},
+	Pages = {2709--2712},
+	Title = {Small group human activity recognition},
+	Year = {2012}}
+
+@incollection{31_li2013new,
+	Author = {Li, Gaojian and Lin, Weiyao and Zhang, Sheng and Wu, Jianxin and Chen, Yuanzhe and Wei, Hui},
+	Booktitle = {Advances in Multimedia Modeling},
+	Pages = {163--173},
+	Publisher = {Springer},
+	Title = {A New Network-Based Algorithm for Human Group Activity Recognition in Videos},
+	Year = {2013}}
+
+@inproceedings{32_kaneko2012viewpoint,
+	Author = {Kaneko, Takuhiro and Shimosaka, Masamichi and Odashima, Shigeyuki and Fukui, Rui and Sato, Tomomasa},
+	Booktitle = {Computer Vision--ECCV 2012. Workshops and Demonstrations},
+	Organization = {Springer},
+	Pages = {253--262},
+	Title = {Viewpoint invariant collective activity recognition with relative action context},
+	Year = {2012}}
+
+@inproceedings{33_odashima2012collective,
+	Author = {Odashima, Shigeyuki and Shimosaka, Masamichi and Kaneko, Takuhiro and Fukui, Rui and Sato, Tomomasa},
+	Booktitle = {Computer Vision--ECCV 2012. Workshops and Demonstrations},
+	Organization = {Springer},
+	Pages = {243--252},
+	Title = {Collective activity localization with contextual spatial pyramid},
+	Year = {2012}}
+
+@article{34_zha2013detecting,
+	Author = {Zha, Zheng-Jun and Zhang, Hanwang and Wang, Meng and Luan, Huanbo and Chua, Tat-Seng},
+	Journal = {Circuits and Systems for Video Technology, IEEE Transactions on},
+	Number = {5},
+	Pages = {856--869},
+	Publisher = {IEEE},
+	Title = {Detecting group activities with multi-camera context},
+	Volume = {23},
+	Year = {2013}}
+
+@incollection{35_todorovic2012human,
+	Author = {Todorovic, Sinisa},
+	Booktitle = {Computer Vision--ECCV 2012},
+	Pages = {130--143},
+	Publisher = {Springer},
+	Title = {Human activities as stochastic kronecker graphs},
+	Year = {2012}}
+
+@incollection{36_zhu2011generative,
+	Author = {Zhu, Guangyu and Yan, Shuicheng and Han, Tony X and Xu, Changsheng},
+	Booktitle = {Advances in Multimedia Modeling},
+	Pages = {1--11},
+	Publisher = {Springer},
+	Title = {Generative group activity analysis with quaternion descriptor},
+	Year = {2011}}
+
+@article{37_liuaqualitative,
+	Author = {Liua, Yiting and Wanga, Shengsheng and Wenb, Changji and Dicksona, Bolou Bolou and Yanga, Juanjuan and Lia, Ruiqing},
+	Journal = {Journal of Information \& Computational Science},
+	Number = {6},
+	Pages = {2003--2010},
+	Title = {Qualitative Spatio-temporal Reasoning Based Group Activity Recognition},
+	Volume = {11},
+	Year = {2014}}
+
+@incollection{38_amer2014hirf,
+	Author = {Amer, Mohamed Rabie and Lei, Peng and Todorovic, Sinisa},
+	Booktitle = {Computer Vision--ECCV 2014},
+	Pages = {572--585},
+	Publisher = {Springer},
+	Title = {HiRF: Hierarchical Random Field for Collective Activity Recognition in Videos},
+	Year = {2014}}
+
+@incollection{39_choi2014discovering,
+	Author = {Choi, Wongun and Chao, Yu-Wei and Pantofaru, Caroline and Savarese, Silvio},
+	Booktitle = {Computer Vision--ECCV 2014},
+	Pages = {417--433},
+	Publisher = {Springer},
+	Title = {Discovering Groups of People in Images},
+	Year = {2014}}
+
+@article{40_noceti2014humans,
+	Author = {Noceti, Nicoletta and Odone, Francesca},
+	Journal = {Pattern Recognition},
+	Number = {11},
+	Pages = {3535--3551},
+	Publisher = {Elsevier},
+	Title = {Humans in groups: The importance of contextual information for understanding collective activities},
+	Volume = {47},
+	Year = {2014}}
+
+@inproceedings{41_niu2004human,
+	Author = {Niu, Wei and Long, Jiao and Han, Dan and Wang, Yuan-Fang},
+	Booktitle = {Multimedia and Expo, 2004. ICME'04. 2004 IEEE International Conference on},
+	Organization = {IEEE},
+	Pages = {719--722},
+	Title = {Human activity detection and recognition for video surveillance},
+	Volume = {1},
+	Year = {2004}}
+
+@inproceedings{42_oh2011large,
+	Author = {Oh, Sangmin and Hoogs, Anthony and Perera, Amitha and Cuntoor, Naresh and Chen, Chia-Chih and Lee, Jong Taek and Mukherjee, Saurajit and Aggarwal, JK and Lee, Hyungtae and Davis, Larry and others},
+	Booktitle = {Computer Vision and Pattern Recognition (CVPR), 2011 IEEE Conference on},
+	Organization = {IEEE},
+	Pages = {3153-3160},
+	Title = {A large-scale benchmark dataset for event recognition in surveillance video},
+	Year = {2011}}

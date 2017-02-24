@@ -1,0 +1,2193 @@
+\documentclass[12pt,letterpaper]{report}
+
+\usepackage{amsmath,amssymb,bm,bbm,upgreek,mathrsfs}
+\usepackage{algorithmic,algorithm}
+\usepackage{graphicx,caption,sidecap,subcaption}
+\usepackage{setspace}
+\usepackage{color}
+\usepackage{tikz}
+\usetikzlibrary{arrows,shapes}
+\usepackage{qtree}
+\usepackage{multirow}
+\usepackage{etoolbox}
+\usepackage{fullpage}
+\usepackage{titling}
+\newcommand{\subtitle}[1]{%
+  \posttitle{%
+    \par\end{center}
+    \begin{center}\large#1\end{center}
+    \vskip0.5em}%
+}
+
+\usepackage[round,authoryear]{natbib}
+
+
+% \captionsetup{subrefformat=parens}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Useful math macros %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% argmax and argmin
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+%% Distributions
+\newcommand{\Norm}[2]{\mathcal{N}(#1,#2)}
+\newcommand{\Unif}{\mathcal{U}}
+\newcommand{\Pois}[1]{\mathcal{P}\mathrm{ois}(#1)}
+\newcommand{\Exp}[1]{\mathcal{E}\mathrm{xp}(#1)}
+\newcommand{\Gamm}[2]{\mathcal{G}(#1,#2)}
+\newcommand{\Bern}[1]{\mathcal{B}\mathrm{ern}\left(#1\right)}
+\newcommand{\Binom}[2]{\mathcal{B}\mathrm{inom}(#1,#2)}
+\newcommand{\Geom}[1]{\mathcal{G}\mathrm{eom}(#1)}
+\newcommand{\Cat}{\mathcal{C}\mathrm{at}}
+\newcommand{\Beta}[2]{\mathcal{B}\mathrm{eta}(#1,#2)}
+\newcommand{\Lapl}{\mathcal{L}\mathrm{aplace}}
+\newcommand{\GP}{\mathcal{GP}}
+\newcommand{\DP}{\mathcal{DP}}
+\newcommand{\CRP}{\mathsf{CRP}}
+
+%% Probability
+\newcommand{\E}[1]{\mathbb{E}[#1]}
+\newcommand{\Cov}[2]{\mathbb{C}\mathrm{ov}(#1,#2)}
+\newcommand{\given}{\, \vert \,}
+
+%% General
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\abs}[1]{\left\vert #1 \right\vert}
+\newcommand{\norm}[1]{\left\vert \left \vert #1 \right\vert \right\vert}
+
+%% Vectors and Matrices
+\newcommand{\bx}{\mathbf{x}}
+\newcommand{\bX}{\mathbf{X}}
+\newcommand{\by}{\mathbf{y}}
+\newcommand{\bY}{\mathbf{Y}}
+\newcommand{\ba}{\mathbf{a}}
+\newcommand{\bA}{\mathbf{A}}
+\newcommand{\bb}{\mathbf{b}}
+\newcommand{\bB}{\mathbf{B}}
+\newcommand{\bc}{\mathbf{c}}
+\newcommand{\bM}{\mathbf{M}}
+\newcommand{\bC}{\mathbf{C}}
+\newcommand{\bQ}{\mathbf{Q}}
+\newcommand{\bl}{\mathbf{l}}
+\newcommand{\bem}{\mathbf{m}}
+\newcommand{\bq}{\mathbf{q}}
+\newcommand{\bz}{\mathbf{z}}
+\newcommand{\bZ}{\mathbf{Z}}
+\newcommand{\bu}{\mathbf{u}}
+\newcommand{\br}{\mathbf{r}}
+\newcommand{\bs}{\mathbf{s}}
+\newcommand{\bw}{\mathbf{w}}
+\newcommand{\bW}{\mathbf{W}}
+\newcommand{\bT}{\mathbf{T}}
+\newcommand{\bth}{\bm\uptheta}
+\newcommand{\bTh}{\bm\Theta}
+\newcommand{\bbeta}{\boldsymbol{\beta}}
+\newcommand{\btheta}{\boldsymbol{\theta}}
+\newcommand{\bpi}{\boldsymbol{\pi}}
+\newcommand{\bphi}{\boldsymbol{\phi}}
+\newcommand{\btau}{\boldsymbol{\tau}}
+\newcommand{\bmu}{\boldsymbol{\mu}}
+\newcommand{\blambda}{\boldsymbol{\lambda}}
+\newcommand{\bSigma}{\boldsymbol{\Sigma}}
+
+%% Sets
+\newcommand{\cA}{\mathcal{A}}
+\newcommand{\cB}{\mathcal{B}}
+\newcommand{\cZ}{\mathcal{Z}}
+\newcommand{\cM}{\mathcal{M}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\title{Modeling and Unsupervised Learning of Structured Similarity Among
+  Source Contexts in Bayesian Hierarchical Infinite Mixture Models}
+\subtitle{With Two Applications to Modeling Natural Language Semantics}
+\author{Colin Reimer Dawson}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\tableofcontents
+
+\doublespacing
+% \onehalfspacing
+
+\begin{abstract}
+In a classical mixture modeling, each data point is modeled as arising
+i.i.d. (typically) from a weighted sum of probability distributions,
+where both the weights and the parameters of the mixture components
+are targets of inference.  When data arises from different sources
+that may not give rise to the same mixture distribution, a
+hierarchical model can allow the source contexts to share components while
+assigning different weights across them (while perhaps coupling the
+weights to ``borrow strength'' across contexts).  The Dirichlet
+Process (DP) Mixture Model (e.g., \citet{rasmussen2000infinite}) is a Bayesian
+approach to mixture modeling which models the data as arising from a countably
+infinite number of components: the Dirichlet Process provides a prior
+on the mixture weights that guards against overfitting.  The Hierarchical 
+Dirichlet Process (HDP) Mixture Model \citep{teh2006hierarchical} employs
+a separate DP Mixture Model for each context, but
+couples the weights across contexts by using a common base measure which is
+itself drawn from a top-level DP.  This coupling is critical to ensure
+that mixture components are reused across contexts.
+For example, in natural language topic modeling, a common application
+domain for mixture models, the components represent semantic topics,
+and the contexts are documents, and it is critical that topics be reused
+across documents.
+
+These models have been widely adopted in Bayesian statistics and
+machine learning.  However, a limitation of DPs is that the atoms
+are {\it a priori} exchangeable, and in the case of HDPs, the
+component weights are independent conditioned on the top-level
+measure.  This is unrealistic in many applications, including topic modeling, where certain
+components (e.g., topics) are expected to correlate across contexts
+(e.g., documents).  In the case of topic modeling, the Discrete
+Infinite Logistic Normal model (DILN; \citet{paisley2011discrete}) addresses
+this shortcoming by associating with each mixture component a latent
+location in an abstract metric, and rescaling each context-specific
+set of weights, initially drawn from an HDP, 
+by an exponentiated draw from a Gaussian Process (GP), so that
+components which are nearby in space tend to have their weights be
+scaled up or down together.  However, inference in this model requires
+the posterior distribution to be approximated by a variational family,
+as MCMC sampling from the exact posterior was deemed intractable.
+Thus, one goal of this dissertation is the development of simple MCMC
+algorithms for HDP models with correlated components.
+
+A second application of HDPs is to time series
+models, in particular Hidden Markov Models (HMMs), where the HDP can be used
+as a prior on a doubly infinite transition matrix for the latent Markov
+chain, giving rise to the HDP-HMM (first developed, as the ``Infinite
+HMM'', by \cite{beal2001infinite}, 
+and subsequently shown to be a case of an HDP by \citet{teh2006hierarchical}).  
+There, the hierarchy is over rows of the transition matrix,
+and the distributions across rows are coupled through a top-level
+Dirichlet Process.  The sequential nature of the problem introduces two
+added wrinkles, namely that: the contexts themselves are random (since
+the context when generating state $t$ is the state at time $t-1$),
+and the set of contexts is the same as the set of components.  Hence,
+not only might the components be correlated with each other via
+locations in some latent space, but we might expect that contexts that
+correspond to correlated components will overall have similar
+distributions.  
+
+In the first part of the dissertation, I will present a formal overview of
+Dirichlet Processes and their various representations, as well as
+associated schemes for tackling the problem of doing approximate inference over an
+infinitely flexible model with finite computational resources.  I will
+then turn to the Hierarchical Dirichlet Process, and review the literature on
+modeling correlations between components.
+
+Next, I will present a novel probabilistic model, which I call the
+Hierarchical Dirichlet Process Hidden Markov Model With Local
+Transitions, which achieves the goal of simultaneously modeling
+correlations between contexts and components by assigning each
+a location in a metric space and promoting transitions between states
+that are near each other.  I present a Gibbs sampling scheme
+for inference in this model, employing an augmented data
+representation to simplify the relevant conditional distributions.  I
+give a intuitive interpretation of the augmented representation by
+casting the discrete time chain as a continuous time chain in which
+durations are not observed, and in which some jump attempts fail and
+are never observed.  By tying the success probability of a jump
+between two states to the distance between them, the first successful
+(and therefore observed) jump is more likely to be to a nearby state.
+I refer to this representation as a Markov Process With Failed Jump
+Attempts.  I test this model on both synthetic and real data,
+including a natural language data set drawn from a corpus of
+biological research articles, in which the goal is inferences about
+the semantic scope of assertions about biological processes implicated
+in cancer (to, e.g., species, organ sites, gene variants, etc.).
+There, the latent states are sets of entities in the scope, and the
+data is raw text.  It is presumed that succesive assertions in a paper
+apply in similar scopes.
+
+% Finally, I present a generative model of natural language phrase
+% structure where the problem is estimation of context-dependent
+% distributions of parse tree symbols, and using that family of
+% distributions to infer, from novel sentences, (1) the best syntactic
+% parse tree, and (2) the semantic context that produced the sentence.  There, ``context''
+% consists of a combination of the surrounding linguistic elements as
+% well as the semantic context.  The chief challenge stems from the huge
+% number of possible contexts, and thus a principled method for tying
+% the contexts based on similarity is needed.  I present two approaches,
+% the first based on a multilevel HDP model, where contexts are
+% hierarchically nested based on shared features, and the second based
+% on an adaptation of a generalization of the Dirichlet Process known as the Distance
+% Dependent Chinese Restaurant Process (ddCRP; \citet{blei2011distance}) to the
+% problem.  Here, rather than nesting the contexts, which requires a
+% predetermined order of precedence among context features, 
+% I assign to each context an uncountably infinite mixture
+% of principal ``topic'' components, where the mixing weights are unique
+% per context, but are {\it a priori} similar across similar
+% contexts.  This is achieved by introducing latent cluster assignment
+% variables, where affiliation to a cluster is biased by similarity to
+% its other members.  I also present a prior, likelihood, and inference algorithm
+% to learn a sparse, cluster-specific similarity function.  I test the model and
+% inference algorithms on a corpus of captioned scenes, where the scenes
+% provide a space of possible semantic contexts for the captions.
+
+\end{abstract}
+
+
+\chapter{A Hierarchical Dirichlet Process Hidden Markov Model With ``Local'' Transitions (HDP-HMM-LT)}
+ I describe a generalization of the Hierarchical Dirichlet Process
+Hidden Markov Model (HDP-HMM; \citet{teh2006hierarchical})
+which introduces a notion of latent similarity between pairs of hidden
+states, such that transitions are a priori more likely to occur between states
+with similar emission distributions.  This is achieved by
+placing a similarity kernel on the space of state parameters, and
+scaling transition probabilities by the similarity between states.  
+I refer to this model as the Hierarchical Dirichlet Process Hidden Markov Model with Local
+Transitions (HDP-HMM-LT).  Although this achieves the goal of selectively increasing the
+probability of transitions between similar states, inference is made
+more complicated since the posterior measure over transition
+distributions is no longer a Dirichlet Process, due to the
+heterogenous scale parameters of the Gamma distributed unnormalized
+weights.  I present an alternative representation of this process that facilitates
+inference by casting the discrete time chain as a continuous time Markov Process
+in which: (1) some jump attempts fail, (2) the probability of success is
+proportional to the similarity between the source and destination
+states, (3) only successful jumps are observed,
+and (4) the time elapsed between jumps, as well as the number of
+unsuccessful jump attempts, are latent variables that are sampled
+during MCMC inference.  By introducing these auxiliary latent variables, all
+conditional distributions in the model are members of an exponential
+family, admitting exact Gibbs sampling,
+with the exception of the parameters of the similarity kernel.
+The choice of similarity kernel is application-specific, but I present
+results for an exponential (a.k.a. Laplacian) similarity kernel with a single decay parameter
+whose conditional posterior density is log-concave, and hence admits
+Adaptive Rejection Sampling \citep{gilks1992adaptive}.
+
+The motivating domain for this model is natural language text, in
+which sentences in a document are arranged in such a way that
+the sets of relevant entities in successive sentences have a high
+degree of overlap, even when they are not identical.  The goal is to model the
+entity set in a sentence using a binary vector, indicating which
+entities are present in the context, and to constrain the dynamics 
+governing latent state transitions so that
+transitions between similar entity sets are {\it a priori} more
+likely, but where the presence or absence of an entity depends on
+the state of multiple entities in the previous sentence.  The latter
+property makes an ordinary factorial HMM undesireable.  
+
+\section{Transition Dynamics in the HDP-HMM}
+\label{sec:transition-dynamics}
+
+The conventional HDP-HMM \citep{teh2006hierarchical} is based on a 
+Hierarchical Dirichlet Process defined as follows:
+
+Each of a countably infinite set of states, indexed by $j$, receives a
+location $\theta_j$ in emission parameter space, $\Omega$, according to 
+base measure $H$.  A top-level
+weight distribution, $\bbeta$, is drawn from a stick-breaking
+process with parameter $\gamma > 0$, so that state $j$ has overall
+weight $\beta_j$, and emission distribution parameterized by $\theta_j$.
+\begin{align}
+\theta_j &\stackrel{i.i.d.}{\sim} H \\
+\bbeta &\sim GEM(\gamma)
+\end{align}
+
+The actual transition distribution from state $j$, denoted by $\bpi_j$
+is then drawn from a DP with concentration $\alpha$ and base measure $\bbeta$:
+\begin{equation}
+  \label{eq:1}
+  \bpi_j \stackrel{i.i.d}{\sim} DP(\alpha \bbeta) \qquad j = 1, 2, \dots
+\end{equation}
+
+The hidden state sequence is then generated according to the $\pi_j$.
+Let $z_t$ be the index of the chain's state at time $t$.  Then we have
+\begin{equation}
+  \label{eq:4}
+  z_t \given z_{t-1}, \bpi_{z_{t-1}} \sim \bpi_{z_{t-1}} \qquad t = 1, 2, \dots, T
+\end{equation}
+where $T$ is the length of the data sequence.
+
+Finally, the emission distribution for state $j$ is a function of
+$\theta_j$, so that we have
+\begin{equation}
+  \label{eq:5}
+  y_t \given z_{t}, \theta_{z_t} \sim F(\theta_{z_t})
+\end{equation}
+
+A shortcoming of this model is that the generative process does not
+take into account the fact that the set of source states is the same
+as the set of destination states: that is, the distribution $\bpi_j$
+has an element which corresponds to state $j$.  Put another way, there
+is no special treatment of the diagonal of the transition matrix, so
+that self-transitions are no more likely {\it a priori} than
+transitions to any other state.  The Sticky HDP-HMM of Fox, et
+al. (2008) addresses this issue by adding an extra mass of $\kappa$ at location $j$ to the base
+measure of the DP that generates $\bpi_j$.  That is, they replace
+\eqref{eq:1} with
+\begin{equation}
+  \label{eq:6}
+  \bpi_j \sim DP(\alpha\bbeta + \kappa \delta_j).
+\end{equation}
+An alternative model is presented by Johnson et al. (2013), wherein 
+state duration distributions are modeled
+separately, and ordinary self-transitions are ruled out.  In both of
+these models, auxiliary latent variables are introduced to simplify
+conditional posterior distributions and facilitate Gibbs sampling.
+However, while both of these models have the useful property that
+self-transitions are treated as ``special'', they contain no notion of
+similarity for pairs of states that are not identical: 
+in both cases, when the transition matrix
+is integrated out, the prior probability of
+transitioning to state $j'$ depends only on the top-level stick
+weight associated with state $j'$, and not on the identity or
+parameters of the previous state $j$.
+
+\section{An HDP-HMM With Local Transitions}
+
+The goal is to add to the transition model the concept of a transition to
+a ``nearby'' state, where nearness of $j$ and $j'$ is possibly a function of
+$\theta_j$ and $\theta_{j'}$.  In order to accomplish this, we first
+consider an alternative construction of the transition distributions,
+based on the Normalized Gamma Process representation of the Dirichlet
+Process \citep{ferguson1973bayesian}.
+
+\subsection{A Normalized Gamma Process representation of the HDP-HMM}
+\label{sec:normalized-gamma}
+
+Define a random measure, $\mu = \sum_{j=1}^{\infty} \pi_j \delta_{\theta_j}$, where 
+\begin{align}
+  \pi_j &\stackrel{ind}{\sim} \Gamm{w_j}{1} \label{eq:17}\\
+  T &= \sum_{j=1}^{\infty} \pi_j \label{eq:18}\\
+  \tilde{\pi}_j &= \frac{\pi_j}{T}   \label{eq:16}\\
+  \theta_j &\stackrel{i.i.d}{\sim} H \label{eq:19}
+\end{align}
+and subject to the constraint that $\sum_{j\geq 1} w_j < \infty$,
+which ensures that $T < \infty$ almost surely.  As
+shown by Paisley et al. (2011), for fixed $\{w_j\}$ and $\{\theta_j\}$, $\mu$ is distributed as a Dirichlet
+Process with base measure $\bw = \sum_{j=1}^{\infty} w_j \delta_{\theta_j}$.
+If we draw $\bbeta$ from a stick-breaking process and then draw a
+series $\{\mu_m\}_{m=1}^M$ of
+i.i.d. random measures from the above process, setting $\bw =
+\alpha\bbeta$ for some $\alpha > 0$, then
+this defines a Hierarchical Dirichlet Process.  If, moreover, there is
+one $\mu_m$ associated with every state $j$, then we obtain the
+HDP-HMM.
+
+We can thus write
+\begin{align}
+  \bbeta &\sim \mathsf{GEM}(\gamma)   \label{eq:20} \\
+  \theta_j &\stackrel{i.i.d.}{\sim} H \label{eq:21}\\
+  \pi_{jj'} &\stackrel{ind}{\sim} \Gamm{\alpha \beta_{j'}}{1} \label{eq:22}\\
+  T_j &= \sum_{j'=1}^{\infty} \pi_{jj'} \\
+  \tilde{\pi}_{jj'} &= \frac{\pi_{jj'}}{T_j} \label{eq:23},
+\end{align}
+where $\gamma$ and $\alpha$ are prior concentration hyperparameters
+for the two DP levels, where
+\begin{align}
+  \label{eq:50}
+  p(z_t \given z_{t-1}, \bpi) = \tilde{\pi}_{z_{t-1}z_t}
+\end{align}
+and the observed data
+$\{y_t\}_{t\geq 1}$ distributed as
+\begin{equation}
+  \label{eq:24}
+  y_t \given z_t \stackrel{ind}{\sim} F(\theta_{z_t})
+\end{equation}
+for some family, $F$ of probability measures indexed by values of $\theta$.
+
+\subsection{Promoting ``Local" Transitions}
+\label{sec:prom-local-trans}
+
+In the preceding formulation, the $\theta_j$ and the $\pi_{jj'}$ are independent
+conditioned on the top-level measure.  Our goal is to relax this
+assumption, in order to allow for prior knowledge
+that certain ``locations'', $\theta_j$, are more likely than others to
+produce large weights.  This can be accomplished by letting the rate
+parameter in the distribution of the $\pi_{jj'}$
+be a function of $\theta_j$ and $\theta_{j'}$.  
+Let $\Phi: \Omega \times \Omega \to [0,\infty)$ represent a
+``similarity function'', and define a collection of random variables
+$\{\phi_{jj'}\}_{j,j' \geq 1}$ according to
+\begin{equation}
+  \phi_{jj'} = \phi(\theta_j, \theta_j')
+\end{equation}
+We can then generalize \eqref{eq:20}-\eqref{eq:23} to
+\begin{align}
+  \bbeta &\sim \mathrm{GEM}(\gamma) \\
+  \theta_j &\stackrel{i.i.d}{\sim} H \\
+  \pi_{jj'} \given \bbeta, \btheta &\sim \Gamm{\alpha \beta_{j'}}{\phi_{jj'}^{-1}} \\
+  T_j &= \sum_{j'=1}^{\infty} \pi_{jj'} \\
+  \tilde{\pi}_{jj'} &= \frac{\pi_{jj'}}{T_j}
+\end{align}
+so that the expected value of $\pi_{jj'}$ is
+$\alpha\beta_{j'}\phi_{jj'}$.  Since a similarity between one object
+and another should not exceed the similarity between an object and
+itself, we will assume that $\phi_{jj'} \leq B < \infty$ for all $j$
+and $j'$, with equality holding iff $j = j'$.  Moreover, there 
+is no loss of generality by taking $B = 1$, since a constant rescaling of
+$\phi_{jj'}$ gets absorbed in the normalization.
+
+The above model is equivalent to simply drawing the $\pi_{jj'}$ as in
+\eqref{eq:20} and scaling each one by $\phi_{jj'}$ prior to
+normalization.
+
+Unfortunately, this formulation complicates inference significantly,
+as the introduction of non-constant rate parameters to the prior on
+$\bpi$ destroys the conjugacy between $\bpi$ and $\bz$, and worse, the
+conditional likelihood function for $\bpi$ contains an infinite
+sum of the elements in a row, rendering all entries within a row
+mutually dependent.
+
+\subsection{The HDP-HMM-LT as a continuous-time 
+Markov Jump Process with ``failed'' jumps}
+\label{sec:dist-based-filt}
+
+We can gain stronger intuition, as well as simplify posterior
+inference, by re-casting the HDP-HMM-LT described in the last section
+as a continuous time Markov Jump Process where some of the attempts to jump
+from one state to another fail, and where the failure probability
+increases as a function of the ``distance'' between the states.
+
+Let $\Phi$ be defined as in the last section, and let 
+$\bbeta$, $\btheta$ and $\bpi$ be defined as in the Normalized Gamma
+Process representation of the ordinary HDP-HMM.  That is,
+\begin{align}
+  \label{eq:beta} \bbeta &\sim \mathrm{GEM}(\gamma) \\
+  \theta_j &\stackrel{i.i.d}{\sim} H \\
+  \pi_{jj'} \given \bbeta, \btheta &\sim \Gamm{\alpha \beta_{j'}}{1}
+\end{align}
+Now suppose that when the process is in state $j$, jumps to state
+$j'$ are made at rate $\pi_{jj'}$.  This defines a continuous-time
+Markov Process where the off-diagonal elements of the transition rate
+matrix are the off diagonal elements of $\bpi$.  In addition,
+self-jumps are allowed, and occur with rate $\pi_{jj}$.   If we only
+observe the jumps and not the durations between jumps, this is an
+ordinary Markov chain, whose transition matrix is obtained by
+appropriately normalizing $\bpi$.  If we do not observe the jumps themselves, but
+instead an observation is generated once per jump from a distribution that depends
+on the state being jumped to, then we have an ordinary HMM.
+
+I modify this process as follows.  
+Suppose that each jump attempt from state $j$ to state $j'$ has a
+chance of failing, which is an increasing function of the ``distance''
+between the states.  In particular, let the success probability be
+$\phi_{jj'}$ (recall that we assumed above that $0 \leq \phi_{jj'}
+\leq 1$ for all $j,j'$).  Then, the rate of successful jumps from $j$
+to $j'$ is $\pi_{jj'}\phi_{jj'}$, and the corresponding rate of unsuccessful jump
+attempts is $\pi_{jj'}(1-\phi_{jj'})$.  To see this, denote by
+$N_{jj'}$ the total number of jump attempts to $j'$ in a unit
+interval of time spent in state $j$.  Since we are assuming the
+process is Markovian, the total number of attempts is $\Pois{\pi_{jj'}}$
+distributed.  Conditioned on $N_{jj'}$, $n_{jj'}$ will be successful, where
+\begin{equation}
+  \label{eq:51}
+  n_{jj'} \given N_{jj'} \sim \Binom{N_{jj'}}{\phi_{jj'}}
+\end{equation}
+It is easy to show (and well known) that the marginal distribution of
+$n_{jj'}$ is $\Pois{\pi_{jj'}\phi_{jj'}}$, and the marginal
+distribution of $\tilde{q}_{jj'} := N_{jj'} - n_{jj'}$ is
+$\Pois{\pi_{jj'}(1-\phi_{jj'})}$.  The rate of successful jumps
+from state $j$ overall is then $T_j := \sum_{j'} \pi_{jj'} \phi_{jj'}$.
+
+Let $t$ index jumps, so that $z_t$ indicates the $t$th state visited
+by the process (couting self-jumps as a new time step).  Given
+that the process is in state $j$ at discretized time $t-1$ (that is,
+$z_{t-1} = j$), it is a standard property of Markov Processes that 
+the probability that the first successful jump is to state $j'$ (that is, $z_{t} = j'$) 
+is proportional to the rate of successful attempts to 
+$j'$, which is $\pi_{jj'}\phi_{jj'}$.  
+
+Let $\tau_{t}$ indicate the time elapsed between the $t$th and 
+and $t-1$th successful jump (where we assume that the first
+observation occurs when the first successful jump from a distinguished initial
+state is made).  We have
+\begin{equation}
+  \label{eq:52}
+  \tau_t \given z_{t-1} \sim \Exp{T_{z_{t-1}}}
+\end{equation}
+where $\tau_t$ is independent of $z_{t}$.
+
+During this period, there will be $\tilde{q}_{j't}$ unsuccessful attempts to
+jump to state $j'$, where
+\begin{equation}
+  \label{eq:53}
+  \tilde{q}_{j't} \given z_{t-1} \sim \Pois{\tau_t \pi_{z_{t-1}j'}(1-\phi_{z_{t-1}j'})}
+\end{equation}
+
+Define the following additional variables
+\begin{align}
+  \label{eq:56}
+    \mathcal{T}_j &= \{t \given z_{t-1} = j\} \\
+    q_{jj'} &= \sum_{t \in \mathcal{T}_j}
+    \tilde{q}_{j't} \\
+    u_j &= \sum_{t \in \mathcal{T}_j} \tau_t 
+\end{align}
+and let $\bQ = (q_{jj'})_{j,j' \geq 1}$ be the matrix of unsuccessful
+jump attempt counts, and $\bu = (u_j)_{j \geq 1}$ be the vector of
+the total times spent in each state.
+
+Since each of the $\tau_t$ with $t \in \mathcal{T}_j$ are
+i.i.d. $\Exp{T_j}$, we get the marginal distribution
+\begin{equation}
+u_j \given \bz, \bpi \btheta \stackrel{ind}{\sim} \Gamm{n_{j\cdot}}{T_j}
+\end{equation}
+by the standard property that sums of i.i.d. Exponential distributions
+has a Gamma distribution with shape equal to the number of variates in
+the sum, and rate equal to the rate of the individual exponentials.  
+Moreover, since the $\tilde{q}_{j't}$ with $t \in \mathcal{T}_j$ 
+are Poisson distributed, the total number of failed
+attempts in the total duration $u_j$ is
+\begin{equation}
+  \label{eq:60}
+  q_{jj'} \stackrel{ind}{\sim} \Pois{u_j\pi_{jj'}(1-\phi_{jj'})}.
+\end{equation}
+
+Thus if we marginalize out the individual $\tau_t$ and
+$\tilde{q}_{j't}$, we have a joint distribution
+over $\bz$, $\bu$, and $\bQ$, conditioned on the transition rate
+matrix $\bpi$ and the success probability matrix $\bphi$, which is
+\begin{align}
+  \label{eq:54}
+  p(\bz, \bu, \bQ \given \bpi, \btheta) &= \left(\prod_{t=1}^T p(z_{t} \given
+    z_{t-1})\right) \prod_{j} p(u_j \given \bz, \bpi, \btheta)
+  \prod_{j'} p(q_{jj'} \given u_j \pi_{jj'}, \phi_{jj'}) \\
+  &= \left(\prod_{t} \frac{\pi_{z_{t-1}z_t}\phi_{z_{t-1}z_t}}{T_{z_{t-1}}}\right) \prod_{j}
+  \frac{T_j^{n_{j\cdot}}}{\Gamma(n_{j\cdot})} u_j^{n_{j\cdot} - 1}
+  e^{-T_j u_j} \\ &\qquad\qquad\times
+  \prod_{j'} e^{-u_j\pi_{jj'}(1-\phi_{jj'})} u_j^{q_{jj'}}
+  \pi_{jj'}^{q_{jj'}} (1-\phi_{jj'})^{q_{jj'}} (q_{jj'}!)^{-1} \\
+  &= \prod_{j} \Gamma(n_{j\cdot})^{-1} u_j^{n_{j\cdot} + q_{j\cdot}-1}
+  \\ &\qquad\qquad \times \prod_{j'}
+  \pi_{jj'}^{n_{jj'} + q_{jj'}} \phi_{jj'}^{n_{jj'}}
+  (1-\phi_{jj'})^{q_{jj'}} e^{-\pi_{jj'}\phi_{jj'}u_j}
+  e^{-\pi_{jj'}(1-\phi_{jj'})u_j} (q_{jj'}!)^{-1} \\
+  &\label{eq:joint-likelihood} = \prod_{j} \Gamma(n_{j\cdot})^{-1} u_j^{n_{j\cdot} + q_{j\cdot}-1} \prod_{j'}
+  \pi_{jj'}^{n_{jj'} + q_{jj'}} \phi_{jj'}^{n_{jj'}}
+  (1-\phi_{jj'})^{q_{jj'}} e^{-\pi_{jj'}u_j} (q_{jj'}!)^{-1}
+\end{align}
+
+\subsection{An HDP-HSMM-LT modification}
+\label{sec:an-hsmm-modification}
+
+Note that it is trivial to modify the HDP-HMM-LT to allow the
+number of observations generated each time a state is visited to have
+a distribution which is not Geometric, by simply fixing the diagonal
+elements of $\bpi$ to be zero, and allowing $D_t$ observations to be
+emitted $i.i.d.$ $F(\theta_{z_t})$ at jump $t$, where
+\begin{equation}
+  \label{eq:95}
+  D_t \given \bz \stackrel{ind}{\sim} g(\omega_{z_t}) \qquad \omega_j
+  \stackrel{i.i.d}{\sim} G
+\end{equation}
+The likelihood then includes the additional term for the $D_t$, and
+the only inference step which is affected is that instead of sampling
+$\bz$ alone, we sample $\bz$ and the $D_t$ jointly, by defining
+\begin{equation}
+  z^*_s = z_{\max\{T \given s \leq \sum_{t=1}^T D_t\}}
+\end{equation}
+where $s$ ranges over the number of observations, 
+and associating a $\by_s$ with each $z^*_s$.
+Inferences about $\bphi$ are not affected, since the diagonal
+elements are assumed to be 1 anyway.
+
+This is the same construction used in the Hierarchical Dirichlet
+Process Hidden Semi-Markov Model (HDP-HSMM;
+\citet{johnson2013bayesian}).  
+Unlike in the standard representation of the HDP-HSMM,
+however, there is no need to introduce
+additional auxiliary variables as a result of this modification, due
+to the presence of the (continuous) durations, $\bu$, which were
+already needed to account for the normalization of the $\bpi$.
+
+\subsection{Summary}
+\label{sec:model-summary}
+
+I have defined the following augmented generative model for the
+HDP-H(S)MM-LT:
+\begin{align}
+  \label{eq:96}
+  \bbeta &\sim \mathrm{GEM}(\gamma) \\
+  \theta_j &\stackrel{i.i.d}{\sim} H \\
+  \pi_{jj'} \given \bbeta, \btheta &\sim \Gamm{\alpha \beta_{j'}}{1}
+  \\
+  z_{t} \given z_{t-1}, \bpi, \btheta &\sim \sum_{j}
+  \left(\frac{\pi_{z_{t-1}j}\phi_{z_{t-1}j}}{\sum_{j'}
+    \pi_{z_{t-1}j'}\phi_{z_{t-1}j'}}\right)\delta_j \\
+  u_j \given \bz, \bpi, \btheta &\stackrel{ind}{\sim}
+  \Gamm{n_{j\cdot}}{\sum_{j'} \pi_{jj'}\phi_{jj'}} \\
+  q_{jj'} \given \bu, \bpi, \btheta &\stackrel{ind}{\sim}
+  \Pois{u_j(1 - \phi_{jj'})\pi_{jj'}} \\
+  \label{eq:likelihood} \by_t \given \bz, \btheta &\sim F(\theta_{z_t})
+\end{align}
+
+If we are using the HSMM variant, then we simply fix $\pi_{jj}$ to 0
+for each $j$, draw
+\begin{align}
+  \label{eq:97}
+  \omega_j &\stackrel{i.i.d}{\sim} G \\
+  D_t \given \bz &\stackrel{ind}{\sim} g(\omega_{z_t}),
+\end{align}
+for chosen $G$ and $g$, set
+\begin{equation}
+  \label{eq:98}
+  z^*_s = z_{\max\{T \given s \leq \sum_{t=1}^T D_t\}}
+\end{equation}
+and replace \eqref{eq:likelihood} with
+\begin{equation}
+  \label{eq:likelihood-hsmm} \by_s \given \bz, \btheta \sim F(\theta_{z^*_s})
+\end{equation}
+
+\section{Inference}
+\label{sec:inference}
+
+I develop a Gibbs sampling algorithm based on the Markov Process with
+Failed Jumps representation, augmenting the data with the duration
+variables $\bu$, the failed jump attempt count matrix, $\bQ$, as well
+as additional auxiliary variables which we will define below.
+In this representation the transition matrix is not modeled
+directly, but is a function of the unscaled transition matrix $\pi$
+and the similarity matrix $\bphi$.  The full set of variables is
+partitioned into three blocks: $\{\gamma, \alpha, \bbeta, \bpi\}$,
+$\{\bz, \bu, \bQ, \Lambda\}$, and $\{\btheta\}$, where $\Lambda$
+represents a set of auxiliary variables that will be introduced
+below.  The variables in each block are sampled jointly 
+conditioned on the other two blocks.
+
+Since we are representing the transition matrix of the Markov chain
+explicitly, we approximate the stick-breaking process that produces
+$\bbeta$ using a finite Dirichlet distribution with a number of 
+components larger than we expect to need, forcing the remaining 
+components to have zero weight.  
+Let $J$ indicate the maximum number of states.  Then,
+we approximate \eqref{eq:beta} with
+\begin{equation}
+  \label{eq:28}
+  \bbeta \given \gamma \sim \mathrm{Dirichlet}(\gamma / J, \dots,
+  \gamma / J)
+\end{equation}
+This distribution converges weakly to the Stick-Breaking Process as $J \to
+\infty$.  In practice, $J$ is large enough when the vast majority of the
+probability mass in $\bbeta$ is allocated to a strict subset of
+components, or when the latent state sequence $\bz$ never uses all $J$
+available states, indicating that the data is well described by a number of
+states less than $J$.
+
+\subsection{Sampling $\bpi$, $\bbeta$, $\alpha$ and $\gamma$}
+\label{sec:sampling-pi}
+
+The joint conditional over $\gamma$, $\alpha$, $\bbeta$ and $\bpi$
+given $\bz$, $\bu$, $\bQ$, $\Lambda$ and $\btheta$ will factor as
+\begin{equation}
+  \label{eq:46}
+  p(\gamma, \alpha, \bbeta, \bpi \given \bz, \bu, \bQ, \Lambda, \btheta) = p(\gamma \given
+  \Lambda) p(\alpha \given \Lambda) p(\bbeta \given \gamma, \Lambda) p(\bpi
+  \given \alpha, \bbeta, \btheta, \bz)
+\end{equation}
+I will derive these four factors in reverse order.
+
+\subsubsection{Sampling $\bpi$}
+
+The entries in $\bpi$ are conditionally independent given $\alpha$ and
+$\bbeta$, so we have the prior
+\begin{equation}
+  \label{eq:47}
+  p(\bpi \given \bbeta, \alpha) = \prod_{j} \prod_{j'}
+  \Gamma(\alpha\beta_{j'})^{-1}
+  \pi_{jj'}^{\alpha\beta_{j'} - 1} \exp(-\pi_{jj'}),
+\end{equation}
+and the likelihood given augmented data $\{\bz, \bu, \bQ\}$ given by
+\eqref{eq:joint-likelihood}.  Combining these, we have
+\begin{equation}
+  \label{eq:61}
+  p(\bpi, \bz, \bu, \bQ \given \bbeta, \alpha, \btheta) =
+  \prod_{j} u_j^{n_{j\cdot} + q_{j\cdot}
+  - 1}\prod_{j'} 
+  \Gamma(\alpha\beta_{j'})^{-1} \pi_{jj'}^{\alpha\beta_{j'} + n_{jj'}
+    + q_{jj'} - 1} e^{-(1 + u_j)
+    \pi_{jj'}} \phi_{jj'}^{n_{jj'}} (1-\phi_{jj'})^{q_{jj'}} (q_{jj'}!)^{-1}
+\end{equation}
+Conditioning on everything except $\bpi$, we get
+\begin{align}
+  \label{eq:24}
+  p(\bpi \given \bQ, \bu, \bZ, \bbeta, \alpha, \btheta) &\propto \prod_j
+  \prod_{j'} \pi_{jj'}^{\alpha\beta_{j'} + n_{jj'} + q_{jj'} - 1}
+  \exp(-(1 + u_j)\pi_{jj'})
+\end{align}
+and thus we see that the $\pi_{jj'}$ are conditionally independent
+given $\bu$, $\bZ$ and $\bQ$, and distributed according to
+\begin{align}
+  \label{eq:25}
+  \pi_{jj'} \given n_{jj'}, q_{jj'}, \beta_{j'}, \alpha \stackrel{ind}{\sim}
+  \Gamm{\alpha\beta_{j'} + n_{jj'} + q_{jj'}}{1 + u_j}
+\end{align}
+
+
+\subsubsection{Sampling $\bbeta$}
+\label{sec:sampling-bbeta}
+
+Consider the conditional distribution of $\bbeta$ having
+integrated out $\bpi$.  The prior density of $\bbeta$ from
+\eqref{eq:28} is
+\begin{equation}
+  \label{eq:62}
+  p(\bbeta \given \gamma) =
+  \frac{\Gamma(\gamma)}{\Gamma(\frac{\gamma}{J})^J} \prod_{j}
+  \beta_j^{\frac{\gamma}{J} - 1}
+\end{equation}
+After integrating out $\bpi$ in \eqref{eq:61}, we have
+\begin{align}
+  p(\bz, \bu, \bQ \given \bbeta, \alpha, \gamma, \btheta) &=
+  \prod_{j=1}^J u_{j} ^{-1}
+  \prod_{j'=1}^J u^{n_{jj'} + q_{jj'} - 1}(1 +
+  u_j)^{-(\alpha\beta_{j'} + n_{jj'} + q_{jj'})}
+  \\
+  &\qquad \qquad \times \frac{\Gamma(\alpha\beta_{j'} + n_{jj'} +
+    q_{jj'})}{\Gamma(\alpha\beta_{j'})} \phi_{jj'}^{n_{jj'}}(1-\phi_{jj'})^{q_{jj'}}
+  (q_{jj'}!)^{-1} \\
+  &= \prod_{j=1}^J \Gamma(n_{j\cdot})^{-1} u_j^{-1}(1+u_j)^{-\alpha}
+  \left(\frac{u_j}{1+u_j}\right)^{n_{j\cdot} + q_{j\cdot}} \\ &\qquad
+  \qquad \times \prod_{j' =
+    1}^J \frac{\Gamma(\alpha\beta_{j'} + n_{jj'} +
+    q_{jj'})}{\Gamma(\alpha\beta_{j'})} \phi_{jj'}^{n_{jj'}}(1-\phi_{jj'})^{q_{jj'}}
+  (q_{jj'}!)^{-1}
+\end{align}
+ where we have used the fact that the $\beta_j$ sum to 1.  Therefore
+\begin{align}
+  p(\bbeta \given \bz, \bu, \bQ, \alpha, \gamma, \btheta) &\propto \prod_{j=1}^J
+  \beta_j^{\frac{\gamma}{J} - 1} \prod_{j'=1}^J \frac{\Gamma(\alpha\beta_{j'} +
+    n_{jj'} + q_{jj'})}{\Gamma(\alpha\beta_{j'})}.
+\end{align}
+
+Following \citep{teh2006hierarchical}, we can write the ratios of Gamma functions
+as polynomials in $\beta_j$, as
+\begin{equation}
+  \label{eq:31}
+  p(\bbeta \given \bz, \bu, \bQ, \alpha, \gamma, \btheta) \propto \prod_{j=1}^J
+  \beta_j^{\frac{\gamma}{J} - 1} \prod_{j'=1}^{J} \sum_{m_{jj'} = 1}^{n_{jj'}}
+  s(n_{jj'} + q_{jj'}, m_{jj'}) (\alpha \beta_{j'})^{m_{jj'}}
+\end{equation}
+where $s(m,n)$ is an unsigned Stirling number of the first kind.
+This admits an augmented data representation, where we introduce a
+random matrix $\bM = (m_{jj'})_{1 \leq j,j' \leq J}$, whose
+entries are conditionally independent given $\bbeta$, $\bQ$ and $\bz$, with
+\begin{equation}
+  \label{eq:32}
+  p(m_{jj'} = m \given \beta_{j'}, \alpha, n_{jj'}, q_{jj'}) =
+  \frac{s(n_{jj'} + q_{jj'}, m) \alpha^{m}
+    \beta_{j'}^{m}}{\sum_{m'=0}^{n_{jj'} + q_{jj'}} s(n_{jj'} +
+  q_{jj'}, m') \alpha^{m'} \beta_{j'}^{m'}}
+\end{equation}
+for integer $m$ ranging between $0$ and $n_{jj'} + q_{jj'}$.  Note
+that $s(n,0) = 0$ if $n > 0$, $s(0,0) = 1$ and $s(0,m) = 0$ if $m > 0$.
+Then, we have joint distribution
+\begin{equation}
+  \label{eq:33}
+  p(\bbeta, \bM \given \bz, \bu, \bQ, \alpha, \gamma, \btheta) \propto \prod_{j=1}^J
+  \beta_j^{\frac{\gamma}{J} - 1} \prod_{j'=1}^{J} s(n_{jj'} + q_{jj'}, m_{jj'}) \alpha^{m_{jj'}} \beta_{j'}^{m_{jj'}}
+\end{equation}
+which yields \eqref{eq:31} when marginalized over $\bM$.  Again discarding
+constants in $\bbeta$ and regrouping yields
+\begin{equation}
+  \label{eq:34}
+  p(\bbeta \given \bM, \bZ, \bu, \btheta, \alpha, \gamma) \propto \prod_{j=1}^J
+  \beta_j^{\frac{\gamma}{J} + m_{\cdot j}- 1}
+\end{equation}
+which is Dirichlet:
+\begin{equation}
+  \label{eq:38}
+  \bbeta \given \bM, \gamma \sim \mathrm{Dirichlet}(\frac{\gamma}{J} +
+  m_{\cdot 1}, \dots, \frac{\gamma}{J} + m_{\cdot J})
+\end{equation}
+
+\subsubsection{Sampling $\alpha$ and $\gamma$}
+\label{sec:sampling-alpha}
+Assume that $\alpha$ and $\gamma$ have Gamma priors, with
+\begin{align}
+  \label{eq:42}
+  p(\alpha) &= \frac{b_{\alpha}^{a_{\alpha}}}{\Gamma(a_{\alpha})}
+  \alpha^{a_{\alpha} - 1} \exp(-b_{\alpha}\alpha) \\
+  p(\gamma) &= \frac{b_{\gamma}^{a_\gamma}}{\Gamma(a_{\gamma})}
+  \gamma^{a_{\gamma - 1}} \exp(-b_{\gamma}\gamma)
+\end{align}
+
+Having integrated out $\bpi$, we have
+\begin{align}
+  p(\bbeta, \bz, \bu, \bQ, \bM \given \alpha, \gamma, \btheta) &=
+  \frac{\Gamma(\gamma)}{\Gamma(\frac{\gamma}{J})^J} \alpha^{m_{\cdot\cdot}} \prod_{j=1}^J \beta_j^{\frac{\gamma}{J} +
+    m_{\cdot j} - 1}\Gamma(n_{j\cdot})^{-1} u_j^{-1}(1+u_j)^{-\alpha}
+  \left(\frac{u_j}{1+u_j}\right)^{n_{j\cdot} + q_{j\cdot}} \\ &\qquad
+  \qquad \times \prod_{j' =
+    1}^J s(n_{jj'} + q_{jj'}, m_{jj'}) \phi_{jj'}^{n_{jj'}}(1-\phi_{jj'})^{q_{jj'}}
+  (q_{jj'}!)^{-1}
+\end{align}
+We can also integrate out $\bbeta$, to yield
+\begin{align}
+  p(\bz, \bu, \bQ, \bM \given \alpha, \gamma, \btheta) &=
+  \alpha^{m_{\cdot\cdot}} e^{-\sum_{j''} \log(1+u_{j''}) \alpha}
+  \frac{\Gamma(\gamma)}{\Gamma(\gamma + m_{\cdot\cdot})} \\ &\qquad
+  \qquad \times \prod_j
+  \frac{\Gamma(\frac{\gamma}{J} + m_{\cdot
+      j})}{\Gamma(\frac{\gamma}{J}) \Gamma(n_{j\cdot})} u_j^{-1}
+  \left(\frac{u_j}{1+u_j}\right)^{n_{j\cdot} + q_{j\cdot}} \\ &\qquad
+  \qquad \times \prod_{j' =
+    1}^J s(n_{jj'} + q_{jj'}, m_{jj'}) \phi_{jj'}^{n_{jj'}}(1-\phi_{jj'})^{q_{jj'}}
+  (q_{jj'}!)^{-1}
+\end{align}
+demonstrating that $\alpha$ and $\gamma$ are independent given $\btheta$
+and the augmented data, with
+\begin{equation}
+  \label{eq:43}
+  p(\alpha \given \bz, \bu, \bQ, \bM, \btheta) \propto
+  \alpha^{a_{\alpha} + m_{\cdot\cdot}}\exp(-(b_\alpha + \sum_{j}\log(1+u_j))\alpha)
+\end{equation}
+and
+\begin{align}
+  \label{eq:8}
+  p(\gamma \given \bz, \bu, \bQ, \bM, \btheta) &\propto \gamma^{a_{\gamma - 1}}
+  \exp(-b_{\gamma}\gamma) \frac{\Gamma(\gamma)\prod_{j=1}^J
+    \Gamma(\frac{\gamma}{J} + m_{\cdot j})}{\Gamma(\frac{\gamma}{J})^J\Gamma(\gamma + m_{\cdot\cdot})}
+\end{align}
+So we see that
+\begin{equation}
+  \label{eq:44}
+  \alpha \given \bz, \bu, \bQ, \bM, \btheta \sim \Gamm{a_{\alpha}
+    + m_{\cdot\cdot}}{b_\alpha + \sum_j\log(1+u_j)}
+\end{equation}
+To sample $\gamma$, we introduce a new set of auxiliary variables, $\br = (r_1, \dots,
+r_j)$ and $t$ with the following distributions:
+\begin{align}
+  \label{eq:9}
+  p(r_j = r \given m_{\cdot j}, \gamma) &=
+  \frac{\Gamma(\frac{\gamma}{J})}{\Gamma(\frac{\gamma}{J}
+    + m_{\cdot j})} s(m_{\cdot j}, r)
+    \left(\frac{\gamma}{J}\right)^r \qquad r  = 1, \dots, m_{\cdot j} \\
+  p(t \given m_{\cdot\cdot} \gamma) &= \frac{\Gamma(\gamma +
+    m_{\cdot\cdot})}{\Gamma(\gamma) \Gamma(m_{\cdot\cdot})} t^{\gamma
+    - 1} (1-t)^{m_{\cdot\cdot} - 1} \qquad t \in (0,1)
+\end{align}
+so that
+\begin{align}
+  \label{eq:10}
+  p(\gamma, \br, t \given \bM) &\propto \gamma^{a_{\gamma - 1}}
+  \exp(-b_{\gamma}\gamma) t^{\gamma - 1}(1-t)^{m_{\cdot\cdot} +
+    q_{\cdot} - 1} \prod_{j=1}^J s(m_{\cdot j} + q_j, r_j)
+  \left(\frac{\gamma}{J}\right)^{r_j}
+\end{align}
+and
+\begin{align}
+  \label{eq:11}
+  p(\gamma \given \br, t) \propto \gamma^{a_\gamma +
+    r_{\cdot} - 1} \exp(-(b_{\gamma} - \log(t)) \gamma),
+\end{align}
+which is to say
+\begin{equation}
+  \label{eq:18}
+  \gamma \given \br, t, \bz, \bu, \bQ, \bM, \btheta \sim \Gamm{a_{\gamma} + r_{\cdot}}{b_{\gamma} - \log(t)}
+\end{equation}
+
+\subsubsection{Summary}
+
+I have made the following additional assumptions about the generative
+model in this section:
+\begin{equation}
+  \label{eq:100}
+  \gamma \sim \Gamm{a_{\gamma}}{b_{\gamma}} \qquad \alpha \sim \Gamm{a_{\alpha}}{b_{\alpha}}
+\end{equation}
+
+The joint conditional over $\gamma$, $\alpha$, $\bbeta$ and $\bpi$
+given $\bz$, $\bu$, $\bQ$, $\bM$, $\br$, $t$ and $\btheta$ factors as
+\begin{equation}
+  \label{eq:46}
+  p(\gamma, \alpha, \bbeta, \bpi \given \bz, \bu, \bQ, \br, t,
+  \btheta) = p(\gamma \given \br, t) p(\alpha \given \bu, \bM) p(\bbeta
+  \given \gamma, \bM) p(\bpi \given \alpha, \bbeta, \bz, \bu, \bQ)
+\end{equation}
+where
+\begin{align}
+  \label{eq:64}
+  \gamma \given \br, t &\sim \Gamm{a_{\gamma} + r_{\cdot}}{b_{\gamma} -
+    \log(t)} \\
+  \alpha \given \bu, \bM &\sim \Gamm{a_{\alpha} +
+    m_{\cdot\cdot}}{b_{\alpha} + \sum_j \log(1 + u_j)} \\
+  \bbeta \given \gamma, \bM &\sim \mathrm{Dirichlet}(\frac{\gamma}{J} + m_{\cdot 1},
+  \dots, \frac{\gamma}{J} + m_{\cdot J}) \\
+  \pi_{jj'} \given \alpha, \beta_{j'}, \bz, \bu, \bQ
+  &\stackrel{ind}{\sim} \Gamm{\alpha\beta_{j'} + n_{jj'} + q_{jj'}}{1 +
+  u_j}
+\end{align}
+
+
+\subsection{Sampling $\bz$ and the auxiliary variables}
+\label{sec:sampling-z_t}
+
+The hidden state sequence, $\bz$, is sampled jointly with the auxiliary
+variables, which consist of $\bu$, $\bM$, $\bQ$, $\br$ and $t$.  The
+joint conditional distribution of these variables is defined directly
+by the generative model:
+\begin{align}
+  \label{eq:19}
+  p(\bz, \bu, \bQ, \bM, \br, t \given \bpi, \bbeta, \alpha, \gamma,
+  \btheta) &= p(\bz \given \bpi, \btheta) p(\bu \given \bz, \bpi, \btheta) p(\bQ \given
+  \bu, \bpi, \btheta) p(\bM \given
+  \bz, \bQ, \alpha, \bbeta) \\
+  &\qquad \times p(\br \given
+  \gamma, \bM) p(t \given \gamma, \bM)
+\end{align}
+Since we are representing the transition matrix explicitly, we can
+sample the entire sequence $\bz$ at once with the forward-backward algorithm,
+as in an ordinary HMM (or, if we are employing the HSMM variant
+described in Sec. \ref{sec:an-hsmm-modification}, then we can use the
+modified message passing scheme for HSMMs described by
+\citet{johnson2013bayesian}).  
+Having done this, we can sample $\bu$, $\bQ$, $\bM$,
+$\br$ and $t$ from their forward distributions.  To summarize,
+we have
+\begin{align}
+  \label{eq:48}
+  u_j \given \bZ, \bpi, \btheta &\stackrel{ind}{\sim}
+  \Gamm{n_{j\cdot}}{\sum_{j'} \pi_{jj'}\phi_{jj'}} \\
+  q_{jj'} \given u_j, \pi_{jj'}, \phi_{jj'} &\stackrel{ind}{\sim}
+  \Pois{u_j(1 - \phi_{jj'})\pi_{jj'}} \\
+  m_{jj'} \given n_{jj'}, q_{jj'}, \beta_{j'}, \alpha &\stackrel{ind}{\sim}
+  \frac{\Gamma(\alpha\beta_j)}{\Gamma(\alpha\beta_j + n_{jj'} +
+    q_{jj'})}\sum_{m=1}^{n_{jj'} + q_{jj'}} s(n_{jj'} + q_{jj'}, m) \alpha^m \beta_{j'}^m \delta_{m}
+  \\
+  r_j \given m_{\cdot j}, \gamma &\stackrel{ind}{\sim}
+  \frac{\Gamma(\frac{\gamma}{J})}{\Gamma(\frac{\gamma}{J} + m_{\cdot
+      j})} \sum_{r=1}^{m_{j\cdot}} s(m_{\cdot j}, r)
+  \left(\frac{\gamma}{J}\right)^r \delta_r \\
+  t \given \gamma, \bM &\sim \Beta{\gamma}{m_{\cdot\cdot}}
+\end{align}
+
+\subsection{Sampling state and emission parameters}
+\label{sec:sampling-eta}
+
+The state parameters, $\btheta$, influence the transition matrix,
+$\bpi$ and the auxiliary vector $q$ through the similarity matrix
+matrix $\bphi$, and also control the emission distributions.
+We have likelihood factors
+\begin{align}
+  \label{eq:65}
+  p(\bz, \bQ \given \btheta) &\propto \prod_{j}\prod_{j'}
+  \phi_{jj'}^{n_{jj'}}(1-\phi_{jj'})^{q_{jj'}} \\
+  p(\bY \given \bz, \btheta) &= \prod_{t=1}^T f(\by_t; \theta_{z_t})
+\end{align}
+where proportionality is with respect to variation in $\btheta$.
+
+The parameter space for the hidden states, 
+the associated prior $H$ on $\btheta$, and the similarity function
+$\Phi$, is application-specific, but we consider here the case where a state,
+$\theta_j$, consists of a finite-length binary vector, motivated by the
+application of inferring the set of relevant entities in each sentence of
+a text document.
+
+Let $\theta_j = (\theta_{j1}, \dots, \theta_{jD})$, with $\theta_{jd} = 1$
+indicating presence of feature $d$ in context state $j$, and
+$\theta_{jd} = 0$ indicating absence.  Of course, in this case,
+the set of possible states is finite, and so on its face it may
+seem that a nonparametric model is unnecessary.  However, if $D$ is
+reasonably large, it is likely that most of the $2^D$ possible states
+are vanishingly unlikely (and, in fact, the number of observations may
+well be less than $2^D$), and so we would like a model that encourages
+the selection of a sparse set of states.  Moreover, there may be more
+than one state with the same $\theta$, but with different transition dynamics.
+
+\subsubsection{Sampling $\btheta$}
+\label{sec:sampling-eta}
+
+In principle, $H$ can be any distribution over binary vectors, but we
+will suppose for simplicity that it can be factored into $D$
+independent coordinate-wise Bernoulli variates.  Let $\mu_d$ be the
+Bernoulli parameter for the $d$th coordinate.
+
+We require a similarity function, $\Phi(\theta_j, \theta_{j'})$, which 
+varies between 0 to 1, and is equal to 1 if and only if $\theta_j =
+\theta_{j'}$.  A natural choice in this setting is the Laplacian kernel:
+\begin{align}
+  \label{eq:39}
+  \phi_{jj'} &= \Phi(\theta_j, \theta_{j'}) = \exp(-\lambda \Delta_{jj'})
+\end{align}
+where $\Delta_{jj'd} = \abs{\theta_{jd} - \theta_{j'd}}$, $\Delta_{jj'} =
+\sum_{d=1}^D \Delta_{jj'}$ is the Hamming
+distance between $\theta_j$ and $\theta_{j'}$,
+and $\lambda \geq 0$ (if $\lambda = 0$, the $\phi_{jj'}$
+are identically 1, and so do not have any influence, reducing the
+model to an ordinary HDP-HMM).
+
+Let
+\begin{align}
+  \label{eq:68}
+  \phi_{jj'-d} &= \exp(-\lambda(\Delta_{jj'} - \Delta_{jj'd}))
+\end{align}
+so that $\phi_{jj'} = \phi_{jj'-d} e^{-\lambda\Delta_{jj'd}}$.
+
+Since the matrix $\bphi$ is assumed to be symmetric, we have
+\begin{align}
+  \label{eq:70}
+  \frac{p(\bz, \bQ \given \theta_{jd}  = 1, \btheta\setminus\theta_{jd}
+    )}{p(\bz, \bQ \given \theta_{jd}  = 0, \btheta\setminus\theta_{jd} )}
+  &\propto \prod_{j' \neq j}
+  \frac{e^{-\lambda(n_{jj'} + n_{j'j})\abs{1 - \theta_{j'd}}}(1 -
+    \phi_{jj'-d} e^{-\lambda\abs{1 - \theta_{j'd}}})^{q_{jj'} +
+      q_{j'j}}}{e^{-\lambda(n_{jj'} + n_{j'j})\abs{\theta_{j'd}}}
+    (1-\phi_{jj'-d}e^{-\lambda\abs{\theta_{j'd}}})^{q_{jj'} +
+      q_{j'j}}} \\
+  &= \label{eq:71} e^{-\lambda(c_{jd0} - c_{jd1})}
+  \prod_{j' \neq j} \left(\frac{1 - \phi_{jj'-d}e^{-\lambda}}{1-\phi_{jj'-d}}\right)^{(-1)^{\theta_{j'd}}(q_{jj'} + q_{j'j})}
+\end{align}
+where $c_{jd0}$ and $c_{jd1}$ are the number of successful jumps to or
+from state $j$, to or from states with a 0 or 1, respectively, in
+position $d$.  That is,
+\begin{equation}
+  \label{eq:72}
+  c_{jd0} = \sum_{\{j' \given \theta_{j'd} = 0\}} n_{jj'} + n_{j'j}\qquad c_{jd1} = \sum_{\{j' \given \theta_{j'd} = 1\}} n_{jj'} + n_{j'j}
+\end{equation}
+
+Therefore, we can Gibbs sample $\theta_{jd}$ from its conditional
+posterior Bernoulli distribution given the rest of $\btheta$, where
+we compute the Bernoulli parameter via the log-odds
+\begin{align}
+  \label{eq:77}
+  &\log\left(\frac{p(\theta_{jd} = 1 \given \bY, \bz, \bQ, \btheta \setminus
+    \theta_{jd})}{p(\theta_{jd} = 0 \given \bY, \bz, \bQ, \btheta
+    \setminus \theta_{jd})}\right) = \log\left(\frac{p(\theta_{jd} =
+  1) p(\bz, \bQ \given \theta_{jd} = 1, \btheta \setminus
+  \theta_{jd}) p(\bY \given \bz, \theta_{jd} = 1, \btheta \setminus \theta_{jd})}{p(\theta_{jd} = 0) p(\bz, \bQ \given \theta_{jd} = 0,
+  \btheta \setminus \theta_{jd}) p(\bY \given \bz, \theta_{jd} = 0,
+  \btheta \setminus \theta_{jd})}\right) \\ & \qquad = \log\left(\frac{\mu_d}{1 - \mu_d}\right)
+  + (c_{jd1} - c_{jd0}) \lambda +
+    \sum_{j' \neq j}
+  (-1)^{\theta_{j'd}}(q_{jj'} + q_{j'j})\log\left(\frac{1 -
+      \phi_{jj'}^{(-d)}e^{-\lambda}}{1-\phi_{jj'}^{(-d)}}\right) \\ &
+  \qquad \qquad + \sum_{\{t \given z_t = j\}} \log\left(\frac{f(\by_t;
+      \theta_{jd} = 1, \theta_j \setminus \theta_{jd})}{f(\by_t;
+      \theta_{jd} = 0, \theta_j \setminus \theta_{jd})}\right)
+\end{align}
+
+Suppose also that the observed data $\bY$ consists of a $T \times K$
+matrix, where the $t$th row $\by_t = (y_{t1}, \dots,
+y_{tK})^{\mathsf{T}}$ is a $K$-dimensional feature vector associated
+with time $t$, and let $\bW$ be a $D \times K$ weight matrix
+with $k$th column $\bw_k$, such that 
+\begin{equation}
+  \label{eq:74}
+  f(\by_t; \theta_j) = g(\by_t; \bW^{\mathsf{T}} \theta_j)
+\end{equation}
+for a suitable parametric function $g$.  I will assume for simplicity
+that $g$ factors as
+\begin{equation}
+  \label{eq:73}
+  g(\by_t; \bW^{\mathsf{T}} \theta_j) = \prod_{k=1}^K g_k(y_{tk}; \bw_k \cdot \theta_j)
+\end{equation}
+Define $x_{tk} = \bw_k \cdot \theta_{z_{t}}$, and
+$x_{tk}^{(-d)} = \bw_k^{-d} \cdot \theta_{z_{t}}^{-d}$, where
+$\theta_{j}^{-d}$ and $\bw_{k}^{-d}$ are $\theta_{j}$ and $\bw_k$, respectively, with
+the $d$th coordinate removed.  Then
+\begin{equation}
+  \label{eq:76}
+  \log\left(\frac{f(\by_t; \theta_{jd} = 1, \theta_j \setminus
+    \theta_{jd})}{f(\by_t; \theta_{jd} = 0, \theta_j \setminus \theta_{jd})}\right) =
+  \sum_{k=1}^K \log\left(\frac {g_k(y_{tk};
+    x_{tk}^{(-d)} + w_{dk})}{g_k(y_{tk};
+    x_{tk}^{(-d)})}\right)
+\end{equation}
+If $g_k(y; x)$ is a Normal density with mean $x$ and unit variance, then
+\begin{equation}
+  \label{eq:91}
+  \log\left(\frac {g_k(y_{tk};
+    x_{tk}^{(-d)} + w_{dk})}{g_k(y_{tk};
+    x_{tk}^{(-d)})}\right) = -w_{dk}(y_{tk} - x_{tk}^{(-d)} + \frac{1}{2}w_{dk})
+\end{equation}
+
+\subsubsection{Sampling $\bmu$}
+\label{sec:sampling-bmu}
+
+Sampling the $\mu_d$ is straightforward with a Beta prior.  Suppose
+\begin{equation}
+  \label{eq:92}
+  \mu_d \stackrel{ind}{\sim} \Beta{a_\mu}{b_\mu}
+\end{equation}
+Then, conditioned on $\btheta$ the $\mu_d$ are independent with
+\begin{equation}
+  \label{eq:93}
+  \mu_d \given \btheta \sim \Beta{a_\mu + \sum_{j} \theta_{jd}}{b_\mu +
+  \sum_{j} (1 - \theta_{jd})}
+\end{equation}
+
+\subsubsection{Sampling $\lambda$}
+\label{sec:sampling-lambda}
+
+The parameter $\lambda$ governs the connection between $\btheta$ and
+$\bphi$.  Writing \eqref{eq:65} in terms of $\lambda$ and the difference matrix
+$\boldsymbol{\Delta} = (\Delta_{jj'})_{1 \leq j,j' \leq J}$ gives
+\begin{equation}
+  \label{eq:88}
+  p(\bz, \bQ \given \lambda, \btheta) \propto \prod_{j}\prod_{j'}
+  e^{-\lambda \Delta_{jj'} n_{jj'}}(1-e^{-\lambda\Delta_{jj'}})^{q_{jj'}} 
+\end{equation}
+Put an $\Exp{b_{\lambda}}$ prior on $\lambda$, so that
+\begin{equation}
+  \label{eq:88}
+  p(\lambda \given \bz, \bQ, \btheta) \propto
+  e^{-(b_{\lambda} + \sum_{j}\sum_{j'} \Delta_{jj'} n_{jj'})\lambda} \prod_{j}\prod_{j'}
+  (1-e^{-\lambda\Delta_{jj'}})^{q_{jj'}}
+\end{equation}
+This density is log-concave, with
+\begin{equation}
+  \label{eq:90}
+  -\frac{d^2\log(p(\lambda \given \bz, \bQ,
+    \btheta))}{d\lambda^2} = \sum_{\{(j,j') \given
+    \Delta_{jj'} > 0\}}
+  \frac{\Delta_{jj'}^2 q_{jj'}
+    e^{\lambda\Delta_{jj'}}}{(e^{\lambda\Delta_{jj'}} - 1)^2} > 0
+\end{equation}
+and so we can use Adaptive Rejection Sampling \citep{gilks1992adaptive}
+to sample from it.  The relevant $h$ and $h'$, representing the log
+density and its first derivative, respectively, are
+\begin{align}
+  \label{eq:94}
+  h(\lambda) &= 
+  -(b_{\lambda} + \sum_{\{(j,j') \given \Delta_{jj'} > 0\}} \Delta_{jj'} n_{jj'})\lambda +
+  \sum_{\{(j,j') \given \Delta_{jj'} > 0\}} q_{jj'} \log(1 - e^{-\lambda\Delta_{jj'}}) \\
+  h'(\lambda) &= -(b_{\lambda} + \sum_{\{(j,j') \given \Delta_{jj'} > 0\}} \Delta_{jj'}
+  n_{jj'}) + \sum_{\{(j,j') \given \Delta_{jj'} > 0\}}
+  \frac{q_{jj'}\Delta_{jj'}}{e^{\lambda\Delta_{jj'}} - 1}
+\end{align}
+
+\subsubsection{Sampling $\bW$}
+
+Conditioned on the state matrix $\btheta$ and the data matrix $\bY$, the weight matrix $\bW$ can be sampled as well using standard methods
+for Bayesian regression problems.  For example, suppose that the
+weights are {\em a priori} i.i.d. Normal:
+\begin{equation}
+  \label{eq:78}
+  p(\bW) = \prod_{k=1}^K\prod_{d=1}^D \mathcal{N}(w_{dk} \given 0,\sigma^2_0)
+\end{equation}
+and the likelihood is
+\begin{equation}
+  \label{eq:79}
+  g_k(y; x) = \mathcal{N}(y \given x,1)
+\end{equation}
+Then it is a standard result from Bayesian linear modeling that
+\begin{equation}
+  \label{eq:80}
+  p(\bW \given \btheta, \bY) = \prod_{k=1}^K
+  \mathcal{N}\left(\left(\sigma_0^2 \mathbf{I} + \btheta^{\mathsf{T}} \btheta
+    \right)^{-1}\btheta^{\mathsf{T}}\by_k, \sigma_0^2 \mathbf{I} + \btheta^{\mathsf{T}} \btheta\right)
+\end{equation}
+
+If one or more output features, say $\by_k$, is binary, we can adopt a
+probit model where we introduce a latent data vector $\by^*_k$ for
+each such $k$, and assume
+\begin{equation}
+  \label{eq:83}
+  p(\by^*_{k} \given \bx_k) = \prod_{t} \mathcal{N}(y^*_{tk} \given x_{tk}, 1)
+\end{equation}
+and 
+\begin{equation}
+  \label{eq:84}
+  y_{tk} = \begin{cases}
+    0,& y^*_{tk} \leq 0 \\
+    1,& y^*_{tk} > 0
+  \end{cases}
+\end{equation}
+And so, after marginalizing over $\by^*_k$
+\begin{equation}
+  \label{eq:81}
+  p(\by_k \given \bx_k) = \prod_{t=1}^T F(x_{tk})^{y_{tk}} (1 - F(x_{tk}))^{1 - y_{tk}}
+\end{equation}
+where $F$ is the standard Normal CDF, since
+\begin{equation}
+  \label{eq:85}
+  \int_{0}^{\infty} dy^*_{tk} \mathcal{N}(y^*_{tk} \given x_{tk}, 1) =
+  \int_{-x_{tk}}^{\infty} dy^*_{tk} \mathcal{N}(y^*_{tk} \given 0, 1)
+  = 1 - F(-x_{tk}) = F(x_{tk})
+\end{equation}
+Then, conditioned on $x_{tk}$ and $y_{tk}$, we can sample $y^*_{tk}$ 
+from a Normal distribution left- or right-truncated at 0:
+\begin{equation}
+  \label{eq:82}
+  p(y^*_{tk} \given x_{tk}, y_{tk}) = \begin{cases}
+    \mathcal{N}(x_{tk}, 1) I(y^{*}_{tk} \leq 0), & y_{tk} = 0 \\
+    \mathcal{N}(x_{tk}, 1) I(y^*_{tk} > 0), & y_{tk} = 1
+  \end{cases}
+\end{equation}
+Conditioned on the $y^*_{tk}$ and $\btheta$, the weights are
+distributed as in \eqref{eq:80}.
+
+\subsubsection{Summary}
+\label{sec:summary}
+
+I have made the following assumptions about the representation of the
+hidden states and observed data in this subsection:
+(1) $\btheta$ consists of $D$ binary features (2) the similarity function $\Phi$
+is the Laplacian kernel with respect to Hamming distance with
+decay parameter $\lambda$, and (3) $\bY$ consists of $K$ continuous or 
+binary features associated with each time step $t$.  In addition, we
+make the following distributional assumptions:
+\begin{align}
+\mu_d &\stackrel{i.i.d}{\sim} \Beta{a_{\mu}}{b_{\mu}} \\
+\lambda &\sim \Exp{b_{\lambda}} \\
+\theta_{jd} \given \bmu &\stackrel{ind}{\sim} \Bern{\mu_d} \\
+\bW &\sim \Norm{0}{\sigma^2_0 \mathbf{I}} \\
+y^*_{tk} \given \bW, \bz, \btheta &\stackrel{ind}{\sim} \Norm{x_{tk}}{1} \\
+y_{tk} &= \begin{cases}
+  y^*_{tk}, & \text{if $k$ is a continuous feature} \\
+  \mathbb{I}(y^*_{tk} > 0) & \text{if $k$ is a binary feature}
+\end{cases}
+\end{align}
+where we have defined
+\begin{align}
+  \label{eq:102}
+  x_{tk} = \bw_k \cdot \theta_{z_t}
+\end{align}
+
+I introduce Gibbs blocks corresponding to (1) each $\theta_{jd}$
+individually, (2) the vector $\bmu$, (3) the decay parameter
+$\lambda$, (4) the weight matrix $\bW$, and (5) the latent data
+$\bY^*$ associated with binary features.  We have
+\begin{align}
+  \label{eq:101}
+  \theta_{jd} \given \btheta \setminus \theta_{jd}, \bz, \bQ, \bmu,
+  \lambda, \bW, \bY^* &\sim
+  \Bern{\frac{e^{\zeta_{jd}}}{1 + e^{\zeta_{jd}}}} \\
+  \mu_d \given \btheta, \dots &\stackrel{ind}{\sim} \Beta{a_\mu + \sum_{j} \theta_{jd}}{b_\mu +
+  \sum_{j} (1 - \theta_{jd})} \\
+p(\lambda \given \bz, \bQ, \btheta, \dots) &\propto e^{-(b_{\lambda} + \sum_{j}\sum_{j'} \Delta_{jj'} n_{jj'})\lambda} \prod_{j}\prod_{j'}
+  (1-e^{-\lambda\Delta_{jj'}})^{q_{jj'}} \\
+  \bw_k \given \btheta, \bY^{*}, \dots &\stackrel{ind}{\sim}
+  \Norm{(\sigma_0^2 \mathbf{I} + \btheta^{\mathsf{T}}
+    \btheta)^{-1}\btheta^{\mathsf{T}}\by^*_k}{\sigma_0^2 \mathbf{I} +
+    \btheta^{\mathsf{T}} \btheta} \\
+  \by^*_{tk} \given \bX, \bY, \dots &\stackrel{ind}{\sim} \begin{cases}
+    \Norm{x_{tk}}{1} \mathbb{I}(y^*_{tk} \leq 0), & y_{tk} = 0 \\
+    \Norm{x_{tk}}{1} \mathbb{I}(y^*_{tk} > 0), & y_{tk}= 1
+  \end{cases}
+\end{align}
+where $\Delta_{jj'} = \norm{\theta_j - \theta_j'}_{L_1}$ and
+\begin{align}
+\zeta_{jd} &= \log\left(\frac{\mu_d}{1 - \mu_d}\right)
+  + (c_{jd1} - c_{jd0}) \lambda +
+    \sum_{j' \neq j}
+  (-1)^{\theta_{j'd}}(q_{jj'} + q_{j'j})\log\left(\frac{1 -
+      \phi_{jj'}^{(-d)}e^{-\lambda}}{1-\phi_{jj'}^{(-d)}}\right)
+  \notag \\ & \qquad - \sum_{\{t \given z_t = j\}} \sum_{k=1}^K
+  w_{dk}(y^*_{tk} - x_{tk}^{(-d)} + \frac{1}{2}w_{dk})
+\end{align}
+All distributions can be sampled from directly except for $\lambda$, which
+requires Adaptive Rejection Sampling, with the equations
+\begin{align}
+  h(\lambda) &= 
+  -(b_{\lambda} + \sum_{\{(j,j') \given \Delta_{jj'} > 0\}} \Delta_{jj'} n_{jj'})\lambda +
+  \sum_{\{(j,j') \given \Delta_{jj'} > 0\}} q_{jj'} \log(1 - e^{-\lambda\Delta_{jj'}}) \\
+  h'(\lambda) &= -(b_{\lambda} + \sum_{\{(j,j') \given \Delta_{jj'} > 0\}} \Delta_{jj'}
+  n_{jj'}) + \sum_{\{(j,j') \given \Delta_{jj'} > 0\}}
+  \frac{q_{jj'}\Delta_{jj'}}{e^{\lambda\Delta_{jj'}} - 1}
+\end{align}
+
+\subsection{Generalization to Categorical-Valued $\theta$}
+If we relax the assumption that the $\theta_j$ are binary vectors and
+instead allow each $\theta_{jd}$ to take on one in an arbitrary set of
+discrete values --- i.e., to be categorically distributed rather than
+Bernoulli distributed --- then the inference steps involving $\theta$
+change somewhat.  
+
+I will continue to assume that the $\Phi$ function
+decays exponentially as a function of the number of component-wise
+differences between a pair of states; that is, $\Delta_{jj'd} = 0$ iff
+$\theta_{jd} = \theta_{j'd}$ and $\Delta{jj'd} = 1$ otherwise,
+$\Delta_{jj'} = \sum_{d} \Delta_{jj'd}$, and
+$\Phi(\theta_{j}\theta_{jj'}) = e^{-\lambda\Delta_{jj'}}$.  Therefore
+the process of sampling $\lambda$ is unchanged.
+
+In place of Beta priors on each $\theta_{jd}$, we use Chinese
+Restaurant Process priors, with concentration parameter
+$\alpha_{d}^{(\theta)}$.  In the case that the number of categorical 
+values is known in advance, this can be replaced by a Dirichlet 
+prior, but I present the more flexible case here.
+
+The weight matrix $\bW$ must be expanded to allow for distinct weights
+associated with each possible value of the $\theta_{jd}$.  Rather than
+the matrix given by $(w_{dk})_{d=1,\dots,D,k=1,\dots,K}$, we now need
+a set of weights, $(w_{sdk})$, where $s$ indexes the categorical
+values that $\theta_{jd}$ can take.  With a CRP prior, there are
+infinitely many $s$.  We can use a ``dummy variable'' representation
+of $\btheta_j$, where we define $S_d$ to be the number of realized
+states for dimension $d$ and a 1 in position $\sum_{d' < d} S_{d'} + s$ indicates that
+$\theta_{jd} = s$.  There will thus be $D$ entries equal to 1, with
+the remaining entries equal to zero.  We can then represent the weight
+matrix $\bW$ as stacked block matrix, where each block is $S_d
+\times K$, and there is one block for each $d$.  In practice we only
+need to instantiate a new block when some $\theta_{jd}$ is assigned to
+a ``new table'' in the CRP metaphor, so that the dimension of $\bW$ is
+$\sum_d S_d \times K$.  Then we have
+\begin{equation}
+  \by^*_{t} \sim \Norm{\bw^{(b)} + \btheta_{z_t}\bW }{\bSigma}
+\end{equation}
+where $\bw^{(b)}$ is a $K$-dimensional bias vector with a separate Normal
+prior, $\bW$ is the weight matrix as defined just above, $z_t$ is the
+state indicator for time $t$, and $\bSigma$ is a $K \times K$ noise covariance matrix.
+
+\subsubsection{Sampling $\btheta$}
+
+As before, the conditional posterior for $\theta_{jd}$ 
+is proportional to the product of three terms: the prior (now a CRP),
+the likelihood of all successful and failed transitions to and from
+state $j$, and the likelihood of the observation sequence.
+
+Under the CRP, the prior probability $P(\theta_{jd} = s)$ is
+proportional to the number of other $j' \neq j$ such that
+$\theta_{j'd} = s$ where this count is positive; and proportional to
+$\alpha_j^{(\theta)}$ otherwise.  Let 
+\begin{equation}
+\tilde{n}^{-j}_{ds} = \sum_{j' \neq j} I(\theta_{jd} = s), \quad s = 1,
+\dots, S_d
+\end{equation}
+be these counts, where we assume that there are $S_d$ distinct values
+taken by the $\theta_{jd}$ for a particular $d$.  Then
+\begin{equation}
+  p(\theta_{jd} = s \given \btheta_{d}^{-j}) \propto
+\begin{cases}
+\tilde{n}^{-j}_{ds} & s = 1, \dots, S_d \\
+\alpha_{d}^{(\theta)} & s = S_d + 1
+\end{cases}
+\end{equation}
+
+The transition component of the likelihood is as in the binary case:
+\begin{align}
+  p(\bz, \bQ \given \theta_{jd}, \btheta_{d}^{-j}) & \propto
+  e^{-\lambda\sum_{j'} \Delta_{jj'} (n_{jj'} + n_{j'j})} \prod_{j'
+    \neq j} (1 - e^{-\lambda\Delta_{jj'} (q_{jj'} + q_{j'j})})\\
+  &\propto e^{-\lambda \sum_{j'} I(\theta_{jd} \neq \theta_{j'd})
+    (n_{jj'} + n_{j'j})} \prod_{j'
+    \neq j} (1 - a\cdot e^{-\lambda I(\theta_{jd} \neq \theta_{j'd}) (q_{jj'} + q_{j'j})})
+\end{align}
+where $a$ is a constant in $\theta_{jd}$, defined as $e^{-\lambda
+  \Delta_{jj'-d} (q_{jj'd} + q_{j'jd})}$.  Taking a log yields
+\begin{equation}
+  \log p(\bz, \bQ \given \theta_{jd}, \btheta_{d}^{-j}) =
+  -\lambda \sum_{\{j':\ \theta_{jd} \neq \theta_{j'd}\}} (n_{jj'} +
+  n_{j'j}) + \sum_{j'
+    \neq j} \log(1 - a\cdot e^{-\lambda I(\theta_{jd} \neq \theta_{j'd}) (q_{jj'} + q_{j'j})})
+\end{equation}
+
+The emission component of the likelihood is given for each $t$ by
+\begin{equation}
+  p(\by_t^* \given \btheta_{z_t}, \bW, \bSigma) \propto \abs{\bSigma}^{-1/2}
+  \exp(-\frac{1}{2} (\by^*_t - \bw^{(b)} -
+  \btheta_{z_t}\bW)^{\sf T}\bSigma^{-1}(\by^*_t - \bw^{(b)} - \btheta_{z_t}\bW))
+\end{equation}
+
+Assuming a diagonal covariance matrix, isolating $\theta_{j,d}$, and
+taking a log, this becomes, for each $k$ and $t$,
+\begin{align}
+  \log p(y_{tk}^* \given \theta_{z_t,d}, \btheta_{z_t}^{-d}, w^{(b)}_k, \sigma^2_k) &=
+   -\frac{1}{2\sigma^2_k} \left(y^*_{tk} -
+      w^{(b)}_k-\btheta_{z_t}\bw_k\right)^2 \\
+  &\propto -\frac{1}{2\sigma^2_k} (\sum_{d'} w_{\theta_{z_td'},d',k} -
+    (y^*_{tk} - w^{(b)}_k))^2 \\
+  &\propto -\frac{1}{2\sigma^2_k}(w_{\theta_{z_td},d,k} - (y^*_{tk} -
+    w^{(b)}_k - \sum_{d' \neq d} w_{\theta_{z_t,d'},d',k}))^2
+\end{align}
+For a particular $j$ and $d$, the full emission log likelihood is a sum of
+terms like the above, over all $t$ such that $z_t = j$.
+
+\subsubsection{Sampling $\bW$}
+Having expanded $\btheta$ to a dummy variable representation, and
+having constructed a stacked block form of $\bW$, we can sample each
+column of $\bW$ from a conditional posterior multivariate Normal just
+as in the binary case.
+
+% \chapter{Two Dirichlet Process Models of Probabilistic Context-Rich Grammars}
+
+% In this chapter, I define a probabilistic generative model of syntactic parse trees, in
+% which the probability of generating a particular symbol at a given
+% position in the tree depends on the context in which it occurs.  In
+% traditional probabilistic context-free grammars (PCFGs), the context
+% affecting the production probability is limited to the immediate
+% parent node in the tree.  Numerous attempts have been made to take
+% into account a richer set of context, including grandparent or sibling
+% nodes.  A particularly successful approach in this vein is that of 
+% \cite{collins1997three,collins2003head}, in which
+% each node has a special child, called the {\em head}, 
+% which is assumed to define the main content of the phrase, and in
+% which nonterminal nodes carry both the word and part-of-speech tag 
+% reached by following the sequence of head children to the leaf level of the tree.
+% These special paths, from phrase nodes to the word nodes, are called
+% {\em spikes}.  The non-head children of a phrase node represent the
+% top of a new spike and are generated conditioned on the enriched
+% (``lexicalized'') representation of their immediate parent, as well as
+% their head sibling.  The benefit of this representation is that
+% symbol productions can incorporate surrounding words into account into
+% their context, or {\it syntactic history}, without
+% violating the acyclic tree-structured factorization of the
+% distribution over parse trees.
+
+% The cost of taking additional context into account is that
+% there will typically be very few or no occurrences of any particular
+% combination in even very large data sets, due to very rapid combinatorial growth
+% arising from the large set of available
+% symbols.  Indeed even very local context can result in data sparsity problems
+% when individual words are part of context.  This data sparsity issue is one of the
+% central problems in the field of natural language processing.
+% A standard solution to the sparsity problem 
+% is to start with maximum likelihood estimates (MLEs) of full conditional
+% probabilities and then incorporate some form of smoothing, where
+% probability mass is borrowed from similar contexts (for a review of
+% canonical smoothing methods, see \cite{chen1999empirical}).  The
+% parser of \cite{collins2003head} uses successive {\it back-off
+% interpolation} steps.  Abstractly, if $f$ is a syntactic feature to be
+% generated in a context $\mathbf{c} = (c_1, c_2, \dots, c_n)$, then
+% back-off smoothing estimates the probability $p(f \vert c_1, \dots,
+% c_n)$ by first ordering the context features in perceived decreasing
+% order of importance, and recursively interpolating.  
+
+% Let $\hat{p}$ the target estimate, let $\tilde{p}$ represent the MLE, 
+% and let $c_0$ be the trivial context.  Collins recursively defines
+% \begin{equation}
+%   \label{eq:3} \hat{p}(f \vert c_1, \dots, c_{n-k}) = \lambda_k
+% \tilde{p}(f \vert c_1, \dots, c_{n-k}) + (1 - \lambda_k) \hat{p}(f
+% \vert c_1, \dots, c_{n-k-1}), \quad k = 0, \dots, n-2
+% \end{equation} where $\hat{p}(f \vert c_1) = \lambda_{n-1}
+% \tilde{p}(f) + (1 - \lambda_{n-1}) \varepsilon$ for a small constant
+% $\varepsilon$.  The smoothing weights, $\lambda_1, \dots,
+% \lambda_{n-1}$ are context-dependent, giving greater weight to
+% contexts that have been observed frequently in training, but giving
+% lower weight to contexts in which many values of $f$ were observed
+% with low frequency (intuitively, this is the situation that requires
+% more smoothing, since there are likely many more rare values of $f$
+% that were not observed).
+
+% This approach has some desireable features: first, it allows
+% contexts to ``borrow strength'' from others that share a prefix, and
+% second, by increasing the degree of borrowing when the symbol
+% distribution in a context has a high degree of diversity, the
+% approach accounts for the asymmetry in the number of observations
+% needed to precisely estimate high- and low-entropy distributions.
+% However, it is nonetheless a heuristic, and does not appear to follow
+% as an optimal estimation strategy in any fully probabilistic model.  A
+% second issue with this approach is that it requires a fixed and
+% prespecified ordering of the context features, and hence, for example, two contexts
+% that share almost all of their features will not be coupled at all if the
+% first feature differs.  Ideally, contexts would be coupled if they
+% share any features, with the relevance of each feature learned from data.
+
+% In the remainder of the dissertation, I have three goals, related to
+% the problem of borrowing strength across related contexts.
+% \begin{enumerate}
+% \item The first goal does not directly concern borrowing strength, but
+%   is motivated by the application of inferring natural language
+%   meaning in addition to structure, and places constraints on the
+%   space of feasible solutions to the borrowing strength problem.  
+%   I will augment the context representation to take
+%   extralinguistic context into account in addition to the syntactic
+%   history; in particular, the
+%   distribution over parse trees will be conditioned on a parallel
+%   ``semantic tree'' containing a propositional representation of the
+%   communicative intent of the sentence.  The inferences involved in
+%   parsing then become a means to the ultimate goal, which is
+%   inferences about what the sentence is about.  The addition of this
+%   added semantic context prohibits solutions to the estimation problem
+%   that rely on observations being equipped with a set of known
+%   covariates (context features), since even if annotated parse trees
+%   are provided in training data, the precise communicative intent will
+%   not be given, and thus must be able to be treated as latent, even
+%   in the training data.
+% \item I will show that something close (though not identical) to the smoothing algorithm
+%   used by Collins and described above arises by using a multi-level Hierarchical Dirichlet
+%   Process as the prior on the conditional symbol distributions, where
+%   contexts are nested in the hierarchy according to shared prefixes.
+% \item I will develop an alternative, non-hierarchical prior on
+%   context-conditional symbol distributions which has the properties that
+%   (1) two distributions are coupled to the extent that they share context
+%   features in general (and not just prefixes) and (2) the importance of particular context
+%   features is learned from data.  I achieve this by representing
+%   each context-specific distribution as a mixture of an uncountably
+%   infinite number of ``topic'' distributions, where
+%   (a) latent topic assignment variables are introduced to simplify
+%   inference, (b) the probability of assignment to a topic is an
+%   increasing function of the total pairwise similarity to existing instances of that
+%   topic, (c) the pairwise similarity function is a weighted function of
+%   the binary vector indicating which positions overlap, and (d) the
+%   weights associated with each position may differ by topic, and 
+%   are themselves a target of inference.
+% \end{enumerate}
+
+% I turn next to addressing these three goals in turn, beginning by
+% defining the syntactic and semantic representations used by the two
+% probabilistic models, and then defining each model and associated
+% inference algorithms.
+
+% \section{Representation of Captions}
+% The models defined in this chapter are motivated by the application of
+% recovering semantic representations from the conjunction of natural
+% language {\it captions} and a representation of a physical {\it
+%   scene}, about which visual images provide independent evidnece.  
+% Given some text, the goal is to recover a semantic
+% representation which can be connected to the physical environment.
+
+% Captions have two layers of latent structure that explain the observed word
+% sequence, $S$.  The first is a propositional, or semantic, {\em
+%   elaboration tree}, $\Psi$, in which each node represents a semantic
+% entity or relation to be expressed in the text.  The second
+% representation is a lexicalized constituency tree, $\Lambda$, adapted from the
+% representation of \citet{collins2003head}.  I describe these two
+% representations in detail next.
+
+% \subsection{Elaboration Trees: $\Psi$}
+
+% To constrain the semantic domain, I will assume that the communicative 
+% goal of the speaker producing a caption is to describe to a listener 
+% a three-dimensional room scene containing furniture and wall hangings,
+% such that the listener may pick out the 
+% same objects and relations in the scene that are the speaker's
+% intended referents of the terms in the caption.  
+
+% Denote the set of objects in the scene representation, including the
+% room itself, by $\mathcal{O}$. 
+% Each object in $\mathcal{O}$ is a candidate to be the focus of a
+% description.  A focal, or
+% {\em target} object, $t \in \mathcal{O}$ can be elaborated by
+% including information about its intrinsic features, 
+% such as color and size, or about its spatial relationship to 
+% other objects in the scene.  For each new object introduced into 
+% the description via a spatial relation, it may in turn be elaborated.
+% These elaborations define a set of recursive grammatical rewrite rules
+% which instantiate an {\em elaboration tree}, which we denote by $\Psi$.
+
+% Each elaboration tree is assumed to have a unary predicate, {\sc
+%   Focus}($t$), at its root.  This predicate has two children: the {\em
+%   relation}, $\rho = \textsc{Focus}$, and the {\em target},
+% $t$, which
+% indicates the object type.  The node $t$ may be rewritten with either
+% a spatial relation subtree, or an attribute subtree.  A {\em spatial
+%   relation} elaboration is a rewrite rule that 
+% transforms the target object, $t$, into a
+% predicate node, $\rho(t, b_1, \dots, b_k)$, with $k+2$ children: one
+% for the relation itself, one for the target object, and one for each
+% of the reference objects used in the description
+% An {\em attribute} elaboration is a
+% rewrite rule that replaces $t$ with a unary predicate node,
+% $\alpha(t)$, with two children: the attribute, $\alpha$ and $t$
+% itself.
+
+% An example of an elaboration tree that might be associated with a
+% sentence about objects in a room is given in
+% Fig. \ref{fig:elaboration-tree}.
+
+% \begin{figure}[t]
+%  {\footnotesize
+%   \Tree [.{\sc Focus}(lamp)
+%             [.T:{\sc front-of}(lamp,bed) 
+%                 H:front-of
+%                 [.T:{\sc on}(lamp,table) 
+%                     H:on
+%                     [.T:lamp(white) H:lamp A:white ] 
+%                     [.B:table() H:table A:NULL ] ]
+%                 [.B:bed(green) H:bed A:green ] ] ]
+% }
+% \caption{A semantic tree that might generate the sentence ``A white
+%   lamp on a table is in front of a green bed.''.  Nodes prefixed by
+%   ``H'' are the ``head'' child of the parent; nodes prefixed by ``T''
+%   are the ``target'' (the primary argument), and nodes prefixed by
+%   ``B'' are the ``base'' (the secondary argument). Nodes prefixed by
+%   ``A'' are attributes.} \label{fig:elaboration-tree}
+% \end{figure}
+
+
+% \subsection{Syntactic Trees: $\Lambda$}
+
+% The nodes in the elaboration tree consist solely of semantic concepts
+% and predicates.  All linguistic information is contained in a
+% {\em syntactic tree}, $\Lambda$.  I first describe the 
+% representation used by \cite{collins2003head}, and then describe
+% how this representation is augmented to incorporate information from the
+% elaboration tree.
+
+% The trees in \cite{collins2003head} and related work consist of nodes
+% representing syntactic constituents, labeled by Penn Treebank symbols
+% \citep{marcus1993building}.  Each node has a special child, called the
+% {\em head}, which is assumed to define the main content of the phrase.
+% For example, verb phrases (VPs) typically have a verb as their head; noun
+% phrases have nouns or perhaps other noun phrases; etc.  A path from
+% any constituent to the word level, called a {\em spike}, 
+% can always be defined by iteratively descending to the head child 
+% until a single word is reached.  Each node in the tree carries with it
+% the identities of the word and part-of-speech tag at the end of its
+% respective spike.  The non-head children of a phrase node are called
+% {\em modifiers}, and represent the top of a new spike.  Proceeding
+% from the root to the leaves, there are three types of productions, or
+% {\em events}:
+% (1) {\em root events}, in which the top level constituent label,
+% along with its associated head word and tag, is generated, (2) {\em
+%  unary events}, in which a head child acquires a label (inheriting
+% the word and tag from the parent), and (3) {\em modifier events}, in
+% which children are generated to the left and right of the head,
+% receiving a label, tag and word (the latter two of which are passed to
+% its own head child).  Eventually, each spike of unary events generates
+% a part-of-speech tag as the label, which terminates the spike.  An
+% example syntactic tree is shown in Fig. \ref{fig:parse-tree}.
+
+% \begin{figure}[t]
+%  {\footnotesize
+%   \Tree [.S(VBZ,is)
+%             [.NP(NN,lamp) 
+%                 [.*NPB(NN,lamp) [.det(a) a ] [.JJ(JJ,white) white ] [.*NN(NN,lamp) lamp ] ]
+%                 [.PP(IN,on) [.*IN(on) on ] [.NPB(NN,table) [.det(det,a) a ] [.*NN(NN,table) table ] ] ] ]
+%             [.*VP(VBZ,is) ... ] ]
+% }
+
+% {\footnotesize
+%  \Tree [.... [.*VP(VBZ,is)
+%                  [.*VBZ(VBZ,is) is ]
+%                  [.PP(IN,in)
+%                      [.*IN(IN,in) in ]
+%                      [.NP(NN,front) 
+%                          [.*NPB(NN,front) [.NN(NN,front) front ] ]
+%                          [.PP(IN,of) 
+%                              [.*IN(IN,of) of ]
+%                              [.NPB(NN,bed) [.det(det,a) a ] [.JJ(JJ,green) green ] [.*NN(NN,bed) bed ] ] ] ] ] ] ]}
+                
+%   \caption{A parse tree for the example sentence.  Each node has the
+%     form LABEL(TAG,Word).  Asterisks indicate nodes that are the head
+%     child of their parent.  All other nodes are ``modifiers''.  Each nonterminal node is the start of a
+%     ``spike'', which is obtained by iteratively descending to the head child.}
+%   \label{fig:parse-tree}
+% \end{figure}
+
+% This basic model is extended by adding semantic content from the
+% elaboration tree to each node, in addition to its label, tag, word
+% triple.  We assume each node is associated with zero or one nodes from
+% the elaboration tree; that is, that there is a function from the set
+% of nodes in $\Lambda$ to the set of nodes in $\Psi$ plus a {\em null
+%   elaboration} node.  Further, we make a continuity assumption, which
+% requires that every subtree in $\Lambda$ maps to a subtree
+% in $\Psi$ (or to the null elaboration), 
+% and we assume that the root of $\Lambda$ maps to the root of $\Psi$.
+% As a result of these assumptions, $\Lambda$ together with the set of
+% associations can be generated by specifying, for each child node in
+% $\Lambda$, whether its associated node in $\Psi$ will be (1) the null
+% node, (2) the same as its parent, or (3) a child of the semantic
+% node associated with its parent.  Moves to children are further 
+% categorized as moves to the ``head'', the ``target'',
+% the ``base'', or an ``attribute'' (see
+% Fig. \ref{fig:elaboration-tree}.  We call these decisions {\em
+% semantic step events}, and distinguish two event types: {\em head semantic
+% steps}, which determine the semantic association of head children,
+% and {\em modifier semantic steps}, which determine the association of
+% non-head children.  Figure \ref{fig:augmented-tree} depicts an
+% augmented representation in which each node in the parse tree in Fig. \ref{fig:parse-tree} is
+% associated with a node from the elaboration tree in
+% Fig. \ref{fig:elaboration-tree}.
+
+% \begin{figure}[t]
+%  {\footnotesize
+%    \Tree [.S(VBZ,is,{\sc front}(lamp\ bed)) ... ... ]
+% }
+% {\footnotesize
+%   \Tree 
+%            [.... [.NP(NN,lamp,{\sc ON}(lamp\ table)) 
+%                      [.*NPB(NN,lamp,{\sc lamp}(white)) 
+%                          [.det(det,a,$\emptyset$) a ] 
+%                          [.JJ(JJ,white,{\sc white}) {\sc white} ] 
+%                          [.*NN(NN,lamp,{\sc lamp}) {\sc lamp} ] ]
+%                      [.PP(IN,on,{\sc ON}(lamp\ table)) 
+%                          [.*IN(IN,on,{\sc ON}) on ] 
+%                          [.NPB(NN,table,{\sc table}()) 
+%                              [.det(det,a,$\emptyset$) a ] 
+%                              [.*NN(NN,table,{\sc table}) table ] ] ] ] ]
+% }
+
+% {\footnotesize
+%  \Tree [.... [.*VP(VBZ,is,{\sc front}(lamp\ bed))
+%                  [.*VBZ(VBZ,is,{\sc front}(lamp\ bed)) is ]
+%                  [.PP(IN,in,{\sc front}(lamp\ bed))
+%                      [.*IN(IN,in,{\sc front}) in ]
+%                      [.NP(NN,front,{\sc front}(lamp\ bed))
+%                          [.*NPB(NN,front,{\sc front})
+%                          [.NN(NN,front,{\sc front}) front ] ] 
+%                          [.... ] ] ] ] ]
+%                        }
+
+% {\footnotesize
+%   \Tree [.... [.PP(IN,of,{\sc front}(lamp\ bed))
+%                   [.*IN(IN,of,{\sc front}) of ]
+%                   [.NPB(NN,bed,{\sc bed}(green)) 
+%                       [.det(det,a,$\emptyset$) a ] 
+%                       [.JJ(JJ,green,{\sc green}) green ] 
+%                       [.*NN(NN,bed,{\sc bed}) bed ] ] ] ]
+% }
+                
+%   \caption{A parse tree for the example sentence augmented with
+%     semantic information.  Nodes have the form LABEL(TAG, WORD, PREDICATE(args))}
+%   \label{fig:augmented-tree}
+% \end{figure}
+
+
+% \subsection{Representation of Context}
+% \label{sec:context-representation}
+
+% A syntactic tree, $\Lambda$, is generated via a sequence of
+% contextualized production events.
+% There are five types of productions, three of which --- {\em root
+%   events}, {\em unary events}, and {\em modifier events} --- 
+% generate syntactic symbols, and two of which --- {\em head semantic
+%   steps} and {\em modifier semantic steps} --- determine associations
+% between syntactic constituents and nodes in the elaboration tree,
+% $\Psi$.
+
+% Following \citet{collins2003head}, the probability of each event
+% depends on a set of discrete-valued {\em history} features,
+% corresponding to the outcomes of a subset of previous events.  We add
+% to the conditioning set features from the semantic nodes associated
+% with nearby syntactic constituents.  With the exception of the {\em
+%   root} and {\em modifier} events, each event type produces a single
+% categorical feature.  The {\em root} and {\em modifier} events
+% each produce a word, $w$, a part-of-speech tag, $t$, and a constituent
+% label, $l$.  As in \citet{collins2003head}, we employ the
+% factorization
+% \begin{equation}
+%   \label{eq:2}
+%   P_{\mathrm{root}}(w,t,l\given H) = P_{\mathrm{root}}(t,l \given H)
+%   P_{\mathrm{root}}(w \given t,l,H),
+% \end{equation}
+% where $H$ represents the relevant set of history features.  We employ
+% the analogous factorization of $P_{\mathrm{modifier}}(w,t,l\given
+% H)$.  Collectively, the full set of conditional event probabilities
+% constitutes the parameter set $\theta_{\Lambda}$.
+
+% For each event type, the set of history features included at each
+% smoothing level in Collins' recursive definition is listed in table \ref{tab:event-definitions}.
+
+% \begin{table}\centering
+% \begin{tabular}[h]{|c|c|c|c|c|c|} \hline
+%   \multirow{2}{*}{{\bf type}} & \multirow{2}{*}{{\bf generated}} & \multicolumn{4}{|c|}{{\bf conditioned on}} \\ \cline{3-6}
+%   & & Level 0 & Level 1 & Level 2 & Level 3 \\ \hline
+%   root1 & $l$, $t$ & $s$ & $sa$ & & \\ \hline
+%   root2 & $w$ & $t$, $s$ & $l$ & $sa$ & \\ \hline
+%   head-sem & $s$, $sa$ & $s_p$, $l_p$ & $t_h$, $sa_p$ & $w_h$ & \\ \hline
+%   unary & $l$ & $s$, $l_p$ & $s_p$, $t_h$, $sa_h$ & $sa_p$ &
+%   $w_p$ \\ \hline
+%   mod-sem & $s$, $sa$ & $s_p$, $l_p$ & $s_h$, $l_h$, $dist$ & $t_h$, $sa_p$, $sa_h$ & $w_h$ \\ \hline
+%   mod1 & $l$, $t$ & $l_p$, $s$ & $l_h$, $s_p$, $s_h$, $dist$ & $t_h$, $sa_m$, $sa_p$, $sa_p$ & $w_h$ \\ \hline
+%   mod2 & $w$ & $t$, $s$ & $l$, $l_p$, $l_h$, $s_p$, $s_h$, $dist$ & $t_h$, $sa_m$, $sa_p$, $sa_h$ & $w_h$ \\ \hline
+% \end{tabular}
+% \caption{Features included in each event type.  The features $l$, $t$ and $w$ denote constituent label, part-of-speech tag, and word, respectively.  The $s$ and $sa$ features represent the head and arguments, respectively, of a semantic elaboration node.  The $dist$ feature for modifier events is Collins' distance feature, which specifies (a) whether a modifier is on the left or right of the head, (b) whether the modifier is adjacent to the head, and (c) whether there is a verb contained in any constituent between the modifier and the head.  Features without subscripts refer to the constituent currently being generated; features with the subscript $p$ refer to the parent constituent, and features with the subscript $h$ refer to the sister head constituent.}
+% \label{tab:event-definitions}
+% \end{table}
+
+% \section{Heuristic Smoothing}
+
+% In \citet{collins2003head}, the conditional event distributions are
+% estimated from training data by successive back-off smoothing of the
+% MLEs (i.e., empirical conditional proportions).  Let $p(x | H)$ be a desired conditional
+% probability of generating event $x$ given the full history $H$.  
+% Let $\beta_k$, $k = 0, \dots, K$ be a set of ``abstraction functions'' 
+% such that $\beta_k(H)$ maps a context $H$ to a context equivalence
+% class which is more general (i.e., the set of contexts sharing a
+% prefix with $H$), and let $\beta_K(H) = H$. Denote the maximum 
+% likelihood estimate of $p(x | \beta_k(B))$ by $\hat{p}(x \vert \beta_k(B))$.  Collins recursively sets
+% \begin{equation}
+%   \label{eq:smoothing-recursion}
+%   p(x | \beta_k(H)) = \lambda_k \hat{p}(x \vert \beta_k(H)) 
+%         + (1 - \lambda_k) p(x | \beta_{k-1}(H))
+% \end{equation}
+% where the $\lambda_k$ are smoothing weights, and
+% \begin{equation}
+%   \label{eq:smoothing-base-case}
+%   p(x | \beta_0(H)) = \lambda_0\hat{p}(x | \beta_0(H)) + (1 - \lambda_0) \varepsilon
+% \end{equation}
+% for a small constant $\varepsilon$.
+
+% The smoothing weights are context-sensitive, and defined to be
+% \begin{equation}
+%   \label{eq:lambda-definition}
+%   \lambda_k(H) = \frac{n_k(H)}{n_k(H) + \gamma u_k(H)}
+% \end{equation}
+% where $n_k(H)$ is the number of training instances of context
+% $\beta_k(H)$, $u_k(H)$ is the number of distinct values of $x$ 
+% observed following context $\beta(H)$ (called the {\em
+%   diversity} of $\beta(H)$) and $\gamma$ is a global
+% smoothing parameter controlling the degree to which the final
+% probability estimates differ from their maximum likelihood estimates. 
+
+% \section{An HDP Model of Context-Conditional Event Distributions}
+% \label{sec:hdp-smoothing}
+
+% We wish to define a fully generative model so
+% that we will have a well defined joint posterior distribution over the parameters of
+% the grammar, so that we can justify our estimate in probabilistic
+% terms, and so that we can incorporate the grammar model in a larger
+% model of scenes and captions.  Happily, something very close to 
+% Collins' smoothing equations can be derived
+% as the predictive distribution under a reasonable probabilistic model,
+% namely a Hierarchical Dirichlet Process (HDP)
+% \cite{teh2006hierarchical}, and hence can be used with minimal
+% alteration in Gibbs sampling.
+
+% Let $x$ as above represent a particular outcome of an event.  Let
+% $x \given \beta_0(H) \sim \pi_{\beta_0(H)}$, where $\pi_{\beta_0(H))}$
+% is a distribution over all outcomes available for the event in question.  If we
+% define a Dirichlet Process ({\sf DP}) prior on $\pi_{\beta_0(H)}$, 
+% with concentration parameter $\alpha_0$ and base measure $\pi$, then having 
+% observed $n_0(H)$ events with history
+% $\beta_0(H)$, whose values are represented by $\bx_{\beta_0(H)}$, such that
+% $n_0(x,H)$ of them had outcome $x$,
+% the predictive distribution of the next event (integrating out
+% $\pi_{\beta_0(H)}$) is given by
+% \begin{equation}
+%   \label{eq:3}
+%   p(x\given \beta_0(H), \bx_{\beta_0(H)}) = \frac{n_0(H)}{n_0(H) + \alpha_0}
+%   \frac{n_0(x,H)}{n_0(H)} + \frac{\alpha_0}{n_0(H) +
+%     \alpha_0} \pi(x),
+% \end{equation}
+% (see \citet{teh2006hierarchical} for a derivation).  This is the Chinese
+% Restaurant Process ({\sf CRP}), in which each event (``customer'') 
+% ``sits at the table'' associated with a 
+% previous customer, with probability proportional
+% to the number people already sitting there, and ``starts a new table'' with 
+% probability proportional to a concentration parameter, $\alpha_0$.  The
+% actual value (the ``dish'') associated with each table is chosen
+% randomly from the global base measure, $\pi$, by the first customer to sit there.
+
+% Now considering contexts $\beta_1(H)$ to be restaurants, 
+% several of which belong to a broader context, $\beta_0(H)$, we can add
+% a level to the hierarchy, and define $x \given \beta_1(H) \sim \pi_{\beta_1(H)}$ and
+% $\pi_{\beta_1(H)} \sim \mathsf{DP}(\alpha_1(H), \pi_{\beta_0(H)})$, yielding
+% \begin{equation}
+%   \label{eq:4}
+%   p(x \given \beta_1(H), \bx_{\beta_1(H)}) = \frac{n_1(H)}{n_1(H) +
+%     \alpha_1(H)} \frac{n_1(x,H)}{n_1(H)} +
+%   \frac{\alpha_1(H)}{n_1(H) + \alpha_1(H)} \pi_{\beta_0(H)}(x),
+% \end{equation}
+% where $\pi_{\beta_1(H)}$ has been integrated out.  
+
+% By keeping track of the number of ``tables'' across all ``restaurants'' in the
+% broader context, $\beta_0(H)$, that ordered each dish, $x$, 
+% which we represent by $\bem_0(H) = (m_0(1,H), m_0(2,H), \dots)$, with
+% $m_0(H) = \sum_x m_0(x,H)$, we can also integrate out $\pi_{\beta_0(H)}$, to get
+% \begin{align}
+%   \label{eq:4}
+%   p(x \given \beta_1(H), \bx_{\beta_1(H)}, \bem_0(H)) &= \frac{n_1(H)}{n_1(H) +
+%     \alpha_1(H)} \frac{n_1(x,H)}{n_1(H)} +
+%   \frac{\alpha_1(H)}{n_1(H) + \alpha_1(H)} \times \\ &\qquad \left(\frac{m_0(H)}{m_0(H)
+%     + \alpha_0(H)}\frac{m_0(x,H)}{m_0(H)} + \frac{\alpha_0(H)}{m_0(H)
+%     + \alpha_0(H)} \pi(x)\right) \notag
+% \end{align}
+% Equation \eqref{eq:4} together defines
+% the ``Chinese Restaurant Franchise'' process
+% as described by \cite{teh2006hierarchical}, where each narrow context,
+% $\beta_1(H)$ represents a ``restaurant'' that is affiliated with a broader
+% context, $\beta_0(H)$, representing a ``restaurant franchise''.  Each
+% restaurant works as described above, with a
+% restaurant-specific\footnote{The use of separate concentration
+%   parameters for each restaurant in the franchise is a departure from
+%   the model defined in \cite{teh2006hierarchical}.  To get that model,
+%   we would remove the dependence on $H$, and use a common $\alpha_1$
+%   for all contexts at level 1.}
+% concentration parameter, $\alpha_1(H)$, except that when a new table
+% is instantiated, instead of sampling
+% new values (``dishes'') from the global base measure, $\pi$,
+% the new dish is selected in proportion to the number of times it occurs
+% (``the number of tables ordering it'') in the broader context (``the
+% franchise''), while a completely new value is chosen from $\pi$ in proportion to the
+% franchise-level concentration parameter, $\alpha_0$.  It is natural to
+% continue adding levels to the hierarchy (perhaps ``affiliations of
+% franchises'', etc.), introducing a new set of concentration parameters for
+% each new smoothing level.  In that case, we would increment the
+% subscripts in \eqref{eq:4}, and replace $\pi(x)$ with
+% $\pi_{\beta_0(H)}$, which would be integrated out by counting the
+% number of tables selecting each dish in the ``affiliation of
+% franchises'', and when a new dish is called for at the franchise
+% level, it would be chosen in proportion to the number of tables in the
+% affiliation, with another concentration parameter governing the
+% probability of sampling from the global measure.
+
+% \subsection{Heuristic Smoothing as an Approximation to the HDP Prior}
+
+% The recursively defined predictive distribution 
+% in \eqref{eq:4} has a similar structure to the
+% predictive distribution defined by
+% \eqref{eq:smoothing-recursion}, \eqref{eq:smoothing-base-case} and
+% \eqref{eq:lambda-definition} (provided the top level $\pi$ is uniform over
+% $\varepsilon^{-1}$ outcomes), since the MLE, $\hat{p}(x \vert \beta_k(B))$
+% is simply the empirical proportion, $n_1(x,H) / n_1(H)$.  However,
+% there are some important differences.  First, 
+% instead of a fixed hyperparameter $\alpha$,
+% Collins allows the back-off strength to depend on the data, not only
+% through the number of training instances, but also through the
+% number of distinct outcomes, or ``dishes'' (the diversity).
+
+% This qualitative behavior is intuitively reasonable under the HDP model: The 
+% greater the value of a (restaurant-specific) $\alpha$, 
+% the more likely it is that a new table will be formed there, 
+% hence the larger the expected number of occupied tables.  Hence, the
+% likelihood favors larger $\alpha$ values as the number of
+% tables increases.  The number of occupied tables in the restaurant(s) 
+% governed by $\alpha$, along with
+% an auxiliary variable, $w$, whose distribution depends on $\alpha$ and
+% the number of customers in the restaurant, are sufficient statistics for
+% $\alpha$, since the assignment of tables to dishes depends only on the
+% base measure of the DP, and not on the concentration parameter.  
+% Let $\alpha$ govern a restaurant (or
+% restaurant franchise, etc.), with $n$ customers
+% occupying $T$ distinct tables.  For the bottom level of the hierarchy,
+% \citet{antoniak1974mixtures} showed that
+% \begin{equation}
+%   \label{eq:alpha-T-likelihood}
+%   p(T \given \alpha, n) = s(n, T) \alpha^{T} \frac{\Gamma(\alpha)}{\Gamma(\alpha + n)}
+% \end{equation}
+% where $s(n,T)$ is an unsigned
+% Sterling number of the first kind.  If we further define
+% \begin{align}
+%   \label{eq:w-definition}
+%   w \given \alpha, n \stackrel{ind}{\sim} \Beta{\alpha}{n}
+% \end{align}
+% so that
+% \begin{align}
+%   p(w, T \given \alpha, n) &= s(n, T)
+%   \alpha^{T} \frac{\Gamma(\alpha)}{\Gamma(\alpha + n)}
+%   \frac{\Gamma(\alpha + n)}{\Gamma(\alpha)\Gamma(n)} w^{\alpha -
+%   1} (1 - w)^{n - 1} \\
+% &= s(n, T)
+%   \alpha^{T} \Gamma(n)^{-1} w^{\alpha -
+%   1} (1 - w)^{n - 1}
+% \end{align}
+% then, after placing a $\Gamm{a}{\gamma}$ prior on $\alpha$, we obtain
+% posterior density
+% \begin{equation}
+%   \label{eq:alpha-given-w-and-T}
+%   p(\alpha \given T, w) \propto
+%   \alpha^{a + T - 1} e^{-\left(b - \log(w)\right)\alpha}
+% \end{equation}
+% which is that of a $\Gamm{a + T}{b - \log(w)}$
+% distribution.  Note that the mean of this distribution is
+% approximately proportional to $T$ for small values of $a$ and fixed
+% values of $w$.  Under the assumption that no two tables are assigned
+% to the same outcome, then $T = u$, the diversity of the
+% context, and we can interpret Collins' formula for the smoothing
+% parameter $\lambda$ given in \eqref{eq:lambda-definition} as the result
+% of (1) placing a ``vague'' Gamma prior on $\alpha$ (i.e., $a, b << 1$), 
+% (2) approximating all $w$ parameters with a single constant across for all
+% contexts, (3) approximating the number of tables in each context by the number of unique
+% dishes, and (4) approximating the predictive distribution in
+% \eqref{eq:3} using the resulting approximation posterior mean for
+% $\alpha$.
+
+% The likelihood for concentration parameters at higher levels of the
+% hierarchy has a parallel structure, but importantly, the role played
+% at the bottom level by the number of observations, $n$, is not played
+% by the total number of observations in the collapsed context
+% (or ``restaurant franchise''), but
+% rather by the total number of {\it tables} across all of the
+% lower-level contexts (``restaurants'') belonging to the aggregate
+% (``franchise''), since this corresponds to the
+% number of times a dish/outcome is selected from the broader
+% distribution, and thus represents the number of independent
+% observational units.  
+
+% Denote by $\beta_{ki}$ the $i$th context at level $k$ of the hierarchy
+% (where levels are numbered from top to bottom) which comprises $J$ more
+% specific contexts at level $k+1$, denoted by $\beta_{k+1,1}, \dots,
+% \beta_{k+1,J}$, and which in turn belongs to a larger unit, $\beta_{k-1}$.  
+% Let $\alpha_{ki}$ be the concentration parameter for context
+% $\beta_{ki}$.  Denote by $m_{ki}$ the total number of tables occupied across
+% all the $\{\beta_{k+1,j}\}$; that is, the sum of the $T$ variables
+% used above.  Of these, some number, $T_{ki}$, represent distinct draws
+% from the distribution at context $\beta_{k-1}$.  The distribution of
+% $T_{ki}$ depends on $\alpha_{ki}$ as before:
+% \begin{equation}
+%    p(T_{ki} \given \alpha_{ki}, m_{ki}) = s(m_{ki}, T_{ki}) \alpha^{T_{ki}} \frac{\Gamma(\alpha_{ki})}{\Gamma(\alpha_{ki} + m_{ki})}
+% \end{equation}
+% and we can introduce
+% \begin{align}
+%   \label{eq:w-definition}
+%   w_{ki} \given \alpha_{ki}, m_{ki} \stackrel{ind}{\sim} \Beta{\alpha_{ki}}{m_{ki}}
+% \end{align}
+% so that
+% \begin{equation}
+%   \alpha_{ki} \given T_{ki}, w_{ki} \sim \Gamm{a + T_{ki}}{b - \log(w_{ki})}
+% \end{equation}
+% Going up another level, across all $I$ contexts at level $k$ belonging
+% to broader context $\beta_{k-1}$, we can define $m_{k-1} = \sum_i
+% T_{ki}$, and model the distribution of $T_{k-1}$ conditioned on the
+% higher-level concentration $\alpha_{k-1}$ and the ``observation''
+% count, $m_{k-1}$.  And so on.
+
+% We can see then that the implicit assumption in the heuristic
+% smoothing equations that the number of independent observational units
+% equals the number of true observations becomes further removed from
+% the HDP model the higher up we go in the hierarchy.
+
+% \subsection{Posterior Estimation of Event Distributions in the HDP
+%   Model}
+
+% We would like a fully Bayesian approach to inference in the HDP model,
+% and so rather than approximating the $\alpha$ parameters as fixed functions of the
+% data, we develop a Gibbs-sampling algorithm to infer them.
+
+% Given a training set of fully annotated parse trees (i.e., where the
+% elaboration tree and the associations between the two trees are
+% known), the only unknown parameters are (1) the number of distinct
+% independent observational units, $T$ (IOUs; ``tables'' at the lowest level), 
+% per context and context prefix, (2) the concentration
+% parameters, $\alpha$, for each context and context prefix, and (3) the auxiliary
+% variables, $w$ associated with each context and context prefix.  Since
+% each $\alpha$ depends only on the corresponding $T$ and $w$ for its
+% context, these can be Gibbs sampled independently, conditioned on the
+% other values.  Similarly, the $w$ parameters depend only on $\alpha$
+% and the $n$ (or $m$) parameters associated with its context.
+
+% From \eqref{eq:w-definition} and \eqref{eq:alpha-given-w-and-T}, and indexing
+% indexing contexts at level $k$ with $j$, we have
+% \begin{align}
+%   \alpha_j \given w_j, T_j &\stackrel{ind}{\sim} \Gamm{a + T_j}{b - \log(w_j)} \\
+%   w_j \given \alpha_j, n_j &\stackrel{ind}{\sim} \Beta{\alpha_j}{n_j}
+% \end{align}
+
+% Since the number of IOUs for a context at level $k$ depends on the
+% total number of IOUs across all narrower contexts at the level below,
+% the $T$ variables cannot be sampled independently across all
+% contexts.  Moreoever, since the assignments of observations to outcomes
+% (``dishes'') are known given an annotated training set, this
+% information must be taken into account when sampling the $T$ variables
+% as well.  However, it turns out that it is possible to handle each outcome
+% value in each context at a fixed level independently, by simply
+% simulating the Chinese Restaurant Process for the customers in that
+% context assigned to that outcome.  
+
+% To see why, consider the
+% observations in context $j$ that are assigned to outcome $x$.
+% By exchangeability of observations we may assume that these observations were the last
+% to be generated, and hence we can consider their distribution
+% conditioned on the rest.  Suppose that there are $n_{j-x}$ observations
+% not assigned to outcome $x$, with the remaining $n_{jx}$ left to be
+% assigned.  The prior probability that the next
+% observation would join an existing table is $\frac{n_{j-x}}{n_{j-x} + \alpha}$.
+% However, if this happened, the observation would inherit whatever
+% outcome was associated with the table it joined.  Since this did not
+% happen, the posterior probability that it started a new table is 1,
+% just as if it had been the first observation in the entire context.  Similarly, the
+% prior probability that the next observation would have joined a table with
+% one of the first $n_{j-x}$ customers is still $\frac{n_{j-x}}{n_{j-x}
+%   + 1 + \alpha}$; but this contradicts its observation value, so it is
+% certain that its table choice came from the remaining
+% $\frac{1 + \alpha}{n_{j-x} + 1 + \alpha}$.  The prior
+% probability that it would join the previous customer is
+% $\frac{1}{n_{j-x} + \alpha}$; but conditioned on not joining the
+% first $n_{j-x}$ customers, this probability is increased to
+% $\frac{1}{1 + \alpha}$, with the remaining $\frac{\alpha}{1+\alpha}$
+% going to starting a new table; again just as if the first $n_{j-x}$
+% observations did not exist.  The same logic continues through,
+% demonstrating that the number of distinct tables among the $n_{jx}$.
+% Moreover, since none of this depends on the number of distinct tables
+% associated with any other outcome, the outcome-specific table counts
+% are independent.
+
+% In sum, we can start at the bottom level, $K$, and sample $T_{Kjx}$ for each
+% combination of context $j$ and outcome $x$ by generating 
+% $n_{jx}$ sequential draws from a CRP with concentration
+% $\alpha_{Kj}$.  Then, the number of IOUs for outcome $x$ in the parent context,
+% $T_{K-1,x}$, is obtained by computing $m_{K-1,x}$, the sum of the
+% $T_{Kjx}$ over $j$ for all child contexts, and drawing $m_{K-1,x}$
+% observations from a CRP with concentration $\alpha_{K-1}$.
+
+% \section{A Similarity-Based Dependency Structure for Context-Conditional Event Distributions}
+
+% A limitation of the HDP model defined above is that contexts are only
+% coupled if they share an exact prefix.  Thus, the choice of order for
+% the context features is critical, as even two near-identical contexts
+% will not have their distributions tied if they differ on one of the
+% features in the first tier.  We would like a model of the dependency
+% structure that takes {\em any} similarity into account.
+
+% As before, the goal is estimation of $p(x \given H)$, the outcome
+% distribution for an event with history $H$.  We dispense with the
+% projections to broader contexts, and define a direct joint model of these
+% conditional distributions.  This model will be an adaptation of the
+% Distance-Dependent Chinese Restaurant Process ($ddCRP$;
+% \citet{blei2011distance}), which I describe next.
+
+% Let $\mathcal{H}$ be a space of possible contexts for an event, and
+% let $\phi: \mathcal{H} \times \mathcal{H} \to [0,1]$ be a similarity
+% kernel, such that $\phi(h,h) = 1$ for all $h \in \mathcal{H}$, and
+% $\phi(h,h') \geq 0$ for all $h,h'$.  For example, if each $h = (h_{1},
+% \dots, h_{n})$ is a context consisting of $n$ categorical features,
+% we might define
+% \begin{equation}
+%   \label{eq:exponential-similarity}
+%   \phi(h,h') = \sum_{n=1}^N \exp(-\lambda_n \mathbb{I}(h_n \neq h'_n))
+% \end{equation}
+% where $\lambda_n$ are weights associated with each feature.
+% Alternatively, we could use a weighted overlap measure, such as
+% \begin{equation}
+%   \label{eq:weighted-similarity}
+%   \phi(h,h') = \sum_{n=1}^N \omega_n \mathbb{I}(h_n = h'_n),
+% \end{equation}
+% where $\sum_{n} \omega_n = 1$.
+
+% In both cases, similarities range between 0 and 1, and the
+% more overlap there is between two context sequences, the greater the
+% similarity score.  Let $\alpha > 0$ be an innovation parameter, and
+% $\pi$ be a base distribution over outcomes $x \in \mathcal{X}$.  The
+% following prior on partitions is defined: Introduce
+% set of {\it link variables}, $\{c_i\}$, one corresponding to each
+% observation, where $h_i$ is the context associated with observation $i$.  Set
+% \begin{equation}
+%   P(c_i = i' \given \alpha, \phi) \propto
+%   \begin{cases}
+%     \phi(h_i, h_{i'}) & i \neq i' \\
+%     \alpha & i = i'
+%   \end{cases}
+% \end{equation}
+% Subsets of contexts that can be reached through a series of links
+% are co-clustered, with $z(\bc)_i$ representing the cluster indicator
+% for the $i$th observation.  Each cluster is then assigned an outcome,
+% by drawing from the base distribution $\pi$.  If the base distribution
+% has a symmetric Dirichlet prior, it can be integrated out, yielding the
+% predictive distribution:
+% \begin{equation}
+%   p(\bar{x}_k = x \given \bm) \propto m_x + \gamma
+% \end{equation}
+% where $\bar{x}$ is the assignment to an outcome of cluster $k$, $x$
+% indexes outcomes, $m_x$ is the number of clusters previously
+% associated with outcome $x$, and $\gamma$ is the per-outcome prior weight.
+
+% \subsection{Posterior Estimation of Event Distributions in the Similarity-Based
+%   Model}
+
+% Given a fully annotated training set, the unknown parameters are (1)
+% the cluster assignments, (2) the innovation parameter, $\alpha$, and
+% (3) the parameters of the similarity function.  
+
+% Sampling cluster assignments is straightforward in the case where
+% members of a cluster all share an outcome.  There, links can only
+% occur among observations with identical outcomes, and hence when
+% resampling a link, we only need to consider linking to those other
+% observations that share an outcome with the source.  The posterior
+% probability of a new link is
+% \begin{equation}
+%   p(c_i = i' \given \alpha, \phi, x_i) \propto 
+%   \begin{cases}
+%     \phi(h_i,h_{i'}) (m_{x_i} + \gamma) & i \neq i', \text{ if no change to clusters} \\
+%     \phi(h_i,h_{i'}) (m_{x_i} + 1 + \gamma) & i \neq i', \text{ if a
+%       cluster is split } \\
+%     \phi(h_i,h_{i'}) (m_{x_i} - 1 + \gamma) & i \neq i', \text{ if two
+%     clusters are joined} \\
+%   \alpha (m_{x_i} + \gamma) & i = i', \text{ if no change to clusters}
+%   \\
+%   \alpha (m_{x_i} + 1 + \gamma) & i = i' \text{ if a cluster is split}
+%   \end{cases}
+% \end{equation}
+
+% For $\phi$ given by
+% \eqref{eq:exponential-similarity}, the conditional distributions of
+% $\alpha$ and $\blambda$ do not have simple forms; however, an
+% efficient method for sampling arbitrary differentiable densities, such
+% as Hamiltonian Monte Carlo can be used. 
+
+
+\bibliographystyle{apalike}
+\bibliography{../../../manuscripts/sac/bib/scenes_and_captions}
+
+\end{document}
+

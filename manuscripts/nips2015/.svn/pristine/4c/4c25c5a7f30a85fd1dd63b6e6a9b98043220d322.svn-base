@@ -1,0 +1,800 @@
+\section{Inference}
+\label{sec:inference}
+
+We develop a Gibbs sampling algorithm based on the Markov Process with
+Failed Jumps representation, augmenting the data with the duration
+variables $\bu$, the failed jump attempt count matrix, $\bQ$, as well
+as additional auxiliary variables which we will define below.
+In this representation the transition matrix is not represented
+directly, but is a function of the unscaled transition matrix $\pi$
+and the similarity matrix $\bphi$.  The full set of variables is
+partitioned into blocks: $\{\gamma, \alpha, \bbeta, \bpi\}$,
+$\{\bz, \bu, \bQ, \Lambda\}$, $\{\btheta\}$, and $\{\xi\}$, where $\Lambda$
+represents a set of auxiliary variables that will be introduced
+below, and $\btheta$ represents the emission and state location
+parameters (which may be further factored depending on the specific
+choice of model), and $\xi$ represents additional
+parameters such as any free parameters of the similarity function,
+$\Phi$, and any non-state-specific emission parameters.
+
+
+\subsection{Sampling Transition Parameters and Hyperparameters}
+
+The joint posterior over $\gamma$, $\alpha$, $\bbeta$ and $\bpi$
+given the other variables will factor as
+\begin{equation}
+  \label{eq:46}
+  p(\gamma, \alpha, \bbeta, \bpi) = p(\gamma) p(\alpha) p(\bbeta \given \gamma) p(\bpi
+  \given \alpha, \bbeta)
+\end{equation}
+where we have omitted the dependence on the augmented data,
+$\mathcal{D} = (\bz, \bu, \bQ, \Lambda)$ for conciseness.  
+We will describe these four factors in reverse order.
+
+\paragraph{Sampling \texorpdfstring{$\bpi$}{pi}} 
+Having used data augmentation to simplify the likelihood for $\bpi$ to
+the factored conjugate form in \eqref{eq:joint-likelihood}, the individual
+$\pi_{jj'}$ are {\it a posteriori} independent Gamma distributed:
+\begin{equation}
+\pi_{jj'} \given \alpha, \beta_{j'}, \mathcal{D} \stackrel{ind}{\sim}
+\Gamm{\alpha\beta_{j'} + n_{jj'} + q_{jj'}}{1 + u_j} \qquad j,j' \geq 1
+\end{equation}
+
+\paragraph{Sampling \texorpdfstring{$\bbeta$}{beta}}
+\label{sec:sampling-bbeta}
+To enable joint sampling of the latent state sequence, we employ a
+weak limit approximation to the HDP \cite{johnson2013bayesian}, approximating the stick-breaking
+process for $\bbeta$ using a finite Dirichlet distribution with a
+finite number of components, $J$, which is larger than we expect to
+need.  Due to the product of Gammas form, we can integrate out $\bpi$ 
+analytically from $p(\bpi, \mathcal{D} \given \bbeta)$, to obtain the
+the marginal likelihood for $\bbeta$.  Together, we have
+\begin{align}
+\label{eq:beta-prior-likelihood}
+  p(\bbeta \given \gamma) = \frac{\Gamma(\gamma /
+    J)^J}{\Gamma(\gamma)} \prod_{j} \beta_{j}^{\frac{\gamma}{J} - 1} \qquad
+  p(\mathcal{D} \given \bbeta, \alpha) \propto
+  \prod_{j=1}^J (1+u_j)^{-\alpha} \prod_{j'}
+    \frac{\Gamma(\alpha\beta_{j'} + n_{jj'} +
+    q_{jj'})}{\Gamma(\alpha\beta_{j'})} 
+\end{align}
+ where we have used the fact that the $\beta_j$ sum to 1 to pull out
+ terms of the form $(1 + u_j)^{-\alpha\beta_{j'}}$ from the inner
+ product in the likelihood.  Following Teh et al. (2006), 
+we can introduce auxiliary variables $\{m_{jj'}\}$, with
+\begin{equation}
+  \label{eq:m-distribution}
+  p(m_{jj'} \given \beta_{j'}, \alpha, \mathcal{D}) \stackrel{ind}{\propto}
+  s(n_{jj'} + q_{jj'}, m_{jj'}) \alpha^{m_{jj'}}
+    \beta_{j'}^{m_{jj'}}
+\end{equation}
+for integer $m_{jj'}$ ranging between $0$ and $n_{jj'} + q_{jj'}$,
+where $s(n,m)$ is an unsigned Stirling number of the first kind.
+The normalizing constant in this distribution cancels the ratio of
+Gamma functions in the $\bbeta$ likelihood, so, letting $m_{\cdot j} =
+\sum_{j'} m_{j'j}$, we obtain simply
+\begin{equation}
+  \label{eq:beta-posterior}
+  \bbeta \given \bM, \gamma \sim \mathrm{Dirichlet}(\frac{\gamma}{J} +
+  m_{\cdot 1}, \dots, \frac{\gamma}{J} + m_{\cdot J})
+\end{equation}
+
+\paragraph{Sampling Concentration Parameters}
+\label{sec:sampling-alpha}
+After incorporating $\bM$ into $\mathcal{D}$, we can integrate out
+$\bbeta$, from the joint likelihood $p(\bbeta,\mathcal{D} \given \gamma, \alpha)$:
+\begin{align}
+\label{eq:gamma-marginal-likelihood}
+  p(\mathcal{D} \given \alpha, \gamma) \propto
+  \alpha^{m_{\cdot\cdot}} e^{-\sum_{j''} \log(1+u_{j''}) \alpha}
+  \frac{\Gamma(\gamma)}{\Gamma(\gamma + m_{\cdot\cdot})}
+  \prod_j
+  \frac{\Gamma(\frac{\gamma}{J} + m_{\cdot
+      j})}{\Gamma(\frac{\gamma}{J}) } 
+\end{align}
+Assume that $\alpha$ and $\gamma$ have Gamma priors.  Then
+the update to alpha is conjugate,
+\begin{equation}
+  \label{eq:alpha-posterior}
+  \alpha \given \mathcal{D} \sim \Gamm{a_{\alpha}
+    + m_{\cdot\cdot}}{b_\alpha + \sum_j\log(1+u_j)},
+\end{equation}
+and to simplify the likelihood for $\gamma$, we can introduce a final
+set of auxiliary variables, $\br = (r_1, \dots,
+r_J)$, $r_j \in \{0,\dots,m_{\cdot j}\}$ and $t \in (0,1)$ with the following distributions:
+\begin{align}
+  \label{eq:9}
+  p(r_j \given m_{\cdot j}, \gamma) \propto s(m_{\cdot j}, r)
+    \left(\frac{\gamma}{J}\right)^r \qquad
+  p(t \given m_{\cdot\cdot} \gamma) \propto 
+    t^{\gamma - 1} (1-t)^{m_{\cdot\cdot} - 1}.
+\end{align}
+The normalizing constants are ratios of Gamma functions, which cancel
+those in \eqref{eq:gamma-marginal-likelihood}, so that
+\begin{equation}
+  \label{eq:18}
+  \gamma \given \mathcal{D} \sim \Gamm{a_{\gamma} + r_{\cdot}}{b_{\gamma} - \log(t)}
+\end{equation}
+
+\subsection{Sampling \texorpdfstring{$\bz$}{the latent state sequece} and the auxiliary variables}
+\label{sec:sampling-z_t}
+
+We sample the hidden state sequence, $\bz$, jointly with the auxiliary
+variables, which consist of $\bu$, $\bQ$, $\bM$, $\br$ and $t$.  The
+joint conditional distribution of these variables is defined directly
+by the generative model:
+\begin{align}
+  \label{eq:19}
+  p(\mathcal{D}) = p(\bz) p(\bu \given \bz) p(\bQ \given
+  \bu) p(\bM \given \bz, \bQ) p(\br \given \bM) p(t
+  \given\bM)
+\end{align}
+Since we are conditioning on the transition matrix, we can
+sample the entire sequence $\bz$ at once with the forward-backward algorithm,
+as in an ordinary HMM, or its corresponding generalization if we are
+using the HSMM variant.  Having done this, we can sample $\bu$, $\bQ$, $\bM$,
+$\br$ and $t$ from their forward distributions.
+
+\subsection{Sampling state and emission parameters}
+\label{sec:sampling-eta}
+
+Depending on the application, the similarities $\{\phi_{jj'}\}$ may be based
+directly on the emission distributions, or may be based on a separate set
+of variables.  In the experiments described below we assume the
+former.  For simplicity, we denote the collection of these variables
+by $\btheta$.  We have two likelihood components:
+\begin{align}
+  \label{eq:65}
+  p(\bz, \bQ \given \btheta) \propto \prod_{j}\prod_{j'}
+  \phi_{jj'}^{n_{jj'}}(1-\phi_{jj'})^{q_{jj'}} \qquad
+  p(\bY \given \bz, \btheta) = \prod_{t=1}^T f(\by_t; \theta_{z_t})
+\end{align}
+where proportionality is with respect to variation in $\btheta$.
+
+% \section{Inference}
+% \label{sec:inference}
+
+% I develop a Gibbs sampling algorithm based on the Markov Process with
+% Failed Jumps representation, augmenting the data with the duration
+% variables $\bu$, the failed jump attempt count matrix, $\bQ$, as well
+% as additional auxiliary variables which we will define below.
+% In this representation the transition matrix is not modeled
+% directly, but is a function of the unscaled transition matrix $\pi$
+% and the similarity matrix $\bphi$.  The full set of variables is
+% partitioned into three blocks: $\{\gamma, \alpha, \bbeta, \bpi\}$,
+% $\{\bz, \bu, \bQ, \Lambda\}$, and $\{\btheta\}$, where $\Lambda$
+% represents a set of auxiliary variables that will be introduced
+% below.  The variables in each block are sampled jointly 
+% conditioned on the other two blocks.
+
+% Since we are representing the transition matrix of the Markov chain
+% explicitly, we approximate the stick-breaking process that produces
+% $\bbeta$ using a finite Dirichlet distribution with a number of 
+% components larger than we expect to need, forcing the remaining 
+% components to have zero weight.  
+% Let $J$ indicate the maximum number of states.  Then,
+% we approximate \eqref{eq:beta} with
+% \begin{equation}
+%   \label{eq:28}
+%   \bbeta \given \gamma \sim \mathrm{Dirichlet}(\gamma / J, \dots,
+%   \gamma / J)
+% \end{equation}
+% This distribution converges weakly to the Stick-Breaking Process as $J \to
+% \infty$.  In practice, $J$ is large enough when the vast majority of the
+% probability mass in $\bbeta$ is allocated to a strict subset of
+% components, or when the latent state sequence $\bz$ never uses all $J$
+% available states, indicating that the data is well described by a number of
+% states less than $J$.
+
+% \subsection{Sampling Transition Parameters and Hyperparameters}
+% \label{sec:sampling-pi}
+
+% The joint conditional over $\gamma$, $\alpha$, $\bbeta$ and $\bpi$
+% given $\bz$, $\bu$, $\bQ$, $\Lambda$ and $\btheta$ will factor as
+% \begin{equation}
+%   \label{eq:46}
+%   p(\gamma, \alpha, \bbeta, \bpi \given \bz, \bu, \bQ, \Lambda, \btheta) = p(\gamma \given
+%   \Lambda) p(\alpha \given \Lambda) p(\bbeta \given \gamma, \Lambda) p(\bpi
+%   \given \alpha, \bbeta, \btheta, \bz)
+% \end{equation}
+% I will derive these four factors in reverse order.
+
+% \subsubsection{Sampling \texorpdfstring{$\bpi$}{pi}}
+
+% The entries in $\bpi$ are conditionally independent given $\alpha$ and
+% $\bbeta$, so we have the prior
+% \begin{equation}
+%   \label{eq:47}
+%   p(\bpi \given \bbeta, \alpha) = \prod_{j} \prod_{j'}
+%   \Gamma(\alpha\beta_{j'})^{-1}
+%   \pi_{jj'}^{\alpha\beta_{j'} - 1} \exp(-\pi_{jj'}),
+% \end{equation}
+% and the likelihood given augmented data $\{\bz, \bu, \bQ\}$ given by
+% \eqref{eq:joint-likelihood}.  Combining these, we have
+% \begin{equation}
+%   \label{eq:61}
+%   p(\bpi, \bz, \bu, \bQ \given \bbeta, \alpha, \btheta) =
+%   \prod_{j} u_j^{n_{j\cdot} + q_{j\cdot}
+%   - 1}\prod_{j'} 
+%   \Gamma(\alpha\beta_{j'})^{-1} \pi_{jj'}^{\alpha\beta_{j'} + n_{jj'}
+%     + q_{jj'} - 1} e^{-(1 + u_j)
+%     \pi_{jj'}} \phi_{jj'}^{n_{jj'}} (1-\phi_{jj'})^{q_{jj'}} (q_{jj'}!)^{-1}
+% \end{equation}
+% Conditioning on everything except $\bpi$, we get
+% \begin{align}
+%   \label{eq:24}
+%   p(\bpi \given \bQ, \bu, \bZ, \bbeta, \alpha, \btheta) &\propto \prod_j
+%   \prod_{j'} \pi_{jj'}^{\alpha\beta_{j'} + n_{jj'} + q_{jj'} - 1}
+%   \exp(-(1 + u_j)\pi_{jj'})
+% \end{align}
+% and thus we see that the $\pi_{jj'}$ are conditionally independent
+% given $\bu$, $\bZ$ and $\bQ$, and distributed according to
+% \begin{align}
+%   \label{eq:25}
+%   \pi_{jj'} \given n_{jj'}, q_{jj'}, \beta_{j'}, \alpha \stackrel{ind}{\sim}
+%   \Gamm{\alpha\beta_{j'} + n_{jj'} + q_{jj'}}{1 + u_j}
+% \end{align}
+
+
+% \subsubsection{Sampling \texorpdfstring{$\bbeta$}{beta}}
+% \label{sec:sampling-bbeta}
+
+% Consider the conditional distribution of $\bbeta$ having
+% integrated out $\bpi$.  The prior density of $\bbeta$ from
+% \eqref{eq:28} is
+% \begin{equation}
+%   \label{eq:62}
+%   p(\bbeta \given \gamma) =
+%   \frac{\Gamma(\gamma)}{\Gamma(\frac{\gamma}{J})^J} \prod_{j}
+%   \beta_j^{\frac{\gamma}{J} - 1}
+% \end{equation}
+% After integrating out $\bpi$ in \eqref{eq:61}, we have
+% \begin{align}
+%   p(\bz, \bu, \bQ \given \bbeta, \alpha, \gamma, \btheta) &=
+%   \prod_{j=1}^J u_{j} ^{-1}
+%   \prod_{j'=1}^J u^{n_{jj'} + q_{jj'} - 1}(1 +
+%   u_j)^{-(\alpha\beta_{j'} + n_{jj'} + q_{jj'})}
+%   \\
+%   &\qquad \qquad \times \frac{\Gamma(\alpha\beta_{j'} + n_{jj'} +
+%     q_{jj'})}{\Gamma(\alpha\beta_{j'})} \phi_{jj'}^{n_{jj'}}(1-\phi_{jj'})^{q_{jj'}}
+%   (q_{jj'}!)^{-1} \\
+%   &= \prod_{j=1}^J \Gamma(n_{j\cdot})^{-1} u_j^{-1}(1+u_j)^{-\alpha}
+%   \left(\frac{u_j}{1+u_j}\right)^{n_{j\cdot} + q_{j\cdot}} \\ &\qquad
+%   \qquad \times \prod_{j' =
+%     1}^J \frac{\Gamma(\alpha\beta_{j'} + n_{jj'} +
+%     q_{jj'})}{\Gamma(\alpha\beta_{j'})} \phi_{jj'}^{n_{jj'}}(1-\phi_{jj'})^{q_{jj'}}
+%   (q_{jj'}!)^{-1}
+% \end{align}
+%  where we have used the fact that the $\beta_j$ sum to 1.  Therefore
+% \begin{align}
+%   p(\bbeta \given \bz, \bu, \bQ, \alpha, \gamma, \btheta) &\propto \prod_{j=1}^J
+%   \beta_j^{\frac{\gamma}{J} - 1} \prod_{j'=1}^J \frac{\Gamma(\alpha\beta_{j'} +
+%     n_{jj'} + q_{jj'})}{\Gamma(\alpha\beta_{j'})}.
+% \end{align}
+
+% Following \cite{teh2006hierarchical}, we can write the ratios of Gamma functions
+% as polynomials in $\beta_j$, as
+% \begin{equation}
+%   \label{eq:31}
+%   p(\bbeta \given \bz, \bu, \bQ, \alpha, \gamma, \btheta) \propto \prod_{j=1}^J
+%   \beta_j^{\frac{\gamma}{J} - 1} \prod_{j'=1}^{J} \sum_{m_{jj'} = 1}^{n_{jj'}}
+%   s(n_{jj'} + q_{jj'}, m_{jj'}) (\alpha \beta_{j'})^{m_{jj'}}
+% \end{equation}
+% where $s(m,n)$ is an unsigned Stirling number of the first kind.
+% This admits an augmented data representation, where we introduce a
+% random matrix $\bM = (m_{jj'})_{1 \leq j,j' \leq J}$, whose
+% entries are conditionally independent given $\bbeta$, $\bQ$ and $\bz$, with
+% \begin{equation}
+%   \label{eq:32}
+%   p(m_{jj'} = m \given \beta_{j'}, \alpha, n_{jj'}, q_{jj'}) =
+%   \frac{s(n_{jj'} + q_{jj'}, m) \alpha^{m}
+%     \beta_{j'}^{m}}{\sum_{m'=0}^{n_{jj'} + q_{jj'}} s(n_{jj'} +
+%   q_{jj'}, m') \alpha^{m'} \beta_{j'}^{m'}}
+% \end{equation}
+% for integer $m$ ranging between $0$ and $n_{jj'} + q_{jj'}$.  Note
+% that $s(n,0) = 0$ if $n > 0$, $s(0,0) = 1$ and $s(0,m) = 0$ if $m > 0$.
+% Then, we have joint distribution
+% \begin{equation}
+%   \label{eq:33}
+%   p(\bbeta, \bM \given \bz, \bu, \bQ, \alpha, \gamma, \btheta) \propto \prod_{j=1}^J
+%   \beta_j^{\frac{\gamma}{J} - 1} \prod_{j'=1}^{J} s(n_{jj'} + q_{jj'}, m_{jj'}) \alpha^{m_{jj'}} \beta_{j'}^{m_{jj'}}
+% \end{equation}
+% which yields \eqref{eq:31} when marginalized over $\bM$.  Again discarding
+% constants in $\bbeta$ and regrouping yields
+% \begin{equation}
+%   \label{eq:34}
+%   p(\bbeta \given \bM, \bZ, \bu, \btheta, \alpha, \gamma) \propto \prod_{j=1}^J
+%   \beta_j^{\frac{\gamma}{J} + m_{\cdot j}- 1}
+% \end{equation}
+% which is Dirichlet:
+% \begin{equation}
+%   \label{eq:38}
+%   \bbeta \given \bM, \gamma \sim \mathrm{Dirichlet}(\frac{\gamma}{J} +
+%   m_{\cdot 1}, \dots, \frac{\gamma}{J} + m_{\cdot J})
+% \end{equation}
+
+% \subsubsection{Sampling Concentration Parameters}
+% \label{sec:sampling-alpha}
+% Assume that $\alpha$ and $\gamma$ have Gamma priors, with
+% \begin{align}
+%   \label{eq:42}
+%   p(\alpha) &= \frac{b_{\alpha}^{a_{\alpha}}}{\Gamma(a_{\alpha})}
+%   \alpha^{a_{\alpha} - 1} \exp(-b_{\alpha}\alpha) \\
+%   p(\gamma) &= \frac{b_{\gamma}^{a_\gamma}}{\Gamma(a_{\gamma})}
+%   \gamma^{a_{\gamma - 1}} \exp(-b_{\gamma}\gamma)
+% \end{align}
+
+% Having integrated out $\bpi$, we have
+% \begin{align}
+%   p(\bbeta, \bz, \bu, \bQ, \bM \given \alpha, \gamma, \btheta) &=
+%   \frac{\Gamma(\gamma)}{\Gamma(\frac{\gamma}{J})^J} \alpha^{m_{\cdot\cdot}} \prod_{j=1}^J \beta_j^{\frac{\gamma}{J} +
+%     m_{\cdot j} - 1}\Gamma(n_{j\cdot})^{-1} u_j^{-1}(1+u_j)^{-\alpha}
+%   \left(\frac{u_j}{1+u_j}\right)^{n_{j\cdot} + q_{j\cdot}} \\ &\qquad
+%   \qquad \times \prod_{j' =
+%     1}^J s(n_{jj'} + q_{jj'}, m_{jj'}) \phi_{jj'}^{n_{jj'}}(1-\phi_{jj'})^{q_{jj'}}
+%   (q_{jj'}!)^{-1}
+% \end{align}
+% We can also integrate out $\bbeta$, to yield
+% \begin{align}
+%   p(\bz, \bu, \bQ, \bM \given \alpha, \gamma, \btheta) &=
+%   \alpha^{m_{\cdot\cdot}} e^{-\sum_{j''} \log(1+u_{j''}) \alpha}
+%   \frac{\Gamma(\gamma)}{\Gamma(\gamma + m_{\cdot\cdot})} \\ &\qquad
+%   \qquad \times \prod_j
+%   \frac{\Gamma(\frac{\gamma}{J} + m_{\cdot
+%       j})}{\Gamma(\frac{\gamma}{J}) \Gamma(n_{j\cdot})} u_j^{-1}
+%   \left(\frac{u_j}{1+u_j}\right)^{n_{j\cdot} + q_{j\cdot}} \\ &\qquad
+%   \qquad \times \prod_{j' =
+%     1}^J s(n_{jj'} + q_{jj'}, m_{jj'}) \phi_{jj'}^{n_{jj'}}(1-\phi_{jj'})^{q_{jj'}}
+%   (q_{jj'}!)^{-1}
+% \end{align}
+% demonstrating that $\alpha$ and $\gamma$ are independent given $\btheta$
+% and the augmented data, with
+% \begin{equation}
+%   \label{eq:43}
+%   p(\alpha \given \bz, \bu, \bQ, \bM, \btheta) \propto
+%   \alpha^{a_{\alpha} + m_{\cdot\cdot}}\exp(-(b_\alpha + \sum_{j}\log(1+u_j))\alpha)
+% \end{equation}
+% and
+% \begin{align}
+%   \label{eq:8}
+%   p(\gamma \given \bz, \bu, \bQ, \bM, \btheta) &\propto \gamma^{a_{\gamma - 1}}
+%   \exp(-b_{\gamma}\gamma) \frac{\Gamma(\gamma)\prod_{j=1}^J
+%     \Gamma(\frac{\gamma}{J} + m_{\cdot j})}{\Gamma(\frac{\gamma}{J})^J\Gamma(\gamma + m_{\cdot\cdot})}
+% \end{align}
+% So we see that
+% \begin{equation}
+%   \label{eq:44}
+%   \alpha \given \bz, \bu, \bQ, \bM, \btheta \sim \Gamm{a_{\alpha}
+%     + m_{\cdot\cdot}}{b_\alpha + \sum_j\log(1+u_j)}
+% \end{equation}
+% To sample $\gamma$, we introduce a new set of auxiliary variables, $\br = (r_1, \dots,
+% r_j)$ and $t$ with the following distributions:
+% \begin{align}
+%   \label{eq:9}
+%   p(r_j = r \given m_{\cdot j}, \gamma) &=
+%   \frac{\Gamma(\frac{\gamma}{J})}{\Gamma(\frac{\gamma}{J}
+%     + m_{\cdot j})} s(m_{\cdot j}, r)
+%     \left(\frac{\gamma}{J}\right)^r \qquad r  = 1, \dots, m_{\cdot j} \\
+%   p(t \given m_{\cdot\cdot} \gamma) &= \frac{\Gamma(\gamma +
+%     m_{\cdot\cdot})}{\Gamma(\gamma) \Gamma(m_{\cdot\cdot})} t^{\gamma
+%     - 1} (1-t)^{m_{\cdot\cdot} - 1} \qquad t \in (0,1)
+% \end{align}
+% so that
+% \begin{align}
+%   \label{eq:10}
+%   p(\gamma, \br, t \given \bM) &\propto \gamma^{a_{\gamma - 1}}
+%   \exp(-b_{\gamma}\gamma) t^{\gamma - 1}(1-t)^{m_{\cdot\cdot} +
+%     q_{\cdot} - 1} \prod_{j=1}^J s(m_{\cdot j} + q_j, r_j)
+%   \left(\frac{\gamma}{J}\right)^{r_j}
+% \end{align}
+% and
+% \begin{align}
+%   \label{eq:11}
+%   p(\gamma \given \br, t) \propto \gamma^{a_\gamma +
+%     r_{\cdot} - 1} \exp(-(b_{\gamma} - \log(t)) \gamma),
+% \end{align}
+% which is to say
+% \begin{equation}
+%   \label{eq:18}
+%   \gamma \given \br, t, \bz, \bu, \bQ, \bM, \btheta \sim \Gamm{a_{\gamma} + r_{\cdot}}{b_{\gamma} - \log(t)}
+% \end{equation}
+
+% \subsubsection{Summary}
+
+% I have made the following additional assumptions about the generative
+% model in this section:
+% \begin{equation}
+%   \label{eq:100}
+%   \gamma \sim \Gamm{a_{\gamma}}{b_{\gamma}} \qquad \alpha \sim \Gamm{a_{\alpha}}{b_{\alpha}}
+% \end{equation}
+
+% The joint conditional over $\gamma$, $\alpha$, $\bbeta$ and $\bpi$
+% given $\bz$, $\bu$, $\bQ$, $\bM$, $\br$, $t$ and $\btheta$ factors as
+% \begin{equation}
+%   \label{eq:46}
+%   p(\gamma, \alpha, \bbeta, \bpi \given \bz, \bu, \bQ, \br, t,
+%   \btheta) = p(\gamma \given \br, t) p(\alpha \given \bu, \bM) p(\bbeta
+%   \given \gamma, \bM) p(\bpi \given \alpha, \bbeta, \bz, \bu, \bQ)
+% \end{equation}
+% where
+% \begin{align}
+%   \label{eq:64}
+%   \gamma \given \br, t &\sim \Gamm{a_{\gamma} + r_{\cdot}}{b_{\gamma} -
+%     \log(t)} \\
+%   \alpha \given \bu, \bM &\sim \Gamm{a_{\alpha} +
+%     m_{\cdot\cdot}}{b_{\alpha} + \sum_j \log(1 + u_j)} \\
+%   \bbeta \given \gamma, \bM &\sim \mathrm{Dirichlet}(\frac{\gamma}{J} + m_{\cdot 1},
+%   \dots, \frac{\gamma}{J} + m_{\cdot J}) \\
+%   \pi_{jj'} \given \alpha, \beta_{j'}, \bz, \bu, \bQ
+%   &\stackrel{ind}{\sim} \Gamm{\alpha\beta_{j'} + n_{jj'} + q_{jj'}}{1 +
+%   u_j}
+% \end{align}
+
+
+% \subsection{Sampling \texorpdfstring{$\bz$}{the latent state sequece} and the auxiliary variables}
+% \label{sec:sampling-z_t}
+
+% The hidden state sequence, $\bz$, is sampled jointly with the auxiliary
+% variables, which consist of $\bu$, $\bM$, $\bQ$, $\br$ and $t$.  The
+% joint conditional distribution of these variables is defined directly
+% by the generative model:
+% \begin{align}
+%   \label{eq:19}
+%   p(\bz, \bu, \bQ, \bM, \br, t \given \bpi, \bbeta, \alpha, \gamma,
+%   \btheta) &= p(\bz \given \bpi, \btheta) p(\bu \given \bz, \bpi, \btheta) p(\bQ \given
+%   \bu, \bpi, \btheta) p(\bM \given
+%   \bz, \bQ, \alpha, \bbeta) \\
+%   &\qquad \times p(\br \given
+%   \gamma, \bM) p(t \given \gamma, \bM)
+% \end{align}
+% Since we are representing the transition matrix explicitly, we can
+% sample the entire sequence $\bz$ at once with the forward-backward algorithm,
+% as in an ordinary HMM (or, if we are employing the HSMM variant
+% described in Sec. \ref{sec:an-hsmm-modification}, then we can use the
+% modified message passing scheme for HSMMs described by
+% \cite{johnson2013bayesian}.  
+% Having done this, we can sample $\bu$, $\bQ$, $\bM$,
+% $\br$ and $t$ from their forward distributions.  To summarize,
+% we have
+% \begin{align}
+%   \label{eq:48}
+%   u_j \given \bZ, \bpi, \btheta &\stackrel{ind}{\sim}
+%   \Gamm{n_{j\cdot}}{\sum_{j'} \pi_{jj'}\phi_{jj'}} \\
+%   q_{jj'} \given u_j, \pi_{jj'}, \phi_{jj'} &\stackrel{ind}{\sim}
+%   \Pois{u_j(1 - \phi_{jj'})\pi_{jj'}} \\
+%   m_{jj'} \given n_{jj'}, q_{jj'}, \beta_{j'}, \alpha &\stackrel{ind}{\sim}
+%   \frac{\Gamma(\alpha\beta_j)}{\Gamma(\alpha\beta_j + n_{jj'} +
+%     q_{jj'})}\sum_{m=1}^{n_{jj'} + q_{jj'}} s(n_{jj'} + q_{jj'}, m) \alpha^m \beta_{j'}^m \delta_{m}
+%   \\
+%   r_j \given m_{\cdot j}, \gamma &\stackrel{ind}{\sim}
+%   \frac{\Gamma(\frac{\gamma}{J})}{\Gamma(\frac{\gamma}{J} + m_{\cdot
+%       j})} \sum_{r=1}^{m_{j\cdot}} s(m_{\cdot j}, r)
+%   \left(\frac{\gamma}{J}\right)^r \delta_r \\
+%   t \given \gamma, \bM &\sim \Beta{\gamma}{m_{\cdot\cdot}}
+% \end{align}
+
+% \subsection{Sampling state and emission parameters}
+% \label{sec:sampling-eta}
+
+% The state parameters, $\btheta$, influence the transition matrix,
+% $\bpi$ and the auxiliary vector $q$ through the similarity matrix
+% matrix $\bphi$, and also control the emission distributions.
+% We have likelihood factors
+% \begin{align}
+%   \label{eq:65}
+%   p(\bz, \bQ \given \btheta) &\propto \prod_{j}\prod_{j'}
+%   \phi_{jj'}^{n_{jj'}}(1-\phi_{jj'})^{q_{jj'}} \\
+%   p(\bY \given \bz, \btheta) &= \prod_{t=1}^T f(\by_t; \theta_{z_t})
+% \end{align}
+% where proportionality is with respect to variation in $\btheta$.
+
+% The parameter space for the hidden states, 
+% the associated prior $H$ on $\btheta$, and the similarity function
+% $\Phi$, is application-specific, but we consider here the case where a state,
+% $\theta_j$, consists of a finite-length binary vector, motivated by the
+% application of inferring the set of relevant entities in each sentence of
+% a text document.
+
+% Let $\theta_j = (\theta_{j1}, \dots, \theta_{jD})$, with $\theta_{jd} = 1$
+% indicating presence of feature $d$ in context state $j$, and
+% $\theta_{jd} = 0$ indicating absence.  Of course, in this case,
+% the set of possible states is finite, and so on its face it may
+% seem that a nonparametric model is unnecessary.  However, if $D$ is
+% reasonably large, it is likely that most of the $2^D$ possible states
+% are vanishingly unlikely (and, in fact, the number of observations may
+% well be less than $2^D$), and so we would like a model that encourages
+% the selection of a sparse set of states.  Moreover, there may be more
+% than one state with the same $\theta$, but with different transition dynamics.
+
+% \subsubsection{Sampling \texorpdfstring{$\btheta$}{latent state vectors}}
+% \label{sec:sampling-eta}
+
+% In principle, $H$ can be any distribution over binary vectors, but we
+% will suppose for simplicity that it can be factored into $D$
+% independent coordinate-wise Bernoulli variates.  Let $\mu_d$ be the
+% Bernoulli parameter for the $d$th coordinate.
+
+% We require a similarity function, $\Phi(\theta_j, \theta_{j'})$, which 
+% varies between 0 to 1, and is equal to 1 if and only if $\theta_j =
+% \theta_{j'}$.  A natural choice in this setting is the Laplacian kernel:
+% \begin{align}
+%   \label{eq:39}
+%   \phi_{jj'} &= \Phi(\theta_j, \theta_{j'}) = \exp(-\lambda \Delta_{jj'})
+% \end{align}
+% where $\Delta_{jj'd} = \abs{\theta_{jd} - \theta_{j'd}}$, $\Delta_{jj'} =
+% \sum_{d=1}^D \Delta_{jj'}$ is the Hamming
+% distance between $\theta_j$ and $\theta_{j'}$,
+% and $\lambda \geq 0$ (if $\lambda = 0$, the $\phi_{jj'}$
+% are identically 1, and so do not have any influence, reducing the
+% model to an ordinary HDP-HMM).
+
+% Let
+% \begin{align}
+%   \label{eq:68}
+%   \phi_{jj'-d} &= \exp(-\lambda(\Delta_{jj'} - \Delta_{jj'd}))
+% \end{align}
+% so that $\phi_{jj'} = \phi_{jj'-d} e^{-\lambda\Delta_{jj'd}}$.
+
+% Since the matrix $\bphi$ is assumed to be symmetric, we have
+% \begin{align}
+%   \label{eq:70}
+%   \frac{p(\bz, \bQ \given \theta_{jd}  = 1, \btheta\setminus\theta_{jd}
+%     )}{p(\bz, \bQ \given \theta_{jd}  = 0, \btheta\setminus\theta_{jd} )}
+%   &\propto \prod_{j' \neq j}
+%   \frac{e^{-\lambda(n_{jj'} + n_{j'j})\abs{1 - \theta_{j'd}}}(1 -
+%     \phi_{jj'-d} e^{-\lambda\abs{1 - \theta_{j'd}}})^{q_{jj'} +
+%       q_{j'j}}}{e^{-\lambda(n_{jj'} + n_{j'j})\abs{\theta_{j'd}}}
+%     (1-\phi_{jj'-d}e^{-\lambda\abs{\theta_{j'd}}})^{q_{jj'} +
+%       q_{j'j}}} \\
+%   &= \label{eq:71} e^{-\lambda(c_{jd0} - c_{jd1})}
+%   \prod_{j' \neq j} \left(\frac{1 - \phi_{jj'-d}e^{-\lambda}}{1-\phi_{jj'-d}}\right)^{(-1)^{\theta_{j'd}}(q_{jj'} + q_{j'j})}
+% \end{align}
+% where $c_{jd0}$ and $c_{jd1}$ are the number of successful jumps to or
+% from state $j$, to or from states with a 0 or 1, respectively, in
+% position $d$.  That is,
+% \begin{equation}
+%   \label{eq:72}
+%   c_{jd0} = \sum_{\{j' \given \theta_{j'd} = 0\}} n_{jj'} + n_{j'j}\qquad c_{jd1} = \sum_{\{j' \given \theta_{j'd} = 1\}} n_{jj'} + n_{j'j}
+% \end{equation}
+
+% Therefore, we can Gibbs sample $\theta_{jd}$ from its conditional
+% posterior Bernoulli distribution given the rest of $\btheta$, where
+% we compute the Bernoulli parameter via the log-odds
+% \begin{align}
+%   \label{eq:77}
+%   &\log\left(\frac{p(\theta_{jd} = 1 \given \bY, \bz, \bQ, \btheta \setminus
+%     \theta_{jd})}{p(\theta_{jd} = 0 \given \bY, \bz, \bQ, \btheta
+%     \setminus \theta_{jd})}\right) = \log\left(\frac{p(\theta_{jd} =
+%   1) p(\bz, \bQ \given \theta_{jd} = 1, \btheta \setminus
+%   \theta_{jd}) p(\bY \given \bz, \theta_{jd} = 1, \btheta \setminus \theta_{jd})}{p(\theta_{jd} = 0) p(\bz, \bQ \given \theta_{jd} = 0,
+%   \btheta \setminus \theta_{jd}) p(\bY \given \bz, \theta_{jd} = 0,
+%   \btheta \setminus \theta_{jd})}\right) \\ & \qquad = \log\left(\frac{\mu_d}{1 - \mu_d}\right)
+%   + (c_{jd1} - c_{jd0}) \lambda +
+%     \sum_{j' \neq j}
+%   (-1)^{\theta_{j'd}}(q_{jj'} + q_{j'j})\log\left(\frac{1 -
+%       \phi_{jj'}^{(-d)}e^{-\lambda}}{1-\phi_{jj'}^{(-d)}}\right) \\ &
+%   \qquad \qquad + \sum_{\{t \given z_t = j\}} \log\left(\frac{f(\by_t;
+%       \theta_{jd} = 1, \theta_j \setminus \theta_{jd})}{f(\by_t;
+%       \theta_{jd} = 0, \theta_j \setminus \theta_{jd})}\right)
+% \end{align}
+
+% Suppose also that the observed data $\bY$ consists of a $T \times K$
+% matrix, where the $t$th row $\by_t = (y_{t1}, \dots,
+% y_{tK})^{\mathsf{T}}$ is a $K$-dimensional feature vector associated
+% with time $t$, and let $\bW$ be a $D \times K$ weight matrix
+% with $k$th column $\bw_k$, such that 
+% \begin{equation}
+%   \label{eq:74}
+%   f(\by_t; \theta_j) = g(\by_t; \bW^{\mathsf{T}} \theta_j)
+% \end{equation}
+% for a suitable parametric function $g$.  I will assume for simplicity
+% that $g$ factors as
+% \begin{equation}
+%   \label{eq:73}
+%   g(\by_t; \bW^{\mathsf{T}} \theta_j) = \prod_{k=1}^K g_k(y_{tk}; \bw_k \cdot \theta_j)
+% \end{equation}
+% Define $x_{tk} = \bw_k \cdot \theta_{z_{t}}$, and
+% $x_{tk}^{(-d)} = \bw_k^{-d} \cdot \theta_{z_{t}}^{-d}$, where
+% $\theta_{j}^{-d}$ and $\bw_{k}^{-d}$ are $\theta_{j}$ and $\bw_k$, respectively, with
+% the $d$th coordinate removed.  Then
+% \begin{equation}
+%   \label{eq:76}
+%   \log\left(\frac{f(\by_t; \theta_{jd} = 1, \theta_j \setminus
+%     \theta_{jd})}{f(\by_t; \theta_{jd} = 0, \theta_j \setminus \theta_{jd})}\right) =
+%   \sum_{k=1}^K \log\left(\frac {g_k(y_{tk};
+%     x_{tk}^{(-d)} + w_{dk})}{g_k(y_{tk};
+%     x_{tk}^{(-d)})}\right)
+% \end{equation}
+% If $g_k(y; x)$ is a Normal density with mean $x$ and unit variance, then
+% \begin{equation}
+%   \label{eq:91}
+%   \log\left(\frac {g_k(y_{tk};
+%     x_{tk}^{(-d)} + w_{dk})}{g_k(y_{tk};
+%     x_{tk}^{(-d)})}\right) = -w_{dk}(y_{tk} - x_{tk}^{(-d)} + \frac{1}{2}w_{dk})
+% \end{equation}
+
+% \subsubsection{Sampling \texorpdfstring{$\bmu$}{mu}}
+% \label{sec:sampling-bmu}
+
+% Sampling the $\mu_d$ is straightforward with a Beta prior.  Suppose
+% \begin{equation}
+%   \label{eq:92}
+%   \mu_d \stackrel{ind}{\sim} \Beta{a_\mu}{b_\mu}
+% \end{equation}
+% Then, conditioned on $\btheta$ the $\mu_d$ are independent with
+% \begin{equation}
+%   \label{eq:93}
+%   \mu_d \given \btheta \sim \Beta{a_\mu + \sum_{j} \theta_{jd}}{b_\mu +
+%   \sum_{j} (1 - \theta_{jd})}
+% \end{equation}
+
+% \subsubsection{Sampling \texorpdfstring{$\lambda$}{kernel decay rate}}
+% \label{sec:sampling-lambda}
+
+% The parameter $\lambda$ governs the connection between $\btheta$ and
+% $\bphi$.  Writing \eqref{eq:65} in terms of $\lambda$ and the difference matrix
+% $\boldsymbol{\Delta} = (\Delta_{jj'})_{1 \leq j,j' \leq J}$ gives
+% \begin{equation}
+%   \label{eq:88}
+%   p(\bz, \bQ \given \lambda, \btheta) \propto \prod_{j}\prod_{j'}
+%   e^{-\lambda \Delta_{jj'} n_{jj'}}(1-e^{-\lambda\Delta_{jj'}})^{q_{jj'}} 
+% \end{equation}
+% Put an $\Exp{b_{\lambda}}$ prior on $\lambda$, so that
+% \begin{equation}
+%   \label{eq:88}
+%   p(\lambda \given \bz, \bQ, \btheta) \propto
+%   e^{-(b_{\lambda} + \sum_{j}\sum_{j'} \Delta_{jj'} n_{jj'})\lambda} \prod_{j}\prod_{j'}
+%   (1-e^{-\lambda\Delta_{jj'}})^{q_{jj'}}
+% \end{equation}
+% This density is log-concave, with
+% \begin{equation}
+%   \label{eq:90}
+%   -\frac{d^2\log(p(\lambda \given \bz, \bQ,
+%     \btheta))}{d\lambda^2} = \sum_{\{(j,j') \given
+%     \Delta_{jj'} > 0\}}
+%   \frac{\Delta_{jj'}^2 q_{jj'}
+%     e^{\lambda\Delta_{jj'}}}{(e^{\lambda\Delta_{jj'}} - 1)^2} > 0
+% \end{equation}
+% and so we can use Adaptive Rejection Sampling \cite{gilks1992adaptive}
+% to sample from it.  The relevant $h$ and $h'$, representing the log
+% density and its first derivative, respectively, are
+% \begin{align}
+%   \label{eq:94}
+%   h(\lambda) &= 
+%   -(b_{\lambda} + \sum_{\{(j,j') \given \Delta_{jj'} > 0\}} \Delta_{jj'} n_{jj'})\lambda +
+%   \sum_{\{(j,j') \given \Delta_{jj'} > 0\}} q_{jj'} \log(1 - e^{-\lambda\Delta_{jj'}}) \\
+%   h'(\lambda) &= -(b_{\lambda} + \sum_{\{(j,j') \given \Delta_{jj'} > 0\}} \Delta_{jj'}
+%   n_{jj'}) + \sum_{\{(j,j') \given \Delta_{jj'} > 0\}}
+%   \frac{q_{jj'}\Delta_{jj'}}{e^{\lambda\Delta_{jj'}} - 1}
+% \end{align}
+
+% \subsubsection{Sampling \texorpdfstring{$\bW$}{weights}}
+
+% Conditioned on the state matrix $\btheta$ and the data matrix $\bY$, the weight matrix $\bW$ can be sampled as well using standard methods
+% for Bayesian regression problems.  For example, suppose that the
+% weights are {\em a priori} i.i.d. Normal:
+% \begin{equation}
+%   \label{eq:78}
+%   p(\bW) = \prod_{k=1}^K\prod_{d=1}^D \mathcal{N}(w_{dk} \given 0,\sigma^2_0)
+% \end{equation}
+% and the likelihood is
+% \begin{equation}
+%   \label{eq:79}
+%   g_k(y; x) = \mathcal{N}(y \given x,1)
+% \end{equation}
+% Then it is a standard result from Bayesian linear modeling that
+% \begin{equation}
+%   \label{eq:80}
+%   p(\bW \given \btheta, \bY) = \prod_{k=1}^K
+%   \mathcal{N}\left(\left(\sigma_0^2 \mathbf{I} + \btheta^{\mathsf{T}} \btheta
+%     \right)^{-1}\btheta^{\mathsf{T}}\by_k, \sigma_0^2 \mathbf{I} + \btheta^{\mathsf{T}} \btheta\right)
+% \end{equation}
+
+% If one or more output features, say $\by_k$, is binary, we can adopt a
+% probit model where we introduce a latent data vector $\by^*_k$ for
+% each such $k$, and assume
+% \begin{equation}
+%   \label{eq:83}
+%   p(\by^*_{k} \given \bx_k) = \prod_{t} \mathcal{N}(y^*_{tk} \given x_{tk}, 1)
+% \end{equation}
+% and 
+% \begin{equation}
+%   \label{eq:84}
+%   y_{tk} = \begin{cases}
+%     0,& y^*_{tk} \leq 0 \\
+%     1,& y^*_{tk} > 0
+%   \end{cases}
+% \end{equation}
+% And so, after marginalizing over $\by^*_k$
+% \begin{equation}
+%   \label{eq:81}
+%   p(\by_k \given \bx_k) = \prod_{t=1}^T F(x_{tk})^{y_{tk}} (1 - F(x_{tk}))^{1 - y_{tk}}
+% \end{equation}
+% where $F$ is the standard Normal CDF, since
+% \begin{equation}
+%   \label{eq:85}
+%   \int_{0}^{\infty} dy^*_{tk} \mathcal{N}(y^*_{tk} \given x_{tk}, 1) =
+%   \int_{-x_{tk}}^{\infty} dy^*_{tk} \mathcal{N}(y^*_{tk} \given 0, 1)
+%   = 1 - F(-x_{tk}) = F(x_{tk})
+% \end{equation}
+% Then, conditioned on $x_{tk}$ and $y_{tk}$, we can sample $y^*_{tk}$ 
+% from a Normal distribution left- or right-truncated at 0:
+% \begin{equation}
+%   \label{eq:82}
+%   p(y^*_{tk} \given x_{tk}, y_{tk}) = \begin{cases}
+%     \mathcal{N}(x_{tk}, 1) I(y^{*}_{tk} \leq 0), & y_{tk} = 0 \\
+%     \mathcal{N}(x_{tk}, 1) I(y^*_{tk} > 0), & y_{tk} = 1
+%   \end{cases}
+% \end{equation}
+% Conditioned on the $y^*_{tk}$ and $\btheta$, the weights are
+% distributed as in \eqref{eq:80}.
+
+% \subsubsection{Summary}
+% \label{sec:summary}
+
+% I have made the following assumptions about the representation of the
+% hidden states and observed data in this subsection:
+% (1) $\btheta$ consists of $D$ binary features (2) the similarity function $\Phi$
+% is the Laplacian kernel with respect to Hamming distance with
+% decay parameter $\lambda$, and (3) $\bY$ consists of $K$ continuous or 
+% binary features associated with each time step $t$.  In addition, we
+% make the following distributional assumptions:
+% \begin{align}
+% \mu_d &\stackrel{i.i.d}{\sim} \Beta{a_{\mu}}{b_{\mu}} \\
+% \lambda &\sim \Exp{b_{\lambda}} \\
+% \theta_{jd} \given \bmu &\stackrel{ind}{\sim} \Bern{\mu_d} \\
+% \bW \sim \Norm{0}{\sigma^2_0 \mathbf{I}}
+% y^*_{tk} \given \bW, \bz, \btheta &\stackrel{ind}{\sim} \Norm{x_{tk}}{1} \\
+% y_{tk} &= \begin{cases}
+%   y^*_{tk}, & \text{if $k$ is a continuous feature} \\
+%   \mathbb{I}(y^*_{tk} > 0) & \text{if $k$ is a binary feature}
+% \end{cases}
+% \end{align}
+% where we have defined
+% \begin{align}
+%   \label{eq:102}
+%   x_{tk} = \bw_k \cdot \theta_{z_t}
+% \end{align}
+
+% I introduce Gibbs blocks corresponding to (1) each $\theta_{jd}$
+% individually, (2) the vector $\bmu$, (3) the decay parameter
+% $\lambda$, (4) the weight matrix $\bW$, and (5) the latent data
+% $\bY^*$ associated with binary features.  We have
+% \begin{align}
+%   \label{eq:101}
+%   \theta_{jd} \given \btheta \setminus \theta_{jd}, \bz, \bQ, \bmu,
+%   \lambda, \bW, \bY^* &\sim
+%   \Bern{\frac{e^{\zeta_{jd}}}{1 + e^{\zeta_{jd}}}} \\
+%   \mu_d \given \btheta, \dots &\stackrel{ind}{\sim} \Beta{a_\mu + \sum_{j} \theta_{jd}}{b_\mu +
+%   \sum_{j} (1 - \theta_{jd})} \\
+% p(\lambda \given \bz, \bQ, \btheta, \dots) &\propto e^{-(b_{\lambda} + \sum_{j}\sum_{j'} \Delta_{jj'} n_{jj'})\lambda} \prod_{j}\prod_{j'}
+%   (1-e^{-\lambda\Delta_{jj'}})^{q_{jj'}} \\
+%   \bw_k \given \btheta, \bY^{*}, \dots &\stackrel{ind}{\sim}
+%   \Norm{(\sigma_0^2 \mathbf{I} + \btheta^{\mathsf{T}}
+%     \btheta)^{-1}\btheta^{\mathsf{T}}\by^*_k}{\sigma_0^2 \mathbf{I} +
+%     \btheta^{\mathsf{T}} \btheta} \\
+%   \by^*_{tk} \given \bX, \bY, \dots &\stackrel{ind}{\sim} \begin{cases}
+%     \Norm{x_{tk}}{1} \mathbb{I}(y^*_{tk} \leq 0), & y_{tk} = 0 \\
+%     \Norm{x_{tk}}{1} \mathbb{I}(y^*_{tk} > 0), & y_{tk}= 1
+%   \end{cases}
+% \end{align}
+% where $\Delta_{jj'} = \norm{\theta_j - \theta_j'}_{L_1}$ and
+% \begin{align}
+% \zeta_{jd} &= \log\left(\frac{\mu_d}{1 - \mu_d}\right)
+%   + (c_{jd1} - c_{jd0}) \lambda +
+%     \sum_{j' \neq j}
+%   (-1)^{\theta_{j'd}}(q_{jj'} + q_{j'j})\log\left(\frac{1 -
+%       \phi_{jj'}^{(-d)}e^{-\lambda}}{1-\phi_{jj'}^{(-d)}}\right)
+%   \notag \\ & \qquad - \sum_{\{t \given z_t = j\}} \sum_{k=1}^K
+%   w_{dk}(y^*_{tk} - x_{tk}^{(-d)} + \frac{1}{2}w_{dk})
+% \end{align}
+% All distributions can be sampled from directly except for $\lambda$, which
+% requires Adaptive Rejection Sampling, with the equations
+% \begin{align}
+%   h(\lambda) &= 
+%   -(b_{\lambda} + \sum_{\{(j,j') \given \Delta_{jj'} > 0\}} \Delta_{jj'} n_{jj'})\lambda +
+%   \sum_{\{(j,j') \given \Delta_{jj'} > 0\}} q_{jj'} \log(1 - e^{-\lambda\Delta_{jj'}}) \\
+%   h'(\lambda) &= -(b_{\lambda} + \sum_{\{(j,j') \given \Delta_{jj'} > 0\}} \Delta_{jj'}
+%   n_{jj'}) + \sum_{\{(j,j') \given \Delta_{jj'} > 0\}}
+%   \frac{q_{jj'}\Delta_{jj'}}{e^{\lambda\Delta_{jj'}} - 1}
+% \end{align}

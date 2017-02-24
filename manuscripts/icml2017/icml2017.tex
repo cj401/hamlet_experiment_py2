@@ -1,0 +1,169 @@
+% Use the following line _only_ if you're still using LaTeX 2.09.
+%\documentstyle[icml2016,epsf,natbib]{article}
+% If you rely on Latex2e packages, like most moden people use this:
+\documentclass{article}
+
+% use Times
+\usepackage{times}
+% For figures
+\usepackage{graphicx} % more modern
+%\usepackage{epsfig} % less modern
+\usepackage{subfigure} 
+
+% For citations
+\usepackage{natbib}
+
+% For algorithms
+\usepackage{algorithm}
+\usepackage{algorithmic}
+
+% As of 2011, we use the hyperref package to produce hyperlinks in the
+% resulting PDF.  If this breaks your system, please commend out the
+% following usepackage line and replace \usepackage{icml2016} with
+% \usepackage[nohyperref]{icml2016} above.
+\usepackage{hyperref}
+
+% Packages hyperref and algorithmic misbehave sometimes.  We can fix
+% this with the following command.
+\newcommand{\theHalgorithm}{\arabic{algorithm}}
+
+% Employ the following version of the ``usepackage'' statement for
+% submitting the draft version of the paper for review.  This will set
+% the note in the first column to ``Under review.  Do not distribute.''
+\usepackage{icml2016} 
+
+% Employ this version of the ``usepackage'' statement after the paper has
+% been accepted, when creating the final version.  This will set the
+% note in the first column to ``Proceedings of the...''
+%\usepackage[accepted]{icml2016}
+
+
+% The \icmltitle you define below is probably too long as a header.
+% Therefore, a short form for the running title is supplied here:
+\icmltitlerunning{An Infinite HMM With Similarity-Biased Transitions}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Useful math
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%% macros %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+% argmax and argmin
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+%% Distributions
+\newcommand{\Norm}[2]{\mathcal{N}(#1,#2)}
+\newcommand{\Unif}[1]{\mathsf{Unif}(#1)}
+\newcommand{\Pois}[1]{\mathsf{Poisson}(#1)}
+\newcommand{\Exp}[1]{\mathsf{Exp}(#1)}
+\newcommand{\Gamm}[2]{\mathsf{Gamma}(#1,#2)}
+\newcommand{\Bern}[1]{\mathcal{B}\mathrm{ern}\left(#1\right)}
+\newcommand{\Be}[1]{\mathsf{Beta}\left(#1\right)}
+\newcommand{\Binom}[2]{\mathcal{B}\mathrm{inom}(#1,#2)}
+\newcommand{\Geom}[1]{\mathcal{G}\mathrm{eom}(#1)}
+\newcommand{\Cat}[1]{\mathsf{Cat}(#1)}
+\newcommand{\Beta}[2]{\mathcal{B}\mathrm{eta}(#1,#2)}
+\newcommand{\Lapl}{\mathcal{L}\mathrm{aplace}}
+\newcommand{\GP}{\mathcal{GP}}
+\newcommand{\DP}[1]{\mathsf{DP}(#1)}
+\newcommand{\GEM}[1]{\mathsf{GEM}(#1)}
+\newcommand{\Dir}[1]{\mathsf{Dir}(#1)}
+\newcommand{\CRP}{\mathsf{CRP}}
+
+%% Probability
+\newcommand{\E}[1]{\mathbb{E}[#1]}
+\newcommand{\Cov}[2]{\mathbb{C}\mathrm{ov}(#1,#2)}
+\newcommand{\given}{\, \vert \,}
+
+%% General
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\abs}[1]{\left\vert #1 \right\vert}
+\newcommand{\norm}[1]{\left\vert \left \vert #1 \right\vert \right\vert}
+
+%% Vectors
+\newcommand{\bx}{\mathbf{x}}
+\newcommand{\bX}{\mathbf{X}}
+\newcommand{\by}{\mathbf{y}}
+\newcommand{\bY}{\mathbf{Y}}
+\newcommand{\ba}{\mathbf{a}}
+\newcommand{\bA}{\mathbf{A}}
+\newcommand{\bb}{\mathbf{b}}
+\newcommand{\bD}{\mathbf{D}}
+\newcommand{\bB}{\mathbf{B}}
+\newcommand{\bc}{\mathbf{c}}
+\newcommand{\bM}{\mathbf{M}}
+\newcommand{\bC}{\mathbf{C}}
+\newcommand{\bQ}{\mathbf{Q}}
+\newcommand{\bl}{\mathbf{l}}
+\newcommand{\bem}{\mathbf{m}}
+\newcommand{\bq}{\mathbf{q}}
+\newcommand{\bz}{\mathbf{z}}
+\newcommand{\bZ}{\mathbf{Z}}
+\newcommand{\bu}{\mathbf{u}}
+\newcommand{\br}{\mathbf{r}}
+\newcommand{\bs}{\mathbf{s}}
+\newcommand{\bw}{\mathbf{w}}
+\newcommand{\bW}{\mathbf{W}}
+\newcommand{\bT}{\mathbf{T}}
+\newcommand{\bth}{\bm\uptheta}
+\newcommand{\bTh}{\bm\Theta}
+\newcommand{\bbeta}{\boldsymbol{\beta}}
+\newcommand{\btheta}{\boldsymbol{\theta}}
+\newcommand{\bpi}{\boldsymbol{\pi}}
+\newcommand{\bphi}{\boldsymbol{\phi}}
+\newcommand{\btau}{\boldsymbol{\tau}}
+\newcommand{\bmu}{\boldsymbol{\mu}}
+\newcommand{\blambda}{\boldsymbol{\lambda}}
+\newcommand{\bell}{\boldsymbol{\ell}}
+\newcommand{\boldeta}{\boldsymbol{\eta}}
+\newcommand{\bSigma}{\boldsymbol{\Sigma}}
+
+%% Sets
+\newcommand{\cA}{\mathcal{A}}
+\newcommand{\cB}{\mathcal{B}}
+\newcommand{\cZ}{\mathcal{Z}}
+\newcommand{\cM}{\mathcal{M}}
+
+
+\newcommand{\fix}{\marginpar{FIX}}
+\newcommand{\new}{\marginpar{NEW}}
+
+\begin{document}
+\twocolumn[
+
+\icmltitle{ An Infinite Hidden Markov Model With Similarity-Biased
+  Transitions }
+
+\icmlauthor{ Colin Reimer Dawson }{cdawson@oberlin.edu}
+\icmlauthor{ Chaofan Huang }{chuang@oberlin.edu}
+\icmlauthor{ Clayton T. Morrison }{claytonm@email.arizona.edu}
+
+\icmladdress{ Oberlin College, 10 N Professor St., Oberlin, OH 44074 USA}
+\icmladdress{ Oberlin College, 10 N Professor St., Oberlin, OH 44074 USA }
+\icmladdress{ The University of Arizona, ... }
+
+\icmlkeywords{ Bayesian nonparametrics, Hidden Markov models }
+\vskip 0.3in
+]
+
+\begin{abstract}
+\input{abstract.tex}
+\end{abstract}
+
+% \input{introduction.tex}
+\input{background.tex}
+
+\input{model.tex}
+\input{inference.tex}
+\input{experiments.tex}
+\input{discussion.tex}
+% \input{acknowledgments.tex}
+
+\newpage
+\bibliographystyle{icml2016}
+\bibliography{hdp_hmm_lt}
+
+\end{document}
