@@ -1,0 +1,2 @@
+comparison model
+all_models LT_hdp_hmm_w0
