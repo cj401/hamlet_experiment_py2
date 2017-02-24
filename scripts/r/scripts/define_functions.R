@@ -897,21 +897,33 @@ make_key_plots <-
     for (v in plot.vars)
     {
       print(paste('Plotting for ', v, '...', sep=""))
-      plot_scalar_by_iteration(
-        specs, v, burnin_samples = burnin_samples, paths = paths,
-        summary_function = I,
-        smoothing_window_size)
-      #if (!(v %in% no_density_and_acf))
-      #{
-      plot_scalar_density_by_model(specs = specs,
-                                   output_type = v,
-                                   paths = paths,
-                                   burnin_samples = burnin_samples)
-      plot_acf_by_model_and_run(specs = specs,
-                                output_type = v,
-                                paths = paths)
-      #}
+      if (v == "n_dots")
+      {
+          plot_scalar_by_iteration(
+                    specs, "n_dot", burnin_samples = burnin_samples,
+                    summary_function = count_nonzero_entries_per_row,
+                    paths = paths,
+                    smoothing_window_size)
+      }
+      else
+      {
+          plot_scalar_by_iteration(
+                    specs, v, burnin_samples = burnin_samples, paths = paths,
+                    summary_function = I,
+                    smoothing_window_size)
+          plot_scalar_density_by_model(specs = specs,
+                    output_type = v,
+                    paths = paths,
+                    burnin_samples = burnin_samples)
+                    plot_acf_by_model_and_run(specs = specs,
+                    output_type = v,
+                    paths = paths)
+      }
     }
+    if("n_dot" %in% plot.vars)
+    #    {
+    #
+    #    }
     if (plot_A)
     {
         plot_A_and_block_A(specs = specs,
