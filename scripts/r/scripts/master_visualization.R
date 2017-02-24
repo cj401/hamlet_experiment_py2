@@ -48,7 +48,10 @@ option_list = list(
   make_option(c("--remove"), type="character",
               default=NULL,
               help="variables removed from the base variables, seperate by a comma",
-              metavar="character")
+              metavar="character"),
+  make_option(c("--max_iter"), type="character",
+              default="5000",
+              help="max iteration for plotting", metavar="character")
 );
 
 opt_parser = OptionParser(option_list = option_list)
@@ -91,4 +94,5 @@ make_plots(opt$query_file,
           as.numeric(opt$threshold),
           opt$block_matrix_code,
           as.numeric(opt$binary),
-          opt$groundtruth)
+          opt$groundtruth,
+          as.numeric(opt$max_iter))
