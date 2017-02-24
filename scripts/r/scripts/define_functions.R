@@ -648,8 +648,10 @@ plot_scalar_density_by_model <-
         #plot_data$model <- factor(plot_data$model, levels=c('noLT','LT','BFact','Sticky','StickyLT'))
         #plot_data <- plot_data[order(plot_data$model),]
         print(paste('Output density plot to', output_path, "/", output_type, "_density.pdf", sep = ""))
+        width = (max(density_plot_data$value) - min(density_plot_data$value))/50
         ggplot(density_plot_data, aes(value, fill=model)) +
-          geom_histogram(alpha=0.5, aes(y=..density..), position='identity') +
+          geom_histogram(alpha=0.4, aes(y=..density..), position='identity', binwidth=width) +
+          geom_line(stat="density", aes(color=model)) +
           labs(x=output_type, y="density") +
           scale_fill_manual(values=group.colors) +
           scale_color_manual(values=group.colors) +
