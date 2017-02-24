@@ -309,6 +309,7 @@ plot_scalar_by_iteration <-
         plot_data <- rbind(plot_data, plot_data_each_group)
       }
       names(plot_data) <- c("iter", "m", "lwr", "upr","model")
+      plot_data <- plot_data[order(plot_data$model),]
       print(paste('Output to', output_path, "/", output_type, ".pdf", sep = ""))
       #pdf(paste(output_path, "/", output_type, ".pdf", sep = ""))
       ggplot(plot_data) +
@@ -321,9 +322,9 @@ plot_scalar_by_iteration <-
           axis.title=element_text(size=20),
           legend.text=element_text(size=20),
           legend.title=element_text(size=24),
-          aspect.ratio = 0.5
+          aspect.ratio = 0.35
         )
-      ggsave(paste(output_path, "/", output_type, ".pdf", sep = ""), width = 8, height = 4)
+      ggsave(paste(output_path, "/", output_type, ".pdf", sep = ""), width = 8, height = 2.8)
       #dev.off()
       print('done.')
     #xf}
@@ -599,8 +600,9 @@ plot_scalar_density_by_model <-
       specs, 
       output_type,
       paths,
-      xrange = c(-Inf, Inf),
-      yrange = c(-Inf, Inf),
+      #xrange = c(-Inf, Inf),
+      #yrange = c(-Inf, Inf),
+      summary_function = I,
       burnin_samples = 10
     )
 {
@@ -614,7 +616,7 @@ plot_scalar_density_by_model <-
       #else
       #{
         results_list <- get_scalar_or_vector_data(specs, output_type, paths)
-        collected_data <- collect_data_as_scalar(results_list)
+        collected_data <- collect_data_as_scalar(results_list, summary_function = summary_function)
         density_data <- collect_data_for_density_plot(collected_data, burnin_samples)
         groups <- specs$models
         density_plot_data <- data.frame()
@@ -634,9 +636,9 @@ plot_scalar_density_by_model <-
             axis.title=element_text(size=20),
             legend.text=element_text(size=20),
             legend.title=element_text(size=24),
-            aspect.ratio = 0.5
+            aspect.ratio = 0.35
           )
-        ggsave(paste(output_path, "/", output_type, "_density.pdf", sep = ""), width = 8, height = 4)
+        ggsave(paste(output_path, "/", output_type, "_density.pdf", sep = ""), width = 8, height = 2.8)
         
         
         #x_lowest_val <- Inf
@@ -904,6 +906,11 @@ make_key_plots <-
                     summary_function = count_nonzero_entries_per_row,
                     paths = paths,
                     smoothing_window_size)
+        plot_scalar_density_by_model(specs = specs,
+                                     output_type = "n_dot",
+                                     paths = paths,
+                                     burnin_samples = burnin_samples,
+                                     summary_function = count_nonzero_entries_per_row)
       }
       else
       {
@@ -915,12 +922,12 @@ make_key_plots <-
                     output_type = v,
                     paths = paths,
                     burnin_samples = burnin_samples)
-                    plot_acf_by_model_and_run(specs = specs,
+          plot_acf_by_model_and_run(specs = specs,
                     output_type = v,
                     paths = paths)
       }
     }
-    if("n_dot" %in% plot.vars)
+    #if("n_dot" %in% plot.vars)
     #    {
     #
     #    }
