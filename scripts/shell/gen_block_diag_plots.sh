@@ -13,6 +13,6 @@ export THIS_DIR=$(pwd)
 
 cd $THIS_DIR/$RSCRIPT_ROOT
 
-Rscript master_visualization.R -q "block_diag.txt" -d $COCKTAIL_RESULTS_PATH -s $SMOOTH -b $BURNIN -p "." -v train_log_likelihood,test_log_likelihood -r $PROJECT_ROOT
+Rscript master_visualization.R -q "block_diag.txt" -d $COCKTAIL_RESULTS_PATH -s $SMOOTH -b $BURNIN -p "." -v train_log_likelihood,test_log_likelihood,A -r $PROJECT_ROOT
 
 cd $THIS_DIR
