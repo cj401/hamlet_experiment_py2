@@ -78,9 +78,9 @@ get_matrix_data <- function(specs, output_type, paths)
     for (m in groups)
     {
       cur_path <- getwd()
-      model_dir <- 
+      model_dir <-
         paste(
-          paths$results, "/", 
+          paths$results, "/",
           specs$results, "/",
           specs$dataset, "/",
           m, "/", sep = "")
@@ -89,7 +89,7 @@ get_matrix_data <- function(specs, output_type, paths)
       setwd(cur_path)
       for (i in items)
       {
-        data_path <- 
+        data_path <-
           paste(
             model_dir, "/",
             i, "/",
@@ -114,17 +114,17 @@ get_matrix_data <- function(specs, output_type, paths)
                 header = FALSE))
           matrix_stack[,,t] <- next_matrix
         }
-        data_list[[m]] <- 
+        data_list[[m]] <-
           append(data_list[[m]], list(matrix_stack))
       }
     }
     return(data_list)
-    
+
     #for(i in 1:length(specs$models))
     #{
      #   data_path <-
      #      paste(
-     #           paths$results, "/", 
+     #           paths$results, "/",
      #           specs$results, "/",
      #           specs$dataset, "/",
      #           specs$models[i], "/",
@@ -439,8 +439,8 @@ plot_binary_matrices <- function(specs, data, paths)
   pdf(paste(output_dir, "/groundtruth.pdf", sep=""), width=8, height=1.2)
   #old_par <- par()
   par(mar = c(1,4,1,1))
-  image(data$gt, x = seq(0.5, T + 0.5), y = seq(0.5, D + 0.5), 
-        col = gray.colors(100), xlab="", ylab="Groundtruth", 
+  image(data$gt, x = seq(0.5, T + 0.5), y = seq(0.5, D + 0.5),
+        col = gray.colors(100), xlab="", ylab="Groundtruth",
         xaxt="n", yaxt="n", cex.lab=1)
         #par(old_par)
   dev.off()
@@ -454,8 +454,8 @@ plot_binary_matrices <- function(specs, data, paths)
     T <- nrow(m)
     D <- ncol(m)
     par(mar = c(1,4,1,1))
-    image(m, x = seq(0.5, T + 0.5), y = seq(0.5, D + 0.5), 
-          col = gray.colors(100), xlab="", ylab=strsplit(ms, "_")[[1]][1], 
+    image(m, x = seq(0.5, T + 0.5), y = seq(0.5, D + 0.5),
+          col = gray.colors(100), xlab="", ylab=strsplit(ms, "_")[[1]][1],
           xaxt="n", yaxt="n", cex.lab=1)
     dev.off()
   }
@@ -607,9 +607,9 @@ create.thetastar.array <- function(root, exclusions)
     }
 }
 
-plot_scalar_density_by_model <- 
+plot_scalar_density_by_model <-
     function(
-      specs, 
+      specs,
       output_type,
       paths,
       #xrange = c(-Inf, Inf),
@@ -660,8 +660,8 @@ plot_scalar_density_by_model <-
             aspect.ratio = 0.35
           )
         ggsave(paste(output_path, "/", output_type, "_density.pdf", sep = ""), width = 8, height = 2.8)
-        
-        
+
+
         #x_lowest_val <- Inf
         #x_highest_val <- -Inf
         #y_lowest_val <- Inf
@@ -693,7 +693,7 @@ plot_scalar_density_by_model <-
          # labels[i] <- split_group_name[[i]][1]
         #}
         #legend("topright", lty = plot_vars, col = plot_vars, legend = labels)
-        #dev.off() 
+        #dev.off()
       #}
       print('done.')
 }
@@ -712,7 +712,7 @@ collect_data_for_density_plot <- function(collapsed_data, burnin_samples)
     return (result)
 }
 
-plot_acf_by_model_and_run <- 
+plot_acf_by_model_and_run <-
     function(
         specs,
         output_type,
@@ -743,7 +743,7 @@ plot_acf_by_model_and_run <-
       print("done.")
 }
 
-plot_A_and_block_A <- 
+plot_A_and_block_A <-
   function(specs, paths, block_code_path, threshold)
 {
     print("Plotting A matrix...")
@@ -879,7 +879,7 @@ make_plots <-
       {
         print(paste("    ", comp, sep = ""))
         make_key_plots(query_file = query_file,
-                       results_dir = data_set, 
+                       results_dir = data_set,
                        data_set = p,
                        burnin_samples = burnin_samples,
                        paths = root,
@@ -951,10 +951,10 @@ make_key_plots <-
                     paths = paths,
                     burnin_samples = burnin_samples,
                     max_iteration = max_iteration)
-          plot_acf_by_model_and_run(specs = specs,
-                    output_type = v,
-                    paths = paths,
-                    max_iteration)
+          ## plot_acf_by_model_and_run(specs = specs,
+          ##           output_type = v,
+          ##           paths = paths,
+          ##           max_iteration)
       }
     }
     #if("n_dot" %in% plot.vars)
