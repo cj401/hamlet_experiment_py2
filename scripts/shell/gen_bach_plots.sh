@@ -7,7 +7,7 @@ export LOW_BURNIN=300
 export SMOOTH=100
 export RESULTS_PATH="music/bach_nominal/lambda_epsilon/bach_major_01/"
 export RSCRIPT_ROOT="scripts/r/scripts" #assume this will be run from <hamlet_root>/experiment
-export PROJECT_ROOT="../../../../"  #relative to RSCRIPT_ROOT
+export PROJECT_ROOT="../../../../data/"  #relative to RSCRIPT_ROOT
 export THIS_DIR=$(pwd)
 
 cd $THIS_DIR/$RSCRIPT_ROOT
