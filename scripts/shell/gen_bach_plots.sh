@@ -12,6 +12,6 @@ export THIS_DIR=$(pwd)
 
 cd $THIS_DIR/$RSCRIPT_ROOT
 
-Rscript master_visualization.R -q "bach_icml.txt" -d $RESULTS_PATH -s $SMOOTH -b $BURNIN -p "." -v train_log_likelihood,test_log_likelihood,A -r $PROJECT_ROOT --max_iter=10000
+Rscript master_visualization.R -q "bach_icml.txt" -d $RESULTS_PATH -s $SMOOTH -b $BURNIN -p "." -v train_log_likelihood,test_log_likelihood,n_dot,A -r $PROJECT_ROOT --max_iter=10000
 
 cd $THIS_DIR
