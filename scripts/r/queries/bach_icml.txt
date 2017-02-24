@@ -1,0 +1,6 @@
+comparison model
+hdp_models Sticky_hdp_hmm_w0
+hdp_models noLT_hdp_hmm_w0
+hdp_models LT_hdp_hmm_w0_lambda1p0_epsilon0p0005
+hdp_models StickyLT_hdp_hmm_w0_lambda1p0_epsilon0p0005
+
