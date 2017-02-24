@@ -309,9 +309,10 @@ plot_scalar_by_iteration <-
         plot_data <- rbind(plot_data, plot_data_each_group)
       }
       names(plot_data) <- c("iter", "m", "lwr", "upr","model")
-      BFact_subset <- subset(plot_data, model=="BFact")
-      plot_data <- subset(plot_data, model!="BFact")
-      plot_data <- rbind(plot_data, BFact_subset)
+      plot_data$model <- factor(plot_data$model, levels=c('noLT','LT','BFact','Sticky','StickyLT'))
+      #BFact_subset <- subset(plot_data, model=="BFact")
+      #plot_data <- subset(plot_data, model!="BFact")
+      #plot_data <- rbind(plot_data, BFact_subset)
       #plot_data <- plot_data[order(plot_data$model, plot_data$iter),]
       print(paste('Output to', output_path, "/", output_type, ".pdf", sep = ""))
       #pdf(paste(output_path, "/", output_type, ".pdf", sep = ""))
@@ -636,9 +637,10 @@ plot_scalar_density_by_model <-
           density_plot_data <- rbind(density_plot_data, plot_data)
         }
         names(density_plot_data) <- c("value", "model")
-        BFact_subset <- subset(density_plot_data, model=="BFact")
-        density_plot_data <- subset(density_plot_data, model!="BFact")
-        density_plot_data <- rbind(density_plot_data, BFact_subset)
+        #BFact_subset <- subset(density_plot_data, model=="BFact")
+        #density_plot_data <- subset(density_plot_data, model!="BFact")
+        #density_plot_data <- rbind(density_plot_data, BFact_subset)
+        plot_data$model <- factor(plot_data$model, levels=c('noLT','LT','BFact','Sticky','StickyLT'))
         #plot_data <- plot_data[order(plot_data$model),]
         print(paste('Output density plot to', output_path, "/", output_type, "_density.pdf", sep = ""))
         ggplot(density_plot_data, aes(value, fill=model)) +
