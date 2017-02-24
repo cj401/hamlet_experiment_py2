@@ -5,8 +5,7 @@
 export BURNIN=1000
 export LOW_BURNIN=300
 export SMOOTH=100
-export COCKTAIL_RESULTS_PATH="continuous_latent_syn_diag40_4models/block_diag40_s2"
-export COCKTAIL_DATA_PATH="data/continuous_latent_syn/block_diag40_s2"
+export RESULTS_PATH="continuous_latent_syn_diag40_4models/block_diag40_s2"
 export RSCRIPT_ROOT="scripts/r/scripts" #assume this will be run from <hamlet_root>/experiment
 export PROJECT_ROOT="../../../../"  #relative to RSCRIPT_ROOT
 export THIS_DIR=$(pwd)
