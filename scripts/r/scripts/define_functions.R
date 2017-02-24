@@ -429,9 +429,12 @@ plot_binary_matrices <- function(specs, data, paths)
   D <- ncol(data$gt)
   print(paste('Output binary matrix to', output_dir, "/groundtruth.pdf", sep=""))
   pdf(paste(output_dir, "/groundtruth.pdf", sep=""))
+  old_par <- par()
+  par(mar = c(1,6,1,1))
   image(data$gt, x = seq(0.5, T + 0.5), y = seq(0.5, D + 0.5), 
-        col = gray.colors(100), xlab="", ylab="", 
-        xaxt="n", yaxt="n")
+        col = gray.colors(100), xlab="", ylab="Groundtruth", 
+        xaxt="n", yaxt="n", cex.lab=3)
+  par(old_par)
   dev.off()
   models <- names(data$results)
   for (ms in models)
@@ -442,9 +445,12 @@ plot_binary_matrices <- function(specs, data, paths)
     m <- data$results[[ms]]
     T <- nrow(m)
     D <- ncol(m)
+    old_par <- par()
+    par(mar = c(1,6,1,1))
     image(m, x = seq(0.5, T + 0.5), y = seq(0.5, D + 0.5), 
-          col = gray.colors(100), xlab="", ylab="", 
-          xaxt="n", yaxt="n")
+          col = gray.colors(100), xlab="", ylab=strsplit(ms, "_")[[1]][1], 
+          xaxt="n", yaxt="n", cex.lab=3)
+    par(old_par)
     dev.off()
   }
   print('done.')
