@@ -11,6 +11,60 @@ import random
 import collections
 import matplotlib.pyplot as plt
 
+"""
+(20170223)
+For ICML 2017
+
+The original audio sources come from the archived recordings used in the first Speech Separation Challenge:
+http://laslab.org/SpeechSeparationChallenge
+Cooke, M. P., Barker, J., Cunningham, S. P. and Shao, X. (2006) An audio-visual corpus for speech perception and automatic speech recognition, Journal of the Acoustical Society of America, 120: 2421-2424.
+(Follow-on challenges have been referred to as CHiME: http://spandh.dcs.shef.ac.uk/chime_challenge/chime2013/ , http://spandh.dcs.shef.ac.uk/chime_challenge/ , but they do different things to the data and are mainly focused on speech recognition under different conditions, not just separation among speakers.)
+
+This corpus consists of 34 speakers, each uttering the same 500 sentences generated from this grammar:
+<command:4><color:4><preposition:4><letter:25><number:10><adverb:4>
+e.g. "place white at L 3 now"
+
+The audio file samples are all at a sample rate of 25000, meaning there are 25000 sample values within one second of audio.  The sentences range from 2 to 5 seconds, with a mean around 3 seconds.
+
+I generate cocktail party data with subconversations.  Each subconversation consists of n speakers (always 4 in our case), and each party consists of k subconversations, again 4 total in our data.
+
+Within subconversations, speakers take turns speaking and never overlap -- there is always some interval of silence between utterances.  Subconversations are sampled independently of one another, so generally utterances between subconversations may overlap.
+
+For one cocktail party, I sample the 16 speakers (4 speakers each for 4 subconversations) without replacement from the 34 total possible speakers.
+
+Each subconversation begins with a short interval of silence sampled uniformly in the range 0 to initial_space_interval, which for this dataset was 46000 (approximately the average length of an utterance).  This permits the time for the first utterance in a subconversation to be independent (and likely different) than the other subconversations.
+
+Within a subconversation, the speakers take turns speaking, uttering one sentence, followed by a short period of silence.
+
+Each subconversation sequence is sampled as a simple Markov chain (each state corresponds to a speaker speaking), with initial state distribution pi0 drawn from Dirichlet k (uniform concentration) = 2, and row-stochastic transition matrix A also drawn from Dirichlet k=2.  When a speaker speaks, one of the 500 utterances for that speaker is drawn uniformly randomly (with replacement) and is then following by a random period of silence.  The periods of silence for this data were sample from a truncated N(0.25, 0.25) * sample_rate that never has less than 1 sample (i.e., Gaussian with mean 1/4 second, standard deviation 1/4 second (scaled by the sample rate of 25000 = 1 second), but always at least 1 sample point).
+
+subconversation chains were sampled until at least 40 seconds of data were collected.
+
+There are two versions of each subconversation:
+Raw: the real-values taken directly from the audio files as well as 0-values for silence
+State: a binary vector with 1 indicating periods where an utterance was being made (data from an audio file) and 0 indicates silence period.
+
+subconversations were then downsampled.  Downsampling is determined by a "step size" for sampling values in the existing subconversation sequences.  Sampling started at half of the downsample step size (e.g., if step size is 2000, the sampling starts at 1000).  Downsampling takes the raw values at each step -- no filtering (windowed median, mean, etc.) is applied.
+
+One proviso w.r.t. downsampling: as it is possible for the step size to be larger than the intervals of silence between utterances, I enforce that each silence interval appears for at least one data point in the downsample.  For example, if the speaker1 speaks, followed by silence, followed by speaker2, and the step size happens to "step over" the silence, then the downsample will be: ... <speaker1-data>, 0, <speaker2-data>... (where the 0 is the single silence sample).  In this way all utterances are separated by at least one silence (0-value) datum.
+
+Downsampling is done independently for each subconversation (which make enforcing the at-least-one silence datum between each utterance much easier -- don't need to enforce between utterances...).
+
+After downsampling, subconversations are "vertically" concatenated (i.e., unfold in parallel).  Since the endpoints of each individual speaker's utterance stream likely are different, the last step is to find the shortest utterance (which will still be > 40 seconds) and use that as the endpoint for all speaker utterances.
+
+At this point we have a sampled/downsampled cocktail party.  The next steps were applied to generate observations:
+
+(1) absolute-data: Get the absolute value of raw-data
+(2) scaled-data: scale the absolute-data so that it is centered at value 1.0 with standard deviation 0.5
+(3) mixed-data: mix the speaker (16 total in our case) into 12 channels (microphones) using a mixing matrix whose values are drawn iid from Uniform(0, 1)
+(4) noise : sample emission noise iid from N(0, sd=0.3)
+(5) observations: mixed-data + noise
+
+This whole process, using the same parameters, was used to generate training and test conversation data for a single cocktail party.
+
+I generated a total of 10 cocktail parties (although so far we're only evaluating on the first three).
+"""
+
 
 # ----------------------------------------------------------------------
 # Ensure <hamlet>/experiment/scripts/python/ in sys.path  (if possible)
