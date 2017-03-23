@@ -1,6 +1,15 @@
 require(abind)
 require(ggplot2)
 
+try_setwd <- function(dir)
+{
+    tryCatch({
+        setwd(dir)
+        }, error = function(e) {
+            error(paste("Can't change directory to", dir))
+        })
+}
+
 get_directories <- function(project_root)
 {
     results_root = paste(project_root, "results/", sep = "")
@@ -44,9 +53,9 @@ get_scalar_or_vector_data <- function(specs, output_type, paths, max_iteration)
                 specs$dataset, "/",
                 m, "/", sep = "")
         #print(model_dir)
-        setwd(model_dir)
+        try_setwd(model_dir)
         items <- Sys.glob("*")
-        setwd(cur_path)
+        try_setwd(cur_path)
         for(i in items)
         {
             print(paste('Inputting data from ', model_dir, "/",
@@ -84,9 +93,9 @@ get_matrix_data <- function(specs, output_type, paths)
           specs$results, "/",
           specs$dataset, "/",
           m, "/", sep = "")
-      setwd(model_dir)
+      try_setwd(model_dir)
       items <- Sys.glob("*")
-      setwd(cur_path)
+      try_setwd(cur_path)
       for (i in items)
       {
         data_path <-
@@ -541,9 +550,9 @@ states_to_reach_one_minus_epsilon <- function(weight_vector_array, tol = 0.001)
 #    cur_path <- getwd()
 #    results_dir <- paste(root$results, "/", data_set, sep = "")
     ## print(results_dir)
-#    setwd(results_dir)
+#    try_setwd(results_dir)
 #    paths <- Sys.glob(path_glob)
-#    setwd(cur_path)
+#    try_setwd(cur_path)
 #    for(p in paths)
 #    {
 #        print(p)
@@ -768,24 +777,24 @@ plot_A_and_block_A <-
       #print(specs$results)
       #print(specs$dataset)
       #print(m)
-      setwd(model_dir)
+      try_setwd(model_dir)
       items <- Sys.glob("*")
-      setwd(cur_path)
+      try_setwd(cur_path)
       if ("BFact" %in% strsplit(m, "_")[[1]])
       {
         print('BFact model... to plot only A...')
         for (i in items)
         {
-          #setwd(paste(model_dir, "/", i, "/", sep=""))
+          #try_setwd(paste(model_dir, "/", i, "/", sep=""))
           #num_chains <- max(as.numeric(list.files(pattern="[0-9]")), na.rm=TRUE)
-          #setwd(cur_path)
+          #try_setwd(cur_path)
           model_A_dir <- paste(model_dir, "/", i, "/0/A/", sep="")
-          setwd(model_A_dir)
+          try_setwd(model_A_dir)
           iterations <- as.numeric(substr(Sys.glob("*.txt"),1,5))
           last_iteration <- max(iterations)
           print(paste('last_iteration is ', last_iteration))
           last_iteration_file <- paste(formatC(last_iteration, width=5, flag="0", format="d"), "txt", sep=".")
-          setwd(cur_path)
+          try_setwd(cur_path)
           output_path <- paste(output_dir, "/", m, "/", i, "/", sep="")
           if(!file.exists(output_path)) dir.create(output_path, recursive = TRUE)
           print(paste('Output to', output_path, "/", "A.pdf", sep=""))
@@ -813,11 +822,11 @@ plot_A_and_block_A <-
           }
           model_A_dir <- paste(model_dir, "/", i, "/A/", sep="")
           model_block_A_dir <- paste(model_dir, "/", i, "/G/block_A/", sep="")
-          setwd(model_A_dir)
+          try_setwd(model_A_dir)
           iterations <- as.numeric(substr(Sys.glob("*.txt"),1,5))
           last_iteration <- max(iterations)
           last_iteration_file <- paste(formatC(last_iteration, width=5, flag="0", format="d"), "txt", sep=".")
-          setwd(cur_path)
+          try_setwd(cur_path)
           print(paste("Read A from ", model_A_dir, last_iteration_file, sep=""))
           A_ <- as.matrix(read.table(paste(model_A_dir, last_iteration_file, sep="")))
           if (!file.exists(paste(model_block_A_dir, last_iteration_file, sep="")))
@@ -875,9 +884,9 @@ make_plots <-
     cur_path <- getwd()
     results_dir <- paste(root$results, "/", data_set, sep="")
     print(results_dir)
-    setwd(results_dir)
+    try_setwd(results_dir)
     paths <- Sys.glob(path_glob)
-    setwd(cur_path)
+    try_setwd(cur_path)
     for (p in paths)
     {
       print(p)
