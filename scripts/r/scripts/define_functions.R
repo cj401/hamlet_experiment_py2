@@ -6,7 +6,7 @@ try_setwd <- function(dir)
     tryCatch({
         setwd(dir)
         }, error = function(e) {
-            error(paste("Can't change directory to", dir))
+            stop(paste("Can't change directory to", dir))
         })
 }
 
