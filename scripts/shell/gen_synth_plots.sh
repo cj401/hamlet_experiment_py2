@@ -2,8 +2,8 @@
 
 export BURNIN=100
 export SMOOTH=100
-export RESULTS_PATH="synth16/"
-export DATA_PATH="synth16/"
+export RESULTS_PATH="synth16/noLT_s0/"
+export DATA_PATH="synth16/noLT/s0/"
 export RSCRIPT_ROOT="scripts/r/scripts" #assume this will be run from <hamlet_root>/experiment
 export PROJECT_ROOT="../../../../data/"  #relative to RSCRIPT_ROOT
 export THIS_DIR=$(pwd)

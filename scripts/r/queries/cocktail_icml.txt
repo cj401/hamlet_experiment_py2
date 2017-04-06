@@ -1,6 +1,6 @@
 comparison model
-a0p01b0p01 LT_hdp_hmm_w0_aalpha0p01_balpha0p01
-a0p01b0p01 StickyLT_hdp_hmm_w0_aalpha0p01_balpha0p01
-a0p01b0p01 noLT_hdp_hmm_w0_aalpha0p01_balpha0p01
-a0p01b0p01 Sticky_hdp_hmm_w0_aalpha0p01_balpha0p01
-a0p01b0p01 BFact_hmm_w0_aalpha0p01_balpha0p01
+all_models LT_hdp_hmm_w0
+all_models StickyLT_hdp_hmm_w0
+all_models noLT_hdp_hmm_w0
+all_models Sticky_hdp_hmm_w0
+all_models BFact_hmm_w0
