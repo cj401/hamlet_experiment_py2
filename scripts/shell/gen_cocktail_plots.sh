@@ -6,9 +6,9 @@ export DATASET=$1
 export BURNIN=2000
 export LOW_BURNIN=300
 export SMOOTH=200
-export SSC_RESULTS="cocktail_SSC1_s16_m12/abs_2000_n0.3_$DATASET"
-export SSC_DATA="cocktail_SSC1_s16_m12/abs_2000_n0.3/$DATASET"
-export RSCRIPT_ROOT="scripts/r/scripts" #assume this will be run from <hamlet_root>/experiment
+export SSC_RESULTS="cocktail_SSC1_s16_m12/abs_2000_n0.3_$DATASET/"
+export SSC_DATA="cocktail_SSC1_s16_m12/abs_2000_n0.3/$DATASET/"
+export RSCRIPT_ROOT="scripts/r/scripts/" #assume this will be run from <hamlet_root>/experiment
 export PROJECT_ROOT="../../../../data/"  #relative to RSCRIPT_ROOT
 export THIS_DIR=$(pwd)
 
