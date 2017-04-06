@@ -3,7 +3,7 @@
 ## Run on venti from <hamlet_root>/experiment
 
 export EXPERIMENT=$1
-export BURNIN=500
+export BURNIN=1000
 export LOW_BURNIN=500
 export SMOOTH=50
 export COCKTAIL_RESULTS_PATH="cocktail_s16_m12/$EXPERIMENT/h10.0_nocs_cp0"
