@@ -1,3 +1,4 @@
 comparison model
-LT_vs_noLT LT_hdp_hmm_w0_100000itr_J50
-LT_vs_noLT noLT_hdp_hmm_w0_100000itr_J50 
+all_models LT_hdp_hmm_w0
+all_models noLT_hdp_hmm_w0
+all_models BFact_hmm_w0
