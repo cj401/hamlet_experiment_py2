@@ -4,7 +4,7 @@
 
 export BURNIN=5000
 export LOW_BURNIN=300
-export SMOOTH=200
+export SMOOTH=50
 export BACH_PATH="music/bach_nominal/lambda_epsilon/bach_major_01/"
 export CHORD1_PATH="music/chord1/"
 export RSCRIPT_ROOT="scripts/r/scripts" #assume this will be run from <hamlet_root>/experiment
