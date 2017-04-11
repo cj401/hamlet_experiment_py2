@@ -18,6 +18,32 @@ get_directories <- function(project_root)
     return(list(results_root = results_root, data = data_root, fig_root= visualization_root))
 }
 
+assign_colors <- function(model)
+{
+  colors <- c("#FA8072", "#00CED1", "#3CB371", "#FFA500", "#9400D3") 
+  if (model == "noLT") return(colors[1])
+  else if (model == "LT") return(colors[2])
+  else if (model == "BFact") return(colors[3])
+  else if (model == "Sticky") return(colors[4])
+  else if (model == "StickyLT") return(colors[5])
+}
+
+fill_specs <- function(specs)
+{
+  if (is.null(specs$labels))
+  {
+    lab <- NULL
+    color <- NULL
+    for (i in 1:nrow(specs))
+    {
+      lab[i] <- strsplit(as.character(specs$model[i]),"_")[[1]][1]
+      color[i] <- assign_colors(lab[i])
+    }
+    specs$labels <- lab
+    specs$colors <- color 
+  }
+  return(specs)
+}
 
 ## import the data frame containing data locations
 get_specs <- function(query_file, results_dir, data_set, comparison_name)
@@ -28,11 +54,14 @@ get_specs <- function(query_file, results_dir, data_set, comparison_name)
             header = TRUE
         )
     specs <- subset(specs, comparison == comparison_name)
+    specs$colors <- paste("#",specs$colors, sep="")
+    specs <- fill_specs(specs)
     return(
         list(models = as.character(specs$model),
              results = results_dir,
              dataset = data_set,
-             comparison = comparison_name))
+             comparison = comparison_name,
+             df = specs))
 }
 
 ## create a list of data frames collected from the directories
@@ -308,6 +337,7 @@ plot_scalar_by_iteration <-
       ## Put it into one data frame with factors
       groups <- specs$models
       plot_data <- data.frame()
+      color_label <- specs$df
       for (g in unique(groups))
       {
         iter <- t[index_subset]
@@ -315,11 +345,15 @@ plot_scalar_by_iteration <-
         lwr <- summarized_data$values[[g]][[paste(error_var,"_lower",sep = "")]][index_subset]
         upr <- summarized_data$values[[g]][[paste(error_var,"_upper",sep = "")]][index_subset]
         plot_data_each_group <- data.frame(iter, m, lwr, upr)
-        plot_data_each_group$model <- strsplit(g, "_")[[1]][1]
+        plot_data_each_group$model <- color_label$labels[color_label$model==g]
+        #plot_data_each_group$model <- strsplit(g, "_")[[1]][1]
         plot_data <- rbind(plot_data, plot_data_each_group)
       }
       names(plot_data) <- c("iter", "m", "lwr", "upr","model")
-      group.colors <- c("noLT" = "#FA8072", "LT" ="#00CED1", "BFact" = "#3CB371", "Sticky" = "#FFA500", "StickyLT" = "#9400D3")
+      group.colors <- color_label$colors
+      names(group.colors) <- color_label$labels
+      #group.colors <- c("#FA8072", "#00CED1", "#3CB371", "#FFA500", "#9400D3")
+      #group.colors <- c("noLT" = "#FA8072", "LT" ="#00CED1", "BFact" = "#3CB371", "Sticky" = "#FFA500", "StickyLT" = "#9400D3")
       #plot_data$model <- factor(plot_data$model, levels=c('noLT','LT','BFact','Sticky','StickyLT'))
       #BFact_subset <- subset(plot_data, model=="BFact")
       #plot_data <- subset(plot_data, model!="BFact")
@@ -642,15 +676,20 @@ plot_scalar_density_by_model <-
         density_data <- collect_data_for_density_plot(collected_data, burnin_samples)
         groups <- specs$models
         density_plot_data <- data.frame()
+        color_label <- specs$df
         for (g in unique(groups))
         {
           #print(density_data[[g]])
           plot_data <- data.frame(value = density_data[[g]])
-          plot_data$model <- strsplit(g, "_")[[1]][1]
+          plot_data$model <- color_label$labels[color_label$model==g]
+          #plot_data$color <- color_label$colors[color_label$model==g]
+          #plot_data$model <- strsplit(g, "_")[[1]][1]
           density_plot_data <- rbind(density_plot_data, plot_data)
         }
         names(density_plot_data) <- c("value", "model")
-        group.colors <- c("noLT" = "#FA8072", "LT" ="#00CED1", "BFact" = "#3CB371", "Sticky" = "#FFA500", "StickyLT" = "#9400D3")
+        group.colors <- color_label$colors
+        names(group.colors) <- color_label$labels
+        #group.colors <- c("noLT" = "#FA8072", "LT" ="#00CED1", "BFact" = "#3CB371", "Sticky" = "#FFA500", "StickyLT" = "#9400D3")
         #BFact_subset <- subset(density_plot_data, model=="BFact")
         #density_plot_data <- subset(density_plot_data, model!="BFact")
         #density_plot_data <- rbind(density_plot_data, BFact_subset)
