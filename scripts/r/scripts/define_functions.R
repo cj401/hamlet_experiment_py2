@@ -1,6 +1,15 @@
 require(abind)
 require(ggplot2)
 
+try_setwd <- function(dir)
+{
+    tryCatch({
+        setwd(dir)
+        }, error = function(e) {
+            stop(paste("Can't change directory to", dir))
+        })
+}
+
 get_directories <- function(project_root)
 {
     results_root = paste(project_root, "results/", sep = "")
@@ -9,6 +18,32 @@ get_directories <- function(project_root)
     return(list(results_root = results_root, data = data_root, fig_root= visualization_root))
 }
 
+assign_colors <- function(model)
+{
+  colors <- c("#FA8072", "#00CED1", "#3CB371", "#FFA500", "#9400D3") 
+  if (model == "noLT") return(colors[1])
+  else if (model == "LT") return(colors[2])
+  else if (model == "BFact") return(colors[3])
+  else if (model == "Sticky") return(colors[4])
+  else if (model == "StickyLT") return(colors[5])
+}
+
+fill_specs <- function(specs)
+{
+  if (is.null(specs$labels))
+  {
+    lab <- NULL
+    color <- NULL
+    for (i in 1:nrow(specs))
+    {
+      lab[i] <- strsplit(as.character(specs$model[i]),"_")[[1]][1]
+      color[i] <- assign_colors(lab[i])
+    }
+    specs$labels <- lab
+    specs$colors <- color 
+  }
+  return(specs)
+}
 
 ## import the data frame containing data locations
 get_specs <- function(query_file, results_dir, data_set, comparison_name)
@@ -19,17 +54,20 @@ get_specs <- function(query_file, results_dir, data_set, comparison_name)
             header = TRUE
         )
     specs <- subset(specs, comparison == comparison_name)
+    specs$colors <- paste("#",specs$colors, sep="")
+    specs <- fill_specs(specs)
     return(
         list(models = as.character(specs$model),
              results = results_dir,
              dataset = data_set,
-             comparison = comparison_name))
+             comparison = comparison_name,
+             df = specs))
 }
 
 ## create a list of data frames collected from the directories
 ## listed in specs$specs_var_name with filenames `output_type`
 
-get_scalar_or_vector_data <- function(specs, output_type, paths)
+get_scalar_or_vector_data <- function(specs, output_type, paths, max_iteration)
 {
     models <- specs$models
     data_list <- rep(list(list()), length(models))
@@ -44,9 +82,9 @@ get_scalar_or_vector_data <- function(specs, output_type, paths)
                 specs$dataset, "/",
                 m, "/", sep = "")
         #print(model_dir)
-        setwd(model_dir)
+        try_setwd(model_dir)
         items <- Sys.glob("*")
-        setwd(cur_path)
+        try_setwd(cur_path)
         for(i in items)
         {
             print(paste('Inputting data from ', model_dir, "/",
@@ -54,7 +92,7 @@ get_scalar_or_vector_data <- function(specs, output_type, paths)
                         output_type, ".txt",
                         sep = ""))
             next_data <-
-                read.table(
+                subset(read.table(
                     paste(
                         model_dir, "/",
                         i, "/",
@@ -62,7 +100,7 @@ get_scalar_or_vector_data <- function(specs, output_type, paths)
                         sep = ""),
                     header = FALSE,
                     skip = 1
-                )
+                ), V1 <= max_iteration)
             data_list[[m]] <-
                 append(data_list[[m]], list(next_data))
         }
@@ -78,18 +116,18 @@ get_matrix_data <- function(specs, output_type, paths)
     for (m in groups)
     {
       cur_path <- getwd()
-      model_dir <- 
+      model_dir <-
         paste(
-          paths$results, "/", 
+          paths$results, "/",
           specs$results, "/",
           specs$dataset, "/",
           m, "/", sep = "")
-      setwd(model_dir)
+      try_setwd(model_dir)
       items <- Sys.glob("*")
-      setwd(cur_path)
+      try_setwd(cur_path)
       for (i in items)
       {
-        data_path <- 
+        data_path <-
           paste(
             model_dir, "/",
             i, "/",
@@ -114,17 +152,17 @@ get_matrix_data <- function(specs, output_type, paths)
                 header = FALSE))
           matrix_stack[,,t] <- next_matrix
         }
-        data_list[[m]] <- 
+        data_list[[m]] <-
           append(data_list[[m]], list(matrix_stack))
       }
     }
     return(data_list)
-    
+
     #for(i in 1:length(specs$models))
     #{
      #   data_path <-
      #      paste(
-     #           paths$results, "/", 
+     #           paths$results, "/",
      #           specs$results, "/",
      #           specs$dataset, "/",
      #           specs$models[i], "/",
@@ -201,11 +239,11 @@ summarize_scalar_data_across_runs <- function(collapsed_data, smoothing_window_s
                         apply(dd, 1, function(x)
                             {mean(x, na.rm = TRUE) - sqrt(var(x, na.rm = TRUE) / length(x)) * 2 * qt(0.995, length(x) - 1)}),
                     quantile_upper =
-                        apply(dd, 1, function(x) {quantile(x, 0.9)}),
+                        apply(dd, 1, function(x) {quantile(x, 0.9, na.rm=TRUE)}),
                     quantile_lower =
-                        apply(dd, 1, function(x) {quantile(x, 0.1)}),
+                        apply(dd, 1, function(x) {quantile(x, 0.1, na.rm=TRUE)}),
                     median =
-                        apply(dd, 1, median))))
+                        apply(dd, 1, median, na.rm=TRUE))))
 
     }
     names(result) <- names(collapsed_data$values)
@@ -273,7 +311,8 @@ plot_scalar_by_iteration <-
         summary_function = I,
         error_var = "cint",
         yrange = c(-Inf, Inf),
-        burnin_samples = 10
+        burnin_samples = 10,
+        max_iteration
         )
 {
     print(paste('ploting scalar plot for ', output_type, '...', sep=""))
@@ -285,7 +324,7 @@ plot_scalar_by_iteration <-
     #}
     #else
     #{
-      results_list <- get_scalar_or_vector_data(specs, output_type, paths)
+      results_list <- get_scalar_or_vector_data(specs, output_type, paths, max_iteration)
       collected_data <-
         collect_data_as_scalar(
           results_list, summary_function = summary_function
@@ -298,6 +337,7 @@ plot_scalar_by_iteration <-
       ## Put it into one data frame with factors
       groups <- specs$models
       plot_data <- data.frame()
+      color_label <- specs$df
       for (g in unique(groups))
       {
         iter <- t[index_subset]
@@ -305,24 +345,37 @@ plot_scalar_by_iteration <-
         lwr <- summarized_data$values[[g]][[paste(error_var,"_lower",sep = "")]][index_subset]
         upr <- summarized_data$values[[g]][[paste(error_var,"_upper",sep = "")]][index_subset]
         plot_data_each_group <- data.frame(iter, m, lwr, upr)
-        plot_data_each_group$model <- strsplit(g, "_")[[1]][1]
+        plot_data_each_group$model <- color_label$labels[color_label$model==g]
+        #plot_data_each_group$model <- strsplit(g, "_")[[1]][1]
         plot_data <- rbind(plot_data, plot_data_each_group)
       }
       names(plot_data) <- c("iter", "m", "lwr", "upr","model")
+      group.colors <- color_label$colors
+      names(group.colors) <- color_label$labels
+      #group.colors <- c("#FA8072", "#00CED1", "#3CB371", "#FFA500", "#9400D3")
+      #group.colors <- c("noLT" = "#FA8072", "LT" ="#00CED1", "BFact" = "#3CB371", "Sticky" = "#FFA500", "StickyLT" = "#9400D3")
+      #plot_data$model <- factor(plot_data$model, levels=c('noLT','LT','BFact','Sticky','StickyLT'))
+      #BFact_subset <- subset(plot_data, model=="BFact")
+      #plot_data <- subset(plot_data, model!="BFact")
+      #plot_data <- rbind(plot_data, BFact_subset)
+      #plot_data <- plot_data[order(plot_data$model, plot_data$iter),]
       print(paste('Output to', output_path, "/", output_type, ".pdf", sep = ""))
       #pdf(paste(output_path, "/", output_type, ".pdf", sep = ""))
       ggplot(plot_data) +
         geom_ribbon(aes(x=iter, ymin=lwr, ymax=upr, group=model, fill=model), alpha=0.4) +
         geom_line(aes(x=iter, y=m, group=model, color=model)) +
         geom_point(aes(x=iter, y=m, color=model, shape=model)) +
-        labs(x="Iterations", y=output_type) + 
+        labs(x="Iterations", y=output_type) +
+        scale_fill_manual(values=group.colors) +
+        scale_color_manual(values=group.colors) +
         theme(
           axis.text=element_text(size=15),
           axis.title=element_text(size=20),
           legend.text=element_text(size=20),
-          legend.title=element_text(size=24)
+          legend.title=element_text(size=24),
+          aspect.ratio = 0.35
         )
-      ggsave(paste(output_path, "/", output_type, ".pdf", sep = ""))
+      ggsave(paste(output_path, "/", output_type, ".pdf", sep = ""), width = 8, height = 2.8)
       #dev.off()
       print('done.')
     #xf}
@@ -426,23 +479,27 @@ plot_binary_matrices <- function(specs, data, paths)
   T <- nrow(data$gt)
   D <- ncol(data$gt)
   print(paste('Output binary matrix to', output_dir, "/groundtruth.pdf", sep=""))
-  pdf(paste(output_dir, "/groundtruth.pdf", sep=""))
-  image(data$gt, x = seq(0.5, T + 0.5), y = seq(0.5, D + 0.5), 
-        col = gray.colors(100), xlab="", ylab="", 
-        xaxt="n", yaxt="n")
+  pdf(paste(output_dir, "/groundtruth.pdf", sep=""), width=8, height=1.2)
+  #old_par <- par()
+  par(mar = c(1,4,1,1))
+  image(data$gt, x = seq(0.5, T + 0.5), y = seq(0.5, D + 0.5),
+        col = gray.colors(100), xlab="", ylab="Groundtruth",
+        xaxt="n", yaxt="n", cex.lab=1)
+        #par(old_par)
   dev.off()
   models <- names(data$results)
   for (ms in models)
   {
     output_path <- paste(output_dir, "/", ms, "/", sep="")
     if (!file.exists(output_path)) dir.create(output_path, recursive = TRUE)
-    pdf(paste(output_path, "binary_state.pdf", sep=""))
+    pdf(paste(output_path, "binary_state.pdf", sep=""), width=8, height=1.2)
     m <- data$results[[ms]]
     T <- nrow(m)
     D <- ncol(m)
-    image(m, x = seq(0.5, T + 0.5), y = seq(0.5, D + 0.5), 
-          col = gray.colors(100), xlab="", ylab="", 
-          xaxt="n", yaxt="n")
+    par(mar = c(1,4,1,1))
+    image(m, x = seq(0.5, T + 0.5), y = seq(0.5, D + 0.5),
+          col = gray.colors(100), xlab="", ylab=strsplit(ms, "_")[[1]][1],
+          xaxt="n", yaxt="n", cex.lab=1)
     dev.off()
   }
   print('done.')
@@ -527,9 +584,9 @@ states_to_reach_one_minus_epsilon <- function(weight_vector_array, tol = 0.001)
 #    cur_path <- getwd()
 #    results_dir <- paste(root$results, "/", data_set, sep = "")
     ## print(results_dir)
-#    setwd(results_dir)
+#    try_setwd(results_dir)
 #    paths <- Sys.glob(path_glob)
-#    setwd(cur_path)
+#    try_setwd(cur_path)
 #    for(p in paths)
 #    {
 #        print(p)
@@ -593,14 +650,16 @@ create.thetastar.array <- function(root, exclusions)
     }
 }
 
-plot_scalar_density_by_model <- 
+plot_scalar_density_by_model <-
     function(
-      specs, 
+      specs,
       output_type,
       paths,
-      xrange = c(-Inf, Inf),
-      yrange = c(-Inf, Inf),
-      burnin_samples = 10
+      #xrange = c(-Inf, Inf),
+      #yrange = c(-Inf, Inf),
+      summary_function = I,
+      burnin_samples = 10,
+      max_iteration
     )
 {
       print(paste('Plot density plot for ', output_type, sep=""))
@@ -612,31 +671,48 @@ plot_scalar_density_by_model <-
       #}
       #else
       #{
-        results_list <- get_scalar_or_vector_data(specs, output_type, paths)
-        collected_data <- collect_data_as_scalar(results_list)
+        results_list <- get_scalar_or_vector_data(specs, output_type, paths, max_iteration)
+        collected_data <- collect_data_as_scalar(results_list, summary_function = summary_function)
         density_data <- collect_data_for_density_plot(collected_data, burnin_samples)
         groups <- specs$models
         density_plot_data <- data.frame()
+        color_label <- specs$df
         for (g in unique(groups))
         {
+          #print(density_data[[g]])
           plot_data <- data.frame(value = density_data[[g]])
-          plot_data$model <- strsplit(g, "_")[[1]][1]
+          plot_data$model <- color_label$labels[color_label$model==g]
+          #plot_data$color <- color_label$colors[color_label$model==g]
+          #plot_data$model <- strsplit(g, "_")[[1]][1]
           density_plot_data <- rbind(density_plot_data, plot_data)
         }
         names(density_plot_data) <- c("value", "model")
+        group.colors <- color_label$colors
+        names(group.colors) <- color_label$labels
+        #group.colors <- c("noLT" = "#FA8072", "LT" ="#00CED1", "BFact" = "#3CB371", "Sticky" = "#FFA500", "StickyLT" = "#9400D3")
+        #BFact_subset <- subset(density_plot_data, model=="BFact")
+        #density_plot_data <- subset(density_plot_data, model!="BFact")
+        #density_plot_data <- rbind(density_plot_data, BFact_subset)
+        #plot_data$model <- factor(plot_data$model, levels=c('noLT','LT','BFact','Sticky','StickyLT'))
+        #plot_data <- plot_data[order(plot_data$model),]
         print(paste('Output density plot to', output_path, "/", output_type, "_density.pdf", sep = ""))
+        width = (max(density_plot_data$value) - min(density_plot_data$value))/50
         ggplot(density_plot_data, aes(value, fill=model)) +
-          geom_histogram(alpha=0.5, aes(y=..density..), position='identity') +
-          labs(x=output_type, y="density") + 
+          geom_histogram(alpha=0.4, aes(y=..density..), position='identity', binwidth=width) +
+          geom_line(stat="density", aes(color=model)) +
+          labs(x=output_type, y="density") +
+          scale_fill_manual(values=group.colors) +
+          scale_color_manual(values=group.colors) +
           theme(
             axis.text=element_text(size=15),
             axis.title=element_text(size=20),
             legend.text=element_text(size=20),
-            legend.title=element_text(size=24)
+            legend.title=element_text(size=24),
+            aspect.ratio = 0.35
           )
-        ggsave(paste(output_path, "/", output_type, "_density.pdf", sep = ""))
-        
-        
+        ggsave(paste(output_path, "/", output_type, "_density.pdf", sep = ""), width = 8, height = 2.8)
+
+
         #x_lowest_val <- Inf
         #x_highest_val <- -Inf
         #y_lowest_val <- Inf
@@ -668,7 +744,7 @@ plot_scalar_density_by_model <-
          # labels[i] <- split_group_name[[i]][1]
         #}
         #legend("topright", lty = plot_vars, col = plot_vars, legend = labels)
-        #dev.off() 
+        #dev.off()
       #}
       print('done.')
 }
@@ -676,26 +752,30 @@ plot_scalar_density_by_model <-
 collect_data_for_density_plot <- function(collapsed_data, burnin_samples)
 {
     print(paste("Burnin samples is ", burnin_samples))
+    #print('collapsed data')
+    #print(collapsed_data)
     result <- list()
     t <- collapsed_data$iterations
     index_subset = t > burnin_samples
     for (d in collapsed_data$values)
     {
+      #print(c(data.matrix(d[index_subset,])))
       result <- append(result, list(c(data.matrix(d[index_subset,]))))
     }
     names(result) <- names(collapsed_data$values)
     return (result)
 }
 
-plot_acf_by_model_and_run <- 
+plot_acf_by_model_and_run <-
     function(
         specs,
         output_type,
-        paths
+        paths,
+        max_iteration
         )
 {
       print(paste("Plot acf for ", output_type, sep=""))
-      results_list <- get_scalar_or_vector_data(specs, output_type, paths)
+      results_list <- get_scalar_or_vector_data(specs, output_type, paths, max_iteration)
       output_dir <- paste(paths$fig_root, specs$results, "/", specs$comparison, "/", specs$dataset, "/", sep = "")
       if(!file.exists(output_dir)) dir.create(output_dir, recursive = TRUE)
       models <- names(results_list)
@@ -704,7 +784,7 @@ plot_acf_by_model_and_run <-
         num_runs <- length(results_list[[m]])
         for (i in 1:num_runs)
         {
-          output_subdir <- paste(m,"/",formatC(i, width=2, flag="0"),"/",sep="")
+          output_subdir <- paste(m,"/",formatC(i, width=2, flag="0", format="d"),"/",sep="")
           output_path <- paste(output_dir, output_subdir, sep="")
           if(!file.exists(output_path)) dir.create(output_path, recursive = TRUE)
           print(paste("Output to", output_path, "/", output_type, "_acf.pdf", sep=""))
@@ -717,14 +797,14 @@ plot_acf_by_model_and_run <-
       print("done.")
 }
 
-plot_A_and_block_A <- 
+plot_A_and_block_A <-
   function(specs, paths, block_code_path, threshold)
 {
     print("Plotting A matrix...")
     output_dir <- paste(paths$fig_root, specs$results, "/", specs$comparison, "/", specs$dataset, "/", sep = "")
     if(!file.exists(output_dir)) dir.create(output_dir, recursive = TRUE)
     models <- specs$models
-    print(models)
+    #print(models)
     for (m in models)
     {
       cur_path <- getwd()
@@ -736,24 +816,24 @@ plot_A_and_block_A <-
       #print(specs$results)
       #print(specs$dataset)
       #print(m)
-      setwd(model_dir)
+      try_setwd(model_dir)
       items <- Sys.glob("*")
-      setwd(cur_path)
+      try_setwd(cur_path)
       if ("BFact" %in% strsplit(m, "_")[[1]])
       {
         print('BFact model... to plot only A...')
         for (i in items)
         {
-          #setwd(paste(model_dir, "/", i, "/", sep=""))
+          #try_setwd(paste(model_dir, "/", i, "/", sep=""))
           #num_chains <- max(as.numeric(list.files(pattern="[0-9]")), na.rm=TRUE)
-          #setwd(cur_path)
+          #try_setwd(cur_path)
           model_A_dir <- paste(model_dir, "/", i, "/0/A/", sep="")
-          setwd(model_A_dir)
+          try_setwd(model_A_dir)
           iterations <- as.numeric(substr(Sys.glob("*.txt"),1,5))
           last_iteration <- max(iterations)
           print(paste('last_iteration is ', last_iteration))
-          last_iteration_file <- paste(formatC(last_iteration, width=5, flag="0"), "txt", sep=".")
-          setwd(cur_path)
+          last_iteration_file <- paste(formatC(last_iteration, width=5, flag="0", format="d"), "txt", sep=".")
+          try_setwd(cur_path)
           output_path <- paste(output_dir, "/", m, "/", i, "/", sep="")
           if(!file.exists(output_path)) dir.create(output_path, recursive = TRUE)
           print(paste('Output to', output_path, "/", "A.pdf", sep=""))
@@ -781,11 +861,11 @@ plot_A_and_block_A <-
           }
           model_A_dir <- paste(model_dir, "/", i, "/A/", sep="")
           model_block_A_dir <- paste(model_dir, "/", i, "/G/block_A/", sep="")
-          setwd(model_A_dir)
+          try_setwd(model_A_dir)
           iterations <- as.numeric(substr(Sys.glob("*.txt"),1,5))
           last_iteration <- max(iterations)
-          last_iteration_file <- paste(formatC(last_iteration, width=5, flag="0"), "txt", sep=".")
-          setwd(cur_path)
+          last_iteration_file <- paste(formatC(last_iteration, width=5, flag="0", format="d"), "txt", sep=".")
+          try_setwd(cur_path)
           print(paste("Read A from ", model_A_dir, last_iteration_file, sep=""))
           A_ <- as.matrix(read.table(paste(model_A_dir, last_iteration_file, sep="")))
           if (!file.exists(paste(model_block_A_dir, last_iteration_file, sep="")))
@@ -833,7 +913,8 @@ make_plots <-
     threshold,
     block_code_path,
     binary,
-    groundtruth
+    groundtruth,
+    max_iteration
     )
 {
     specs <- read.table(paste("../queries/", query_file, sep=""), header = TRUE)
@@ -842,9 +923,9 @@ make_plots <-
     cur_path <- getwd()
     results_dir <- paste(root$results, "/", data_set, sep="")
     print(results_dir)
-    setwd(results_dir)
+    try_setwd(results_dir)
     paths <- Sys.glob(path_glob)
-    setwd(cur_path)
+    try_setwd(cur_path)
     for (p in paths)
     {
       print(p)
@@ -852,7 +933,7 @@ make_plots <-
       {
         print(paste("    ", comp, sep = ""))
         make_key_plots(query_file = query_file,
-                       results_dir = data_set, 
+                       results_dir = data_set,
                        data_set = p,
                        burnin_samples = burnin_samples,
                        paths = root,
@@ -862,7 +943,8 @@ make_plots <-
                        threshold = threshold,
                        block_code_path = block_code_path,
                        binary = binary,
-                       groundtruth = groundtruth)
+                       groundtruth = groundtruth,
+                       max_iteration = max_iteration)
         print("...........done.")
       }
     }
@@ -881,7 +963,8 @@ make_key_plots <-
     threshold,
     block_code_path,
     binary,
-    groundtruth
+    groundtruth,
+    max_iteration
     )
 {
     specs <- get_specs(query_file, results_dir, data_set, comparison_name)
@@ -895,21 +978,43 @@ make_key_plots <-
     for (v in plot.vars)
     {
       print(paste('Plotting for ', v, '...', sep=""))
-      plot_scalar_by_iteration(
-        specs, v, burnin_samples = burnin_samples, paths = paths,
-        summary_function = I,
-        smoothing_window_size)
-      #if (!(v %in% no_density_and_acf))
-      #{
-      plot_scalar_density_by_model(specs = specs,
-                                   output_type = v,
-                                   paths = paths,
-                                   burnin_samples = burnin_samples)
-      plot_acf_by_model_and_run(specs = specs,
-                                output_type = v,
-                                paths = paths)
-      #}
+      if (v == "n_dot")
+      {
+          plot_scalar_by_iteration(
+                    specs, "n_dot", burnin_samples = burnin_samples,
+                    summary_function = count_nonzero_entries_per_row,
+                    paths = paths,
+                    smoothing_window_size,
+                    max_iteration = max_iteration)
+        plot_scalar_density_by_model(specs = specs,
+                                     output_type = "n_dot",
+                                     paths = paths,
+                                     burnin_samples = burnin_samples,
+                                     summary_function = count_nonzero_entries_per_row,
+                                     max_iteration = max_iteration)
+      }
+      else
+      {
+          plot_scalar_by_iteration(
+                    specs, v, burnin_samples = burnin_samples, paths = paths,
+                    summary_function = I,
+                    smoothing_window_size,
+                    max_iteration = max_iteration)
+          plot_scalar_density_by_model(specs = specs,
+                    output_type = v,
+                    paths = paths,
+                    burnin_samples = burnin_samples,
+                    max_iteration = max_iteration)
+          ## plot_acf_by_model_and_run(specs = specs,
+          ##           output_type = v,
+          ##           paths = paths,
+          ##           max_iteration)
+      }
     }
+    #if("n_dot" %in% plot.vars)
+    #    {
+    #
+    #    }
     if (plot_A)
     {
         plot_A_and_block_A(specs = specs,

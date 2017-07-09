@@ -1,3 +1,2 @@
 comparison model
 all_models LT_hdp_hmm_w0
-all_models StickyLT_hdp_hmm_w0
