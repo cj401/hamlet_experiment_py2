@@ -384,6 +384,34 @@ def generate_parameter_spec_lambda_epsilon_bach_stickyLT(gen_param_files_p=False
          verbose=verbose)
 
 
+def generate_parameter_spec_lambda_epsilon_bach_LT_D3(gen_param_files_p=False, verbose=False):
+    parameter_product_spec = (('Isotropic_exponential_similarity',
+                               'lambda', (0.01, 0.1, 1.0, 5.0, 10.0)),
+                              ('Continuous_state_model',
+                               'epsilon', (0.0001, 0.0005, 0.001, 0.005)))
+    return generate_parameter_spec_product \
+        (source_param_dir=PARAMETERS_ROOT,
+         source_param_files=('music_bach_major_LT_D3.config',),
+         dest_param_dir=os.path.join(PARAMETERS_ROOT, 'music_bach_lambda_epsilon_D3'),
+         parameter_product_spec=parameter_product_spec,
+         gen_param_files_p=gen_param_files_p,
+         verbose=verbose)
+
+
+def generate_parameter_spec_lambda_epsilon_bach_StickyLT_D3(gen_param_files_p=False, verbose=False):
+    parameter_product_spec = (('Isotropic_exponential_similarity',
+                               'lambda', (0.01, 0.1, 1.0, 5.0, 10.0)),
+                              ('Continuous_state_model',
+                               'epsilon', (0.0001, 0.0005, 0.001, 0.005)))
+    return generate_parameter_spec_product \
+        (source_param_dir=PARAMETERS_ROOT,
+         source_param_files=('music_bach_major_StickyLT_D3.config',),
+         dest_param_dir=os.path.join(PARAMETERS_ROOT, 'music_bach_lambda_epsilon_D3'),
+         parameter_product_spec=parameter_product_spec,
+         gen_param_files_p=gen_param_files_p,
+         verbose=verbose)
+
+
 # ----------------------------------------------------------------------
 # Special case: a/b-hyperparameter spec generation
 # ----------------------------------------------------------------------
@@ -767,6 +795,75 @@ def test_collect_parameter_spec_list_music_bach_Sticky_StickyLT_lambda_epsilon()
 # test_collect_parameter_spec_list_music_bach_Sticky_StickyLT_lambda_epsilon()
 
 
+# -------------------------------
+
+
+def collect_parameter_spec_list_music_bach_LT_lambda_epsilon_D3():
+    """
+    parameter_spec list for bach LT *ONLY* lambda_epsilon D3 experiment
+    :return:
+    """
+    spec_list = generate_parameter_spec_lambda_epsilon_bach_LT_D3(gen_param_files_p=False, verbose=False)
+
+    pspec_list = [experiment_tools.ParameterSpec(parameters_file, parameters_dir, model_filename_postfix)
+                  for parameters_file, parameters_dir, model_filename_postfix in spec_list]
+
+    return pspec_list
+
+
+def test_collect_parameter_spec_list_music_bach_LT_lambda_epsilon_D3():
+    pspec_list = collect_parameter_spec_list_music_bach_LT_lambda_epsilon_D3()
+    for pspec in pspec_list:
+        print pspec
+
+# test_collect_parameter_spec_list_music_bach_LT_lambda_epsilon_D3()
+
+
+
+def collect_parameter_spec_list_music_bach_StickyLT_lambda_epsilon_D3():
+    """
+    parameter_spec list for bach StickyLT *ONLY* lambda_epsilon D3 experiment
+    :return:
+    """
+    spec_list = generate_parameter_spec_lambda_epsilon_bach_StickyLT_D3(gen_param_files_p=False, verbose=False)
+
+    pspec_list = [experiment_tools.ParameterSpec(parameters_file, parameters_dir, model_filename_postfix)
+                  for parameters_file, parameters_dir, model_filename_postfix in spec_list]
+
+    return pspec_list
+
+
+def test_collect_parameter_spec_list_music_bach_StickyLT_lambda_epsilon_D3():
+    pspec_list = collect_parameter_spec_list_music_bach_StickyLT_lambda_epsilon_D3()
+    for pspec in pspec_list:
+        print pspec
+
+# test_collect_parameter_spec_list_music_bach_StickyLT_lambda_epsilon_D3()
+
+
+
+def collect_parameter_spec_list_music_bach_LT_StickyLT_lambda_epsilon_D3():
+    """
+    parameter_spec list for *BOTH* bach LT and StickyLT lambda_epsilon D3 experiment
+    :return:
+    """
+    spec_list = generate_parameter_spec_lambda_epsilon_bach_LT_D3(gen_param_files_p=False, verbose=False)
+    spec_list += generate_parameter_spec_lambda_epsilon_bach_StickyLT_D3(gen_param_files_p=False, verbose=False)
+
+    pspec_list = [experiment_tools.ParameterSpec(parameters_file, parameters_dir, model_filename_postfix)
+                  for parameters_file, parameters_dir, model_filename_postfix in spec_list]
+
+    return pspec_list
+
+
+def test_collect_parameter_spec_list_music_bach_LT_StickyLT_lambda_epsilon_D3():
+    pspec_list = collect_parameter_spec_list_music_bach_LT_StickyLT_lambda_epsilon_D3()
+    for pspec in pspec_list:
+        print pspec
+
+# test_collect_parameter_spec_list_music_bach_LT_StickyLT_lambda_epsilon_D3()
+
+
 # ----------------------------------------------------------------------
 # Scripts
 # ----------------------------------------------------------------------
@@ -994,7 +1091,7 @@ def exp_bach_LT_noLT_lambda_epsilon(test=True):
 # GENERATE parameter spec files
 # generate_parameter_spec_lambda_epsilon_bach_LT(gen_param_files_p=True, verbose=True)
 
-# RUN EXPRIMENT
+# RUN EXPERIMENT
 # exp_bach_LT_noLT_lambda_epsilon(test=True)
 
 
@@ -1033,8 +1130,63 @@ def exp_bach_Sticky_StickyLT_lambda_epsilon(test=True):
 # GENERATE parameter spec files
 # generate_parameter_spec_lambda_epsilon_bach_stickyLT(gen_param_files_p=True, verbose=True)
 
-# RUN EXPRIMENT
-exp_bach_Sticky_StickyLT_lambda_epsilon(test=True)
+# RUN EXPERIMENT
+# exp_bach_Sticky_StickyLT_lambda_epsilon(test=True)
+
+
+# ----------------------------------------------------------------------
+
+def exp_bach_LT_StickyLT_lambda_epsilon_D3(test=True, lt=True, stickylt=True):
+    """
+    Experiment using music_bach_major_{LT/StickyLT}_D3.config as base
+    cartesian project of the following parameters:
+        Isotropic_exponential_similarity lambda = {0.01, 0.1, 1.0, 5.0, 10.0}
+        Continuous_state_model epsilon = {0.0001, 0.0005, 0.001, 0.005}
+    Saved parameters in experiment/parameters/music_bach_lambda_epsilon_D3
+
+    NOTE: both config files have the following settings:
+    Continuous_state_model D 3
+    HDP_hyperprior J 200
+    HDP_hyperprior a_gamma 1.0
+    HDP_hyperprior b_gamma 0.1
+    :param test:
+    :param lt:
+    :param stickylt: When true, include the StickyLT model
+    :return:
+    """
+
+    if lt is True and stickylt is True:
+        param_spec_list = collect_parameter_spec_list_music_bach_LT_StickyLT_lambda_epsilon_D3()
+    elif lt is True and stickylt is False:
+        param_spec_list = collect_parameter_spec_list_music_bach_LT_lambda_epsilon_D3()
+    elif lt is False and stickylt is True:
+        param_spec_list = collect_parameter_spec_list_music_bach_StickyLT_lambda_epsilon_D3()
+    else:
+        print 'exp_bach_LT_StickyLT_lambda_epsilon_D3(): both lt and sticklt set to False, nothing to run'
+        sys.exit()
+
+    experiment_tools.run_experiment_script\
+        (main_path=HAMLET_ROOT,
+         data_dir=os.path.join(DATA_ROOT, 'music/bach_chorale_nominal/'),
+         results_dir=os.path.join(RESULTS_ROOT, 'music/bach_nominal/lambda_epsilon_D3'),
+         replications=1,
+         offset=0,
+         parameter_spec_list=param_spec_list,  # determined above
+         match_dict=match_select_bach,
+         multiproc=True,
+         processor_pool_size=multiprocessing.cpu_count(),
+         rerun=False,
+         test=test,
+         select_subdirs_verbose=False)
+
+# GENERATE parameter spec files
+# generate_parameter_spec_lambda_epsilon_bach_LT_D3(gen_param_files_p=True, verbose=True)
+# generate_parameter_spec_lambda_epsilon_bach_StickyLT_D3(gen_param_files_p=True, verbose=True)
+
+# RUN EXPERIMENT
+# set lt=True to run the experiment with the LT model
+# set stickylt=True to run the experiment with the StickyLT model
+exp_bach_LT_StickyLT_lambda_epsilon_D3(test=True, lt=True, stickylt=True)
 
 
 # ----------------------------------------------------------------------

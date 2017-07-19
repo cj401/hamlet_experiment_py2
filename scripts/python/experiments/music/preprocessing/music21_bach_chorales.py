@@ -14,6 +14,12 @@ Adapted from music/data/bach_analysis/extract_chorale_names.py
 """
 
 
+"""
+Command used by DeepBach:
+music21.corpus.getBachChorales(fileExtensions='xml')
+"""
+
+
 # ----------------------------------------------------------------------
 # Ensure <hamlet>/experiment/scripts/python/ in sys.path (if possible)
 # ----------------------------------------------------------------------
