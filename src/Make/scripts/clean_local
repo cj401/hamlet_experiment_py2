@@ -1,0 +1,56 @@
+#
+# A file that is sourced by build-2 to make it a bit simpler.
+#
+
+# Recursive rm is with force is hanging on some systems (spotted on Ubuntu
+# running under parallels and sharing Mac file system).
+
+pushd ${MAKE_PATH} > /dev/null
+    set make_dir_cwd = "${cwd}"
+popd > /dev/null
+
+if ("${cwd}" == "${make_dir_cwd}") then
+    echo "Script clean_local is refusing to clean ${MAKE_DIR}" 
+    exit
+endif 
+
+if (-e Include_lines) then
+   find Include_lines -delete
+endif 
+
+# This is convenient for cleaning up after debugging, but is quite dangerous. 
+#
+
+if ($?CLEAN_EXTRA_MAKEFILES) then
+    set delete_list = `/bin/ls -1 | grep Makefile. | grep -v 'Makefile-2$' | grep -v 'Makefile-include$'`
+
+    if ("${delete_list}" != "") then
+        ${KJB_RM} ${delete_list}
+    endif 
+else 
+    ${KJB_RM} Makefile-dirs
+    ${KJB_RM} Makefile-depend
+    ${KJB_RM} Makefile-libs-needed
+
+    set count = `/bin/ls -1 | grep -c Makefile-library`
+
+    if (${count} > 0) then
+        ${KJB_RM} Makefile-library*
+    endif 
+endif 
+
+set count = `/bin/ls -1 | grep -c _incl.h`
+
+if (${count} > 0) then
+    ${KJB_RM} *_incl.h* 
+endif 
+
+set count = `/bin/ls -1 | grep -c kjb_all_`
+
+if (${count} > 0) then
+    ${KJB_RM} kjb_all_* 
+endif 
+
+
+
+

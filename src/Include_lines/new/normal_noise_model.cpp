@@ -1,0 +1,9 @@
+"normal_noise_model.h"
+"parameters.h"
+"util.h"
+<boost/make_shared.hpp>
+<m_cpp/m_mat_view.h>
+<m_cpp/m_matrix.h>
+<m_cpp/m_vector.h>
+<prob_cpp/prob_distribution.h>
+<prob_cpp/prob_sample.h>

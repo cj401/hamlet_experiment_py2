@@ -1,0 +1,476 @@
+#!/bin/csh -f
+
+# set echo 
+
+if (-e "SKIP_TEST") then
+    exit 0
+endif 
+
+set test_rc = 0
+
+if ($?FORCE_TEST_TOUCH) then
+    set force_test_touch = 1
+else
+    set force_test_touch = 0
+endif 
+
+if ($?KJB_QUIET) then
+    set test_quietly = 1
+else
+    set test_quietly = 0
+endif 
+
+if ($?FORCE_TEST_COMMIT) then
+    set force_test_commit = 1
+else
+    set force_test_commit = 0
+endif 
+
+set bug_rc_def_file = "${SRC_DIR}lib/l/l_def.h"
+
+set bug_rc = 199
+
+if (! -e "${bug_rc_def_file}") then
+    echo "Unable to find ${bug_rc_def_file}"
+    echo "Optimistically using ${bug_rc} for EXIT_BUG"
+else
+    set bug_rc = `grep '#[ 	]*define[ 	]*EXIT_BUG' "${bug_rc_def_file}" | sed 's/^[^0-9]*\([0-9]*\).*$/\1/'`
+endif 
+
+set valgrind_cmd = ""
+
+# Valgrind on mac is not ready for prime time.
+if ("${OS}" != "mac_osx") then 
+    which valgrind >& /dev/null
+
+    if (! ${status} ) then
+        set valgrind_cmd = "valgrind --log-file=valgrind_log_file"
+    endif 
+endif 
+
+set timeout_cmd = ""
+set timeout = ""
+
+if (-e "TIMEOUT") then
+    which timeout >& /dev/null
+
+    if (! ${status} ) then
+        set timeout = `cat TIMEOUT`
+        set timeout_cmd = "timeout ${timeout} "
+    endif 
+endif 
+
+set num_args = $#argv
+
+if ("${num_args}" != 5) then
+    echo "Script test_program needs 5 arguments."
+    exit ${bug_rc}
+endif 
+
+set test_type = "$1"
+
+set program = "$2"
+set input_dir = "$3" 
+set time_factor = "$4"
+set obj_dir = "$5"
+
+if ("${test_type}" == "test") then
+    set test_description = "Initial run"
+    set test_result = "finished" 
+
+    if (! ${test_quietly} ) then 
+        echo "Running initial test to establish valid output for ${program} with input ${input_dir}."
+    endif 
+else if ("${test_type}" == "regress") then
+    set test_description = "Regression testing"
+    set test_result = "passed"
+
+    if (! ${test_quietly} ) then 
+        echo "Running regression tests on ${program} with input ${input_dir}."
+    endif 
+else if ("${test_type}" == "check") then
+    set test_description = "Checking for output_checked"
+    set test_result = "succeeded"
+
+    if (! ${test_quietly} ) then 
+        echo "Checking on the manually maintained 'output_checked' file in `pwd`."
+    endif 
+else 
+    echo "Script test_program first argument must be either 'test', 'check', or 'regress'."
+    exit ${bug_rc}
+endif 
+
+set code_dir = `echo ${obj_dir} | sed 's#^[^/][^/]*/\([^/][^/]*/\)[^/][^/]*/$#\1#'`
+
+set src_code = ""
+foreach suffix (c cpp cxx C)
+    if (-e "${program}.${suffix}") then
+        set src_code = "${program}.${suffix}"
+        break
+    endif 
+end
+
+if ("${src_code}" == "") then
+    echo "Script test_program cannot find the source code for ${program} in `pwd`"
+    echo "It is only needed to decide if we should be under SVN control,"
+    echo "but its non-existance suggests something is wrong."
+    exit ${bug_rc}
+endif 
+
+svn info "${src_code}" >& /dev/null
+
+if (${status}) then
+    set src_is_under_svn = 0
+else
+    set src_is_under_svn = 1
+endif 
+
+set prog_path = "NOT_SET"
+
+if ("${test_type}" != "check") then
+    if (! -x "${obj_dir}${program}") then
+        if ("${test_type}" == "regress") then
+            echo "Script test_program unable to execute ${obj_dir}${program}"
+            echo "Because we are doing 'regress', 'make' should have built it."
+            echo "Presumbly we have have a script or make bug."
+            exit ${bug_rc}
+        else
+            if (! $test_quietly ) then 
+                echo "Script test_program unable to execute ${obj_dir}${program}"
+                echo "Because we are doing 'test', we will try to build it."
+            endif 
+            ${KJB_MAKE} ${obj_dir}${program} 
+            if (${status}) exit ${status}
+
+            if (! -x "${obj_dir}${program}") then
+                echo "Script test_program unable to execute ${obj_dir}${program}"
+                echo "even though we just build it. "
+                echo "Presumbly we have have a script or make bug."
+                exit ${bug_rc}
+            endif 
+        endif 
+    endif 
+
+    set prog_path = "`pwd`/${obj_dir}${program}"
+endif 
+
+if ("${input_dir}" == "NULL") then
+    set input_files = ""
+else 
+    set input_dir_rel_path = "input/$program/$input_dir"
+
+    if (! -d "${input_dir_rel_path}") then
+        echo "Script test_program unable to see directory ${input_dir_rel_path} in `pwd`"
+        exit 1
+    endif
+
+    if ("${src_is_under_svn}") then 
+        svn info "${input_dir_rel_path}" >& /dev/null
+
+        if ($status) then
+            set svn_command = "svn add --parents `pwd`/${input_dir_rel_path}"
+
+            if ($force_test_commit) then 
+                ${svn_command}
+            else if (! ${test_quietly} ) then 
+                echo "Because ${src_code} is under SVN consider entering: "
+                echo "    ${svn_command}"
+                echo " "
+            endif 
+        endif 
+    endif 
+
+    set input_files = `find ${input_dir_rel_path} -mindepth 1 -maxdepth 1`
+endif
+
+if ("${test_type}" == "regress") then
+    set test_type_str = "${test_type}" 
+    set output_leaf_dir = ${obj_dir}
+
+    # Directory that we will compare with. 
+    set test_run_dir = runs/${program}/${input_dir}/test-${time_factor}/${code_dir}
+    pushd "${test_run_dir}" > /dev/null
+    if ($status) then
+        echo "Script test_program unable to push into directory ${test_run_dir} from `pwd`"
+        exit ${bug_rc}
+    endif 
+
+    set test_run_dir = `pwd`
+    set test_run_dir_files = `${KJB_LS} | grep -v '.DIFF_TEMP$' | grep -v 'output_checked' | grep -v 'regression_test_passed'   | grep -v 'run_succeeded'  | grep -v 'valgrind_log_file' `
+    popd > /dev/null
+else 
+    set output_leaf_dir = ${code_dir}
+    set test_type_str = "test" 
+endif 
+
+set run_dir = runs/${program}/${input_dir}/${test_type_str}-${time_factor}/${output_leaf_dir}
+
+${KJB_MKDIR} "${run_dir}"
+
+if ($status) then
+    echo "Script test_program unable to create directory ${run_dir} in `pwd`"
+    exit ${bug_rc}
+endif 
+   
+if ("${src_is_under_svn}") then 
+    svn info "${run_dir}" >& /dev/null
+
+    if (${status}) then
+         set svn_command = "svn mdkir --parents `pwd`/${run_dir}"
+
+         if (${force_test_commit}) then 
+             ${svn_command}
+         else if (! ${test_quietly} ) then 
+            echo "Because ${src_code} is under SVN consider entering:"
+            echo "    ${svn_command}"
+            echo " "
+         endif 
+    endif 
+endif 
+
+if ("${input_files}" != "") then
+    ${KJB_CP} ${input_files} "${run_dir}"
+endif 
+
+cd ${run_dir}
+
+if (${status}) then
+    echo " "
+    echo "Script test_program unable to change to directory ${run_dir} from `pwd`"
+    echo " "
+    exit ${bug_rc}
+endif 
+
+set test_rc = 0
+set start_time = `date +%H:%M:%S`
+
+if ("${test_type}" == "check") then
+    if (-e "run_succeeded") then
+        set touch_command = "${KJB_TOUCH} `pwd`/output_checked"
+
+        if (${force_test_touch}) then 
+            ${touch_command}
+            if ${status} set test_rc = 1
+        else 
+            echo "Output files in:"
+            echo "    `pwd`"
+            echo "must be checked by a human."
+            echo " "
+            echo "If the output is OK, then enter:"
+            echo "    ${touch_command}"
+            echo "Forcing failure until this is done." 
+            echo " "
+            set test_rc = 1
+        endif 
+
+        if (${src_is_under_svn}) then
+            svn info .  >& /dev/null
+
+            if (! ${status}) then
+                set svn_command = "svn commit `pwd`/output_checked"
+
+                if (${force_test_commit} then
+                    ${svn_command}
+                else if (! ${test_quietly} ) then 
+                    echo "Because ${src_code} is under SVN consider entering: "
+                    echo "    ${svn_command}"
+                    echo " "
+                endif 
+            endif 
+        endif 
+
+        if (${test_rc}) then
+            if (-e "output_checked") then
+                set test_result = "FAILED (manually maintained file 'output_checked' is out of date)"
+            else
+                set test_result = "FAILED (manually maintained file 'output_checked' does not exist)"
+            endif
+        endif
+               
+        goto end_of_script
+    else
+        echo "Script test_program expected file 'run_succeeded' to exist because 'make' sends us here after building it."
+        exit ${bug_rc}
+    endif 
+endif 
+
+if (-e "STDIN") then
+    set stdin_file = "STDIN"
+else
+    set stdin_file = "/dev/null"
+endif 
+
+if (-e "ARGS") then
+    set extra_args = `cat ARGS`
+else 
+    set extra_args = ""
+endif 
+
+set args = "${time_factor} ${extra_args}"
+
+if (! ${test_quietly} ) then 
+    echo "Begin testing ${program} in `pwd`"
+endif 
+
+(${timeout_cmd} ${valgrind_cmd} ${prog_path} ${args} < ${stdin_file} > STDOUT ) >& STDERR
+set RC = $status
+
+# It is not obvious which of the more obscure RC should be considered buggy. 
+# So we provide the escape hatches ACCEPT_RC and REJECT_RC. Accept takes
+# precedence.
+#
+set accept_rc = 0
+set reject_rc = 0
+
+if (-e "ACCEPT_RC") then 
+    set accept_rc = `cat ACCEPT_RC | grep -c ${RC}`
+endif 
+
+if (${accept_rc}) then
+    if (! ${test_quietly} ) then 
+        echo "Script test_program forcing acceptence of RC=${RC}."
+    endif 
+else
+    if (-e "REJECT_RC") then 
+        set reject_rc = `cat REJECT_RC | grep -c ${RC}`
+    endif 
+
+    if (${reject_rc}) then
+        if (! ${test_quietly} ) then 
+            echo "Script test_program forcing rejection of RC=${RC}."
+        endif 
+    endif 
+
+    if ((${reject_rc}) || (${RC} >= 124 )) then
+        set test_result = "FAILED (return code ${RC})." 
+        set test_rc = 1
+    endif 
+endif 
+
+echo "${RC}" > RC
+
+if ( ! ${test_rc}) then 
+    if ("${valgrind_cmd}" != "") then
+        set no_errors=`grep -c 'ERROR SUMMARY: 0 errors ' < valgrind_log_file`
+
+        if (${no_errors} < 1 ) then
+            set test_result = "FAILED (valgrind reports memory errors)." 
+            set test_rc = 1
+        endif 
+
+        set all_free=`grep -c 'All heap blocks were freed' < valgrind_log_file`
+
+        if ($all_free < 1)  then
+            set test_result = "FAILED (valgrind reports memory leaks)." 
+            set test_rc = 1
+        endif 
+    endif 
+endif 
+
+if (-e "TEST_FAILURE_TESTING") then
+    if (${test_rc}) then
+        set test_rc = 0
+        set test_result = "succeeded in detecting failure." 
+     else
+        set test_rc = 1
+        set test_result = "FAILED in detecting failure." 
+     endif 
+endif 
+
+if (${test_rc}) then
+    # Do nothing
+else if ("${test_type}" == "test") then
+    if (${src_is_under_svn}) then
+        set files = `${KJB_LS}  | grep -v '.DIFF_TEMP$' | grep -v run_succeeded  | grep -v 'valgrind_log_file' `
+
+        set not_in_svn = ""
+        foreach file (${files}) 
+            svn info "${file}" >& /dev/null
+            if (${status}) set not_in_svn = "${not_in_svn} ${file}"
+        end 
+
+        if ("${not_in_svn}" != "") then
+            set svn_command = "cd `pwd`; svn add ${not_in_svn}"
+
+            if ($force_test_commit) then 
+                ${svn_command}
+            else if (! ${test_quietly} ) then 
+                echo "Because ${src_code} is under SVN consider entering: "
+                echo "    ${svn_command}"
+                echo " "
+            endif 
+        endif 
+    endif
+
+    ${KJB_TOUCH} run_succeeded 
+else if ("${test_type}" == "regress") then
+    set run_dir_files = `${KJB_LS} | grep -v '.DIFF_TEMP$' | grep -v 'regression_test_passed'   | grep -v 'valgrind_log_file' `
+
+    foreach output_file (${run_dir_files}) 
+        set test_output_file = "${test_run_dir}/${output_file}"
+        if (-e ${test_output_file}) then
+            grep < ${output_file} -v 'ignore for test' | grep -v 'IL4RT' | grep -v 'ignore line for regression testing' > ${output_file}.DIFF_TEMP
+            grep < ${test_output_file} -v 'ignore for test' | grep -v 'IL4RT' | grep -v 'ignore line for regression testing' > ${test_output_file}.DIFF_TEMP
+
+            ${KJB_DIFF_TEST} ${output_file}.DIFF_TEMP ${test_output_file}.DIFF_TEMP > /dev/null
+
+            if ($status) then 
+                echo " "
+                echo "${program} failed regression testing with ${input_dir} input."
+                echo "There is a difference with respect to ${output_file} "
+                echo "Check with: "
+                echo "    vimdiff  `pwd`/${output_file}.DIFF_TEMP ${test_output_file}.DIFF_TEMP"
+                echo " "
+                echo "If the current result is correct, then the test output will need to be rebuilt."
+                set test_result = "FAILED (diff)"
+                set test_rc = 1
+            endif
+        else
+           echo " "
+           echo "File `pwd`/${output_file} exists but ${test_output_file} does not."
+           echo "This is likely a cleanup issue."
+           set test_result = "FAILED (extra output file (${output_file}))"
+           set test_rc = 1
+        endif
+    end
+
+    foreach output_file (${test_run_dir_files}) 
+        set test_output_file = "${test_run_dir}/${output_file}"
+        if ( ! -e ${output_file}) then
+           echo " "
+           echo "File ${test_output_file} exists but `pwd`/${output_file} does not."
+           echo "This is likely a cleanup issue."
+           set test_result = "FAILED (missing output file ($output_file}))"
+           set test_rc = 1
+        endif
+    end
+
+    if ( ! ${test_rc}) then 
+        ${KJB_TOUCH} regression_test_passed 
+    endif 
+else
+    echo "Cannot happen bug in script test_program. Line ID: FRED"
+    exit ${bug_rc}
+endif 
+
+end_of_script: 
+
+set end_time = `date +%H:%M:%S`
+
+# if ("${valgrind_log_file}" != "") then 
+    ${KJB_RM} valgrind_log_file
+# endif 
+
+echo "${test_description} of ${program} with input ${input_dir} ${test_result}"
+
+if (! ${test_quietly} ) then 
+    echo "Time span: ${start_time}  to ${end_time}"
+    echo " "
+    echo "=========================================================================="
+    echo " "
+endif 
+
+exit ${test_rc}
+
+
+

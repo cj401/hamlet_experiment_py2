@@ -1,0 +1,10 @@
+"dynamics_model.h"
+"emission_model.h"
+"noise_model.h"
+"parameters.h"
+"state_model.h"
+"util.h"
+<l_cpp/l_index.h>
+<m_cpp/m_mat_view.h>
+<m_cpp/m_matrix.h>
+<m_cpp/m_vector.h>

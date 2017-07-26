@@ -1,0 +1,201 @@
+ 
+#
+# Machine generated file to set make targets
+#
+ 
+
+MISC_PROGRAMS = \
+        $(MISC_BIN_DIR)c2man_in \
+        $(MISC_BIN_DIR)c2man_out \
+        $(MISC_BIN_DIR)c2man_out_html \
+        $(MISC_BIN_DIR)help_to_man \
+        $(MISC_BIN_DIR)include_def \
+        $(MISC_BIN_DIR)index_html_man \
+        $(MISC_BIN_DIR)index_man \
+        $(MISC_BIN_DIR)remove_double_blank \
+        $(MISC_BIN_DIR)remove_double_jagged \
+        $(MISC_BIN_DIR)remove_empty_def \
+        $(MISC_BIN_DIR)skip_def \
+        $(MISC_BIN_DIR)skip_def_head \
+        $(MISC_BIN_DIR)writeup_to_man
+
+
+
+WORK_PROGRAMS = \
+        $(WORK_BIN_DIR)c2man_in \
+        $(WORK_BIN_DIR)c2man_out \
+        $(WORK_BIN_DIR)c2man_out_html \
+        $(WORK_BIN_DIR)help_to_man \
+        $(WORK_BIN_DIR)include_def \
+        $(WORK_BIN_DIR)index_html_man \
+        $(WORK_BIN_DIR)index_man \
+        $(WORK_BIN_DIR)remove_double_blank \
+        $(WORK_BIN_DIR)remove_double_jagged \
+        $(WORK_BIN_DIR)remove_empty_def \
+        $(WORK_BIN_DIR)skip_def \
+        $(WORK_BIN_DIR)skip_def_head \
+        $(WORK_BIN_DIR)writeup_to_man
+
+
+
+USER_PROGRAMS = \
+        $(USER_BIN_DIR)c2man_in \
+        $(USER_BIN_DIR)c2man_out \
+        $(USER_BIN_DIR)c2man_out_html \
+        $(USER_BIN_DIR)help_to_man \
+        $(USER_BIN_DIR)include_def \
+        $(USER_BIN_DIR)index_html_man \
+        $(USER_BIN_DIR)index_man \
+        $(USER_BIN_DIR)remove_double_blank \
+        $(USER_BIN_DIR)remove_double_jagged \
+        $(USER_BIN_DIR)remove_empty_def \
+        $(USER_BIN_DIR)skip_def \
+        $(USER_BIN_DIR)skip_def_head \
+        $(USER_BIN_DIR)writeup_to_man
+
+
+
+PROGRAMS = \
+        $(LD_OBJ_DIR)c2man_in \
+        $(LD_OBJ_DIR)c2man_out \
+        $(LD_OBJ_DIR)c2man_out_html \
+        $(LD_OBJ_DIR)help_to_man \
+        $(LD_OBJ_DIR)include_def \
+        $(LD_OBJ_DIR)index_html_man \
+        $(LD_OBJ_DIR)index_man \
+        $(LD_OBJ_DIR)remove_double_blank \
+        $(LD_OBJ_DIR)remove_double_jagged \
+        $(LD_OBJ_DIR)remove_empty_def \
+        $(LD_OBJ_DIR)skip_def \
+        $(LD_OBJ_DIR)skip_def_head \
+        $(LD_OBJ_DIR)writeup_to_man
+
+
+$(OBJ_DIR)c2man_in.o : $(OBJ_DIR)c_dir_made
+
+$(LD_OBJ_DIR)c2man_in.o : $(LD_OBJ_DIR)ld_dir_made $(OBJ_DIR)c2man_in.o
+	$(KJB_CP) $(OBJ_DIR)c2man_in.o $@
+
+$(OBJ_DIR)c2man_out.o : $(OBJ_DIR)c_dir_made
+
+$(LD_OBJ_DIR)c2man_out.o : $(LD_OBJ_DIR)ld_dir_made $(OBJ_DIR)c2man_out.o
+	$(KJB_CP) $(OBJ_DIR)c2man_out.o $@
+
+$(OBJ_DIR)c2man_out_html.o : $(OBJ_DIR)c_dir_made
+
+$(LD_OBJ_DIR)c2man_out_html.o : $(LD_OBJ_DIR)ld_dir_made $(OBJ_DIR)c2man_out_html.o
+	$(KJB_CP) $(OBJ_DIR)c2man_out_html.o $@
+
+$(OBJ_DIR)help_to_man.o : $(OBJ_DIR)c_dir_made
+
+$(LD_OBJ_DIR)help_to_man.o : $(LD_OBJ_DIR)ld_dir_made $(OBJ_DIR)help_to_man.o
+	$(KJB_CP) $(OBJ_DIR)help_to_man.o $@
+
+$(OBJ_DIR)include_def.o : $(OBJ_DIR)c_dir_made
+
+$(LD_OBJ_DIR)include_def.o : $(LD_OBJ_DIR)ld_dir_made $(OBJ_DIR)include_def.o
+	$(KJB_CP) $(OBJ_DIR)include_def.o $@
+
+$(OBJ_DIR)index_html_man.o : $(OBJ_DIR)c_dir_made
+
+$(LD_OBJ_DIR)index_html_man.o : $(LD_OBJ_DIR)ld_dir_made $(OBJ_DIR)index_html_man.o
+	$(KJB_CP) $(OBJ_DIR)index_html_man.o $@
+
+$(OBJ_DIR)index_man.o : $(OBJ_DIR)c_dir_made
+
+$(LD_OBJ_DIR)index_man.o : $(LD_OBJ_DIR)ld_dir_made $(OBJ_DIR)index_man.o
+	$(KJB_CP) $(OBJ_DIR)index_man.o $@
+
+$(OBJ_DIR)remove_double_blank.o : $(OBJ_DIR)c_dir_made
+
+$(LD_OBJ_DIR)remove_double_blank.o : $(LD_OBJ_DIR)ld_dir_made $(OBJ_DIR)remove_double_blank.o
+	$(KJB_CP) $(OBJ_DIR)remove_double_blank.o $@
+
+$(OBJ_DIR)remove_double_jagged.o : $(OBJ_DIR)c_dir_made
+
+$(LD_OBJ_DIR)remove_double_jagged.o : $(LD_OBJ_DIR)ld_dir_made $(OBJ_DIR)remove_double_jagged.o
+	$(KJB_CP) $(OBJ_DIR)remove_double_jagged.o $@
+
+$(OBJ_DIR)remove_empty_def.o : $(OBJ_DIR)c_dir_made
+
+$(LD_OBJ_DIR)remove_empty_def.o : $(LD_OBJ_DIR)ld_dir_made $(OBJ_DIR)remove_empty_def.o
+	$(KJB_CP) $(OBJ_DIR)remove_empty_def.o $@
+
+$(OBJ_DIR)skip_def.o : $(OBJ_DIR)c_dir_made
+
+$(LD_OBJ_DIR)skip_def.o : $(LD_OBJ_DIR)ld_dir_made $(OBJ_DIR)skip_def.o
+	$(KJB_CP) $(OBJ_DIR)skip_def.o $@
+
+$(OBJ_DIR)skip_def_head.o : $(OBJ_DIR)c_dir_made
+
+$(LD_OBJ_DIR)skip_def_head.o : $(LD_OBJ_DIR)ld_dir_made $(OBJ_DIR)skip_def_head.o
+	$(KJB_CP) $(OBJ_DIR)skip_def_head.o $@
+
+$(OBJ_DIR)writeup_to_man.o : $(OBJ_DIR)c_dir_made
+
+$(LD_OBJ_DIR)writeup_to_man.o : $(LD_OBJ_DIR)ld_dir_made $(OBJ_DIR)writeup_to_man.o
+	$(KJB_CP) $(OBJ_DIR)writeup_to_man.o $@
+
+
+
+OBS = \
+    
+
+
+
+VERSION_OBS = \
+
+ 
+ 
+
+
+MAN_FROM_HELP_FILES = \
+
+
+
+MAN_FROM_WRITEUP_FILES = \
+
+ 
+ 
+
+
+
+
+$(OBJ_DIR)c2man_in.o : \
+            $(PCH_L_DIR)l_incl.h$(PCH_SUFFIX)
+
+$(OBJ_DIR)c2man_out.o : \
+            $(PCH_L_DIR)l_incl.h$(PCH_SUFFIX)
+
+$(OBJ_DIR)c2man_out_html.o : \
+            $(PCH_L_DIR)l_incl.h$(PCH_SUFFIX)
+
+$(OBJ_DIR)help_to_man.o : \
+            $(PCH_L_DIR)l_incl.h$(PCH_SUFFIX)
+
+$(OBJ_DIR)include_def.o : \
+            $(PCH_L_DIR)l_incl.h$(PCH_SUFFIX)
+
+$(OBJ_DIR)index_html_man.o : \
+            $(PCH_L_DIR)l_incl.h$(PCH_SUFFIX)
+
+$(OBJ_DIR)index_man.o : \
+            $(PCH_L_DIR)l_incl.h$(PCH_SUFFIX)
+
+$(OBJ_DIR)remove_double_blank.o : \
+            $(PCH_L_DIR)l_incl.h$(PCH_SUFFIX)
+
+$(OBJ_DIR)remove_double_jagged.o : \
+            $(PCH_L_DIR)l_incl.h$(PCH_SUFFIX)
+
+$(OBJ_DIR)remove_empty_def.o : \
+            $(PCH_L_DIR)l_incl.h$(PCH_SUFFIX)
+
+$(OBJ_DIR)skip_def.o : \
+            $(PCH_L_DIR)l_incl.h$(PCH_SUFFIX)
+
+$(OBJ_DIR)skip_def_head.o : \
+            $(PCH_L_DIR)l_incl.h$(PCH_SUFFIX)
+
+$(OBJ_DIR)writeup_to_man.o : \
+            $(PCH_L_DIR)l_incl.h$(PCH_SUFFIX)

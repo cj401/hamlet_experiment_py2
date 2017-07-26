@@ -1,0 +1,138 @@
+#!/bin/tcsh -f
+
+# set echo 
+
+set dir_name = `echo $cwd | sed 's#//*$##'`
+set dir_name = `echo $dir_name | sed 's#.*/##'`
+
+# We do not really need to be in a directory named "test", but for now we guard
+# against the processing that follows for any abribrary directory. 
+if ("${dir_name}" != "test") exit
+
+echo " "
+echo "#################################################################"
+echo "#            Targets and rules for testing  "
+echo " "
+
+echo "Makefile-depend : ./"
+echo 
+
+if (-d "input/") then
+    echo "Makefile-depend : input/"
+    echo 
+endif 
+
+set num_tests = 0
+set tests = ()
+set progs = ()
+
+set main_file_names = `${MAKE_SCRIPT_PATH}stream_file_names -m`
+if (${status}) then
+    echo "Script stream_file_names with option -m failed in script make_test_targets in directory `pwd`."
+    exit 1
+endif 
+
+foreach f (${main_file_names}) 
+    set prog = `echo $f | sed 's/\(.*\)\.[^\.]*/\1/'`
+
+    if (-d "input/${prog}") then
+        pushd "input/${prog}" > /dev/null 
+        if (${status}) then
+            echo "Script make_test_targets unable to change to directory input/${prog} from directory `pwd`."
+            exit 1
+        endif 
+
+        echo "Makefile-depend : input/${prog}" 
+
+        set test_instances = `find . -type d -maxdepth 1 -mindepth 1 \! \( -name '.*' \) |& sed 's#./##'`
+
+        if ("${test_instances}" == "") then
+            set progs = (${progs} ${prog})
+            set tests = (${tests} NULL)
+            @ num_tests += 1
+        else
+            foreach test_instance (${test_instances})
+                echo "Makefile-depend : input/${prog}/${test_instance}" 
+                set progs = (${progs} ${prog})
+                set tests = (${tests} ${test_instance})
+                @ num_tests += 1
+            end
+        endif 
+
+        popd > /dev/null
+    else 
+        set progs = (${progs} ${prog})
+        set tests = (${tests} NULL)
+        @ num_tests += 1
+    endif 
+end
+
+echo 
+
+if (${num_tests} == 0) exit 
+
+foreach make_var_suffix (0 1 2)
+    echo "TEST_TARGETS_${make_var_suffix} = \"
+
+    set count = 1
+
+    while (${count} < ${num_tests})
+        echo "    runs/$progs[$count]/$tests[$count]/test-${make_var_suffix}/"'$(CODE)/output_checked \'
+        @ count += 1
+    end
+
+    # One more, without the backslash.
+    echo "    runs/$progs[$count]/$tests[$count]/test-${make_var_suffix}/"'$(CODE)/output_checked'
+    echo 
+end
+
+foreach make_var_suffix (0 1 2)
+    echo "REGRESS_TARGETS_${make_var_suffix} = \"
+
+    set count = 1
+
+    while (${count} < ${num_tests})
+        echo "    runs/$progs[$count]/$tests[$count]/regress-${make_var_suffix}/"'$(LD_OBJ_DIR)/regression_test_passed \'
+        @ count += 1
+    end
+
+    # One more, without the backslash.
+    echo "    runs/$progs[$count]/$tests[$count]/regress-${make_var_suffix}/"'$(LD_OBJ_DIR)/regression_test_passed'
+    echo 
+end
+
+set count = 1
+
+while (${count} <= ${num_tests})
+    foreach make_var_suffix (0 1 2)
+        if (("$tests[$count]" != "NULL") && (-d "input/$progs[$count]/$tests[$count]")) then
+            # pwd > /dev/stderr
+            set files = `find input/$progs[$count]/$tests[$count] -mindepth 1`
+        else 
+            set files = ""
+        endif
+        
+        echo "runs/$progs[$count]/$tests[$count]/test-${make_var_suffix}/"'$(CODE)'"/output_checked : "'$(MAKE_SCRIPT_PATH)'"test_program ${files} runs/$progs[$count]/$tests[$count]/test-${make_var_suffix}/"'$(CODE)'"/run_succeeded"
+        echo '	$(MAKE_SCRIPT_PATH)test_program'" check $progs[$count] $tests[$count] ${make_var_suffix} "'$(LD_OBJ_DIR)'
+        echo ""
+
+        echo "runs/$progs[$count]/$tests[$count]/test-${make_var_suffix}/"'$(CODE)'"/run_succeeded : "'$(MAKE_SCRIPT_PATH)'"test_program ${files}"
+        echo '	$(MAKE_SCRIPT_PATH)test_program'" test $progs[$count] $tests[$count] ${make_var_suffix} "'$(LD_OBJ_DIR)'
+        echo ""
+
+        echo "runs/$progs[$count]/$tests[$count]/regress-${make_var_suffix}/"'$(LD_OBJ_DIR)/regression_test_passed'" : "'$(MAKE_SCRIPT_PATH)'"test_program runs/$progs[$count]/$tests[$count]/test-${make_var_suffix}/"'$(CODE)'"/output_checked ${files} "'$(LD_OBJ_DIR)'"$progs[$count]"
+        echo '	$(MAKE_SCRIPT_PATH)test_program'" regress $progs[$count] $tests[$count] ${make_var_suffix} "'$(LD_OBJ_DIR)'
+        echo ""
+    end
+
+    @ count += 1
+end
+
+echo " "
+echo " "
+echo "#################################################################"
+echo " "
+
+
+
+

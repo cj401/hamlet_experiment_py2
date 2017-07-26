@@ -1,0 +1,193 @@
+#!/bin/csh -f
+
+###############################################################################
+#
+# Identification:
+#     A script to maintain the file Include_lines/include_lines.
+#
+# Description:
+#     This script is called by make to maintain the file
+#     Include_lines/include_lines. This file has two roles for efficiency. 1)
+#     Its existance/timestamp indicates whether the depenencies (i.e.,
+#     Makefile-depend) are up to date. 2) Its contents tracks the sub libs
+#     mentioned in include lines, and when this changes, it triggers the
+#     build of Makefile-dirs. 
+#
+#     The logic for (1) is implemented in the Makefiles, the script
+#     build_include_line_files, and the script update_include_line_file.  By the
+#     time this script is called, if Include_lines/include_lines was out of
+#     date, it will have been removed, and it is up to this script to rebuild
+#     it. Regardless, this script then checks if the contents indicate that the
+#     sub-directories need to be updated, and calls other scripts to do that if
+#     needed. It is important that we do this only when needed, because sorting
+#     out the sub-libs is potentially expensive because it recurses on all
+#     sub-libs to look for their sub-libs. 
+#
+#     This script is really just a front end to build_include_lines_2 which does
+#     all the heavy lifting.
+#
+# Parameters:
+#     This script takes either zero or one or two args. If the first arg is
+#     "-f", then we force the building of sub_libs_needed. If there is another
+#     argument, it is taken as the directory to run it in. 
+#
+# Author:
+#     Kobus Barnard
+#
+###############################################################################
+
+if ($?SERIALIZE_FILE_BUILD) then
+    #
+    # Implement a dumb lock. It is not perfect.
+    #
+
+    set do_lock = 1
+
+    if($?TMPDIR) then
+        set tmp = "$TMPDIR/${USER}"
+    else
+        set tmp = "/tmp/${USER}"
+    endif
+
+    ${KJB_MKDIR} "${tmp}" 
+
+    if( ! -w "${tmp}" ) then
+        echo 'Writable temp directory not found. Disabling serialization of file builds.'
+        set do_lock = 0
+    endif
+
+    if ($do_lock ) then
+        # Sleep a small amount, which is likely to be different (roughly one
+        # chance in the magic number below, currently 100).  This does not
+        # work on all systems, but it is not critical, although without it,
+        # there is a high chance the locking will not happen.. 
+        #
+        set x = $$ ; @ x %=100 ; sleep 0.$x >& /dev/null
+        if (${status}) then
+            if (! $?KJB_QUIET) then
+                echo "Random sleep failed." 
+            endif 
+        endif 
+
+        set lock_file =  "${tmp}/build_files_lock"
+
+        if (-e "${lock_file}") then
+            set max_age = 30
+
+            # If the lock is older than max_age seconds, ignore it. 
+            set locked = `tools younger_than ${max_age} ${lock_file}`
+
+            if (${status}) then
+                # If this command fails we assume that this is due to the lock file being removed since
+                # we checked for it due to the process that had it finally
+                # finishing, which does happen. In this case we do nothing.
+                echo "Cache file disappeared while getting its age." 
+            else if ("${locked}" == "") then
+                echo "Ignoring ${lock_file} because it is older than ${max_age} seconds." 
+            else
+                set count = 1
+                # Wait up to N seconds to get the lock. 
+                set wait_in_seconds = 10 
+                while (${count} < ${wait_in_seconds})
+                    sleep 1
+
+                    if (! -e "${lock_file}") then
+                        if (! $?KJB_QUIET) then
+                            echo "Got the build file lock" 
+                        endif 
+
+                        break
+                    endif
+
+                    if (! $?KJB_QUIET) then
+                        echo "Script build_include_lines process $$ is waiting on ${lock_file} (${count}/${wait_in_seconds})" 
+                    endif 
+
+                    @ count += 1
+                end
+
+                if ((${count} >= ${wait_in_seconds}) && (! $?KJB_QUIET)) then
+                    echo "Ignoring ${lock_file} due to time out." 
+                endif 
+            endif
+        endif 
+
+        echo "Process $$ is setting ${lock_file}." 
+        touch "${lock_file}"
+    endif 
+else 
+    set do_lock = 0
+endif
+
+###############################################################################
+
+# This is meant to be at the top recursive level.
+setenv KJB_VERBOSE_INDENT ""
+
+set force_build_sub_libs = 0
+set dir_arg = ""
+
+foreach arg ($*)
+   if ("${arg}" == "-f") then
+       set force_build_sub_libs = 1
+   else 
+        set dir_arg = "$arg"
+   endif 
+end 
+ 
+if ("${dir_arg}" == "") then
+    set sub_libs_needed = ""
+    
+    if (-e SUB_LIBS_NEEDED_HINT) then
+         set sub_libs_needed = `cat SUB_LIBS_NEEDED_HINT | grep -v '^[ 	]*#' | grep -v '^[ 	]*$'`
+
+         if ($?KJB_VERBOSE) then
+             echo " "
+             echo "Building include lines in directories in SUB_LIBS_NEEDED_HINT to reduce the number of processes needed."
+             echo "Specifically: ${sub_libs_needed}."
+             echo " "
+         endif 
+    else if ($?SERIALIZE_FILE_BUILD) then
+         set have_cpp = `${MAKE_SCRIPT_PATH}stream_file_names -t -x`
+         set have_c  = `${MAKE_SCRIPT_PATH}stream_file_names -t -c`
+
+         if ("${have_cpp}" == "1") then
+              set sub_libs_needed = "l m wrap_X11 p s c i m2 edge x nr wrap_lapack n sample g qhull h cgi_draw i2 l_cpp m_cpp i_cpp g_cpp n_cpp prob_cpp gp_cpp"
+         else if ("${have_c}" == "1") then
+              set sub_libs_needed = "l m wrap_X11 p s c i m2 edge x nr wrap_lapack n sample g qhull h cgi_draw i2"
+         endif 
+
+         if (("${sub_libs_needed}" != "") && ($?KJB_VERBOSE)) then
+             echo " "
+             echo "Building include lines in commonly used directories to reduce the number of processes needed."
+             echo " "
+         endif 
+    endif
+         
+    foreach lib_sub_dir (${sub_libs_needed})
+        set lib_sub_dir_path = "${KJB_LIB_DIR}${lib_sub_dir}"
+        if (-d "${lib_sub_dir_path}") then
+            ${MAKE_SCRIPT_PATH}build_file_list "${lib_sub_dir_path}"
+            ${MAKE_SCRIPT_PATH}build_include_lines_2 "${lib_sub_dir_path}"
+        endif
+    end
+
+     if (("${sub_libs_needed}" != "") && ($?KJB_VERBOSE)) then
+        echo " "
+        echo "Done building include lines serially to reduce the number of processes needed."
+        echo " "
+    endif 
+endif 
+
+${MAKE_SCRIPT_PATH}build_include_lines_2 $*
+
+###############################################################################
+
+if (${do_lock}) then
+    if (-e "${lock_file}") then
+        echo "Process $$ is removing ${lock_file}." 
+        /bin/rm -f "${lock_file}"
+    endif
+endif
+
+

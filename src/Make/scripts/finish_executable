@@ -1,0 +1,110 @@
+#!/bin/csh -f 
+
+if ($# < 2) then
+    echo "Finish executable needs two arguments."
+    exit 1
+endif 
+
+set exec_path = "$1"
+set exec_name = "$2"
+
+${KJB_PERMIT_EXECUTION} "${exec_path}" 
+
+set link_executable = 1
+
+#
+# The following could be made fancier by consulting the currently inactive
+# script:
+#     check_executable_path
+
+# Generally, we do not use this script if this environment variables are set.
+# However, we check them here to be sure.
+# 
+if ($?KJB_ENVIRONMENT) then
+    if (${?KJB_VERBOSE}) then
+        echo "KJB_ENVIRONMENT is set to ->${KJB_ENVIRONMENT}<- in script finish_executable."
+    endif 
+
+    if (${KJB_ENVIRONMENT}) then 
+        set link_executable = 0
+    endif 
+else 
+    if (${?KJB_VERBOSE}) then
+        echo "KJB_ENVIRONMENT is not set in script finish_executable."
+    endif 
+
+endif 
+
+# Currently, DONT_LINK_EXECUTABLE is only used in this script.  However, it is
+# not clear if we should also consult it in init_compile as we do with
+# KJB_ENVIRONMENT.
+#
+if ($?DONT_LINK_EXECUTABLE) then
+    if (${?KJB_VERBOSE}) then
+        echo "DONT_LINK_EXECUTABLE is set to ->${KJB_ENVIRONMENT}<- in script finish_executable."
+    endif 
+
+    if (${DONT_LINK_EXECUTABLE}) then 
+        set link_executable = 0
+    endif 
+else
+    if (${?KJB_VERBOSE}) then
+        echo "DONT_LINK_EXECUTABLE is not set in script finish_executable."
+    endif 
+endif 
+
+# Currently, FORCE_LINK_EXECUTABLE is only used in this script. It is not clear
+# if this should override DONT_LINK_EXECUTABLE or the other way arround. 
+#
+if ($?FORCE_LINK_EXECUTABLE) then
+    if (${?KJB_VERBOSE}) then
+        echo "FORCE_LINK_EXECUTABLE is set to ->${FORCE_LINK_EXECUTABLE}<- in script finish_executable."
+    endif 
+
+    if (${FORCE_LINK_EXECUTABLE}) then 
+        set link_executable = 1
+    endif 
+else
+    if (${?KJB_VERBOSE}) then
+        echo "FORCE_LINK_EXECUTABLE is not set in script finish_executable."
+    endif 
+endif 
+
+if (${link_executable}) then
+    echo "Linking executable ${exec_path} to ./${exec_name}."
+    echo "This can be disabled by 'unsetenv FORCE_LINK_EXECUTABLE; setenv DONT_LINK_EXECUTABLE 1'"
+    echo " "
+
+    if (-e "${exec_name}") then
+        if (! -l "${exec_name}") then
+            echo "Not linking executable because ${exec_name} exists and is not a link."
+            echo "Forcing removal of executable ${exec_path} to reduce confusion due to apparantly being up to date."
+            ${KJB_RM} ${exec_path}
+            exit 1
+        else 
+            ${KJB_RM} "${exec_name}"
+        endif 
+    endif 
+
+    ${KJB_LN} $1 . 
+else 
+    if (${?KJB_VERBOSE}) then
+        echo "Not Linking executable ${exec_path} to ./${exec_name}."
+    endif 
+
+    if (-e "${exec_name}") then
+        if (! -l "${exec_name}") then
+            echo "Not removing ${exec_name} as planned as it exists and is not a link."
+            echo "Forcing removal of executable ${exec_path} to reduce confusion due to apparantly being up to date."
+            ${KJB_RM} ${exec_path}
+            exit 1
+        else 
+            echo "Removing link ${exec_name} because we are not linking the executable."
+            ${KJB_RM} "${exec_name}"
+        endif 
+    endif 
+endif 
+
+
+
+
