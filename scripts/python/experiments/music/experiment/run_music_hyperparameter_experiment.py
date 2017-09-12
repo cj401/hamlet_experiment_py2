@@ -1186,7 +1186,7 @@ def exp_bach_LT_StickyLT_lambda_epsilon_D3(test=True, lt=True, stickylt=True):
 # RUN EXPERIMENT
 # set lt=True to run the experiment with the LT model
 # set stickylt=True to run the experiment with the StickyLT model
-exp_bach_LT_StickyLT_lambda_epsilon_D3(test=True, lt=True, stickylt=True)
+# exp_bach_LT_StickyLT_lambda_epsilon_D3(test=True, lt=True, stickylt=True)
 
 
 # ----------------------------------------------------------------------

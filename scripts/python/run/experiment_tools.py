@@ -222,7 +222,7 @@ def run_experiment(spec):
     if spec.command:
         command = spec.command
     else:
-        command = './main -p {0}'.format(spec.parameters_file)
+        command = './hamlet -p {0}'.format(spec.parameters_file)
         if spec.parameters_dir:
             command += ' --parameters_dir={0}'.format(spec.parameters_dir)
         if spec.data_subdir:
