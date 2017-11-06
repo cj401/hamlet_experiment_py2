@@ -54,6 +54,7 @@ optional_add_relative_path\
      verbose=True)
 
 
+# Need to run optional_add_relative_path before you can import experiment_tools
 from run import experiment_tools
 
 
@@ -88,8 +89,8 @@ def collect_parameter_spec_list_cocktail16_w0(parameters_path):
 # ----------------------------------------------------------------------
 
 
-match_select_cp16 = {0: ['noise_sd{0}_nocs'.format(h) for h in [10.0]],
-                     1: ['cp{0}'.format(i) for i in range(1)]}
+match_select_cp16 = {0: ['h{0}_nocs'.format(h) for h in [10.0]],
+                     1: ['cp{0}'.format(i) for i in range(3)]}
 
 
 def exp0(test=True):
@@ -103,7 +104,7 @@ def exp0(test=True):
         (main_path=HAMLET_ROOT,
          data_dir=os.path.join(DATA_ROOT, 'cocktail_s16_m12/'),
          results_dir=os.path.join(RESULTS_ROOT, 'cocktail_s16_m12'),
-         replications=2,
+         replications=5,
          offset=0,
          parameter_spec_list=collect_parameter_spec_list_cocktail16_w0(PARAMETERS_ROOT),
          match_dict=match_select_cp16,
@@ -116,4 +117,3 @@ def exp0(test=True):
 
 # Run me!
 # exp0(test=True)
-
