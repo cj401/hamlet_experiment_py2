@@ -78,8 +78,8 @@ def collect_parameter_spec_list_cocktail16_w0(parameters_path):
     works with: cocktail_s16_m12
     :return:
     """
-    return [ experiment_tools.ParameterSpec('cocktail16_inference_BFact_HMM_W0.config', parameters_path),
-             experiment_tools.ParameterSpec('cocktail16_inference_LT_HMM_W0-J600.config', parameters_path),
+    return [ # experiment_tools.ParameterSpec('cocktail16_inference_BFact_HMM_W0.config', parameters_path),
+             # experiment_tools.ParameterSpec('cocktail16_inference_LT_HMM_W0-J600.config', parameters_path),
              experiment_tools.ParameterSpec('cocktail16_inference_noLT_HMM_W0-J600.config', parameters_path)
     ]
 
@@ -90,7 +90,7 @@ def collect_parameter_spec_list_cocktail16_w0(parameters_path):
 
 
 match_select_cp16 = {0: ['h{0}_nocs'.format(h) for h in [10.0]],
-                     1: ['cp{0}'.format(i) for i in range(3)]}
+                     1: ['cp{0}'.format(i) for i in range(1)]}
 
 
 def exp0(test=True):
@@ -104,7 +104,7 @@ def exp0(test=True):
         (main_path=HAMLET_ROOT,
          data_dir=os.path.join(DATA_ROOT, 'cocktail_s16_m12/'),
          results_dir=os.path.join(RESULTS_ROOT, 'cocktail_s16_m12'),
-         replications=5,
+         replications=1,
          offset=0,
          parameter_spec_list=collect_parameter_spec_list_cocktail16_w0(PARAMETERS_ROOT),
          match_dict=match_select_cp16,
@@ -116,4 +116,4 @@ def exp0(test=True):
 
 
 # Run me!
-# exp0(test=True)
+exp0(test=False)
